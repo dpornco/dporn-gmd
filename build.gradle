@@ -4,22 +4,23 @@ buildscript {
         maven { url 'http://repo.spring.io/plugins-release' }
     }
     dependencies {
-        classpath 'org.akhikhl.gretty:gretty:+'
-    }
+		classpath 'org.gretty:gretty:+'
+	}
 }
 
 plugins {
     id "net.ltgt.apt-eclipse" version "0.15"
     id "de.esoco.gwt" version "1.0.3"
+    id "org.springframework.boot" version "2.0.6.RELEASE"
 }
 
 apply plugin: 'java'
 apply plugin: 'war'
-//apply plugin: 'gwt'
 apply plugin: 'eclipse'
 apply plugin: 'eclipse-wtp'
 apply plugin: 'net.ltgt.apt-eclipse'
-apply from: 'https://raw.github.com/gretty-gradle-plugin/gretty/master/pluginScripts/gretty.plugin'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.gretty'
 
 version = '20181028'
 group = "dpornco"
@@ -28,13 +29,26 @@ sourceCompatibility = 1.8
 compileJava.options.encoding = 'UTF-8'
 compileTestJava.options.encoding = 'UTF-8'
 
+springBoot {
+	mainClassName = 'co.dporn.gmd.servlet.DpornCoBoot'
+}
+
+bootJar {
+	mainClassName = 'co.dporn.gmd.servlet.DpornCoBoot'
+}
+
+bootWar {
+	mainClassName = 'co.dporn.gmd.servlet.DpornCoBoot'
+}
+
+
 farm {
 	webapp ':'
 }
 
 war {
 	archiveName (baseName+"."+extension)
-	rootSpec.exclude('**/*.class')
+	rootSpec.exclude('co/dporn/gmd/client/**/*.class')
 	rootSpec.exclude('**/*.gwt.xml')
 }
 
@@ -50,6 +64,9 @@ gretty {
 	servletContainer = 'tomcat9'
 	extraResourceBase 'build/gwt/out'
 	jvmArgs = ['-Dfile.encoding=UTF-8', '-Xmx512M']
+	managedClassReload = false
+	springBootVersion = "2.0.6.RELEASE"
+	springBoot = false
 }
 
 repositories {
@@ -133,14 +150,6 @@ dependencies {
 	
 	compile 'javax.ws.rs:javax.ws.rs-api:2.0.1'
 	
-	//providedCompile 'com.google.gwt:gwt-user:'+gwt.gwtVersion
-	
-	//gwt 'com.github.mvp4g:mvp4g2:1.0.1'
-	//annotationProcessor 'com.github.mvp4g:mvp4g2-processor:1.0.1'
-
-	//gwt 'com.implimentz:autobus:0.0.5'	
-	//annotationProcessor 'com.implimentz:autobus-compiler:0.0.5'
-	
 	//gwt 'org.fusesource.restygwt:restygwt:2.2.+'
 	//gwt 'com.google.code.findbugs:jsr305:3.0.0' //required for restygwt compile
 	//gwt 'de.knightsoft-net:gwt-commons-lang3:3.6-0'
@@ -162,6 +171,12 @@ dependencies {
 	//compression routines for the cache
 	compile 'com.github.tommyettinger:blazingchain:1.4.+'
 	providedCompile group: 'com.github.tommyettinger', name: 'blazingchain', version: '1.4.+', classifier: 'sources'
+	
+	compile 'org.springframework.boot:spring-boot-starter-web'
+	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+	
+	//Use steemj for server side account history as steem api appbase endpoint is failing
+	compile 'com.github.muksihs.steem-java-api-wrapper:steemj-core:d9f07155e7'
 	
 	testCompile 'org.testng:testng:6.+'
 	testCompile 'org.seleniumhq.selenium:selenium-server:+'
@@ -279,8 +294,8 @@ eclipse {
 
 test {
   useTestNG()
-  //outputs.upToDateWhen { false }
-  dependsOn 'compileJava', 'compileGwt'
+  outputs.upToDateWhen { false }
+  dependsOn 'compileJava', 'gwtCompile'
   maxHeapSize = "1024m"
 }
  
