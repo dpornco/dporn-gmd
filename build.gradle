@@ -235,15 +235,13 @@ eclipseJdt {
 
 eclipse {
 	project {
-		name = 'VerifiedNsfwBrowser'
+		name = 'dporn-gmd'
 		referencedProjects
-		//natures 'org.eclipse.buildship.core.gradleprojectnature'
 		webAppDirName = 'src/main/webapp'
 	}
 
 	classpath {
 		plusConfigurations += [configurations.provided]
-		//containers += ['org.springsource.ide.eclipse.gradle.classpathcontainer']
 		downloadSources = true
 		downloadJavadoc = true
 	}
@@ -252,7 +250,7 @@ eclipse {
 		sourceCompatibility=1.8
 		targetCompatibility=1.8
 		
-		/*apt {
+		apt {
 		      // whether annotation processing is enabled in Eclipse
 		      // (isAptEnabled in Kotlin)
 		      aptEnabled = compileJava.aptOptions.annotationProcessing
@@ -263,11 +261,11 @@ eclipse {
 		      reconcileEnabled = true
 		      // a map of annotation processor options; a null value will pass the argument as -Akey rather than -Akey=value
 		      processorOptions = compileJava.aptOptions.processorArgs
-      	}*/
-      /*factorypath {
+      	}
+      factorypath {
 		    plusConfigurations = [ configurations.apt, configurations.testApt ]
 		    minusConfigurations = []
-		}*/
+		}
 	}
 
 	wtp {
