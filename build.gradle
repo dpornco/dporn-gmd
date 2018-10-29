@@ -31,7 +31,7 @@ farm {
 }
 
 war {
-	archiveName (baseName+"."+extension)
+	archiveName baseName+"."+extension
 	rootSpec.exclude('co/dporn/gmd/client/**/*.class')
 	rootSpec.exclude('**/*.gwt.xml')
 }
@@ -41,8 +41,8 @@ gretty {
 	servletContainer = 'tomcat9'
 	extraResourceBase 'build/gwt/out'
 	jvmArgs = ['-Dfile.encoding=UTF-8', '-Xmx512M']
-	managedClassReload = true
-	contextPath='/'
+	managedClassReload = false
+	//contextPath='/'
 }
 
 
@@ -57,6 +57,7 @@ repositories {
 
 
 gwt {
+	logLevel = 'INFO'
 	gwtVersion='2.8.2'
 	eclipse {
 		addGwtContainer = true;
@@ -81,37 +82,28 @@ configurations {
 }
 
 dependencies {
-	providedCompile 'com.google.gwt:gwt-servlet:'+gwt.gwtVersion
-	gwt 'com.google.gwt:gwt-user:'+gwt.gwtVersion
-	
 	providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
 	compile 'javax.ws.rs:javax.ws.rs-api:2.0.1'
 	compile 'org.glassfish.jersey.containers:jersey-container-servlet:2.27'
 	compile 'org.glassfish.jersey.media:jersey-media-json-jackson:2.27'
 	compile 'org.glassfish.jersey.inject:jersey-hk2:2.27'
 	compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.9.6'
-	compile 'org.glassfish.jersey.media:jersey-media-json-jackson:2.22.4'
 	
-	gwt 'com.github.nmorel.gwtjackson:gwt-jackson:0.15.4'
-	
-	//regexp replacement for client side use
+	compile 'com.github.muksihs.steem-java-api-wrapper:steemj-core:d9f07155e7'
     compile 'com.github.tommyettinger:RegExodus:v0.1.10'
-	
-	gwt 'com.github.gwtmaterialdesign:gwt-material:2.1.1'
-	gwt 'com.github.gwtmaterialdesign:gwt-material-themes:2.1.1'
-	gwt 'com.github.gwtmaterialdesign:gwt-material-addins:2.1.1'
-	
-    //client side event bus
-	gwt ('com.google.gwt.eventbinder:eventbinder:1.1.0') {
-        exclude module: 'gwt-user'
-	}
-	
-	//compression routines for the cache
+    
 	compile 'com.github.tommyettinger:blazingchain:1.4.4.2'
 	gwt group: 'com.github.tommyettinger', name: 'blazingchain', version: '1.4.4.2', classifier: 'sources'
 	
-	//Use steemj for server side account history as steem api appbase endpoint is failing
-	compile 'com.github.muksihs.steem-java-api-wrapper:steemj-core:d9f07155e7'
+	gwt 'com.google.gwt:gwt-user:'+gwt.gwtVersion
+	providedCompile 'com.google.gwt:gwt-servlet:'+gwt.gwtVersion
+	gwt 'com.github.nmorel.gwtjackson:gwt-jackson:0.15.4'
+	gwt 'com.github.gwtmaterialdesign:gwt-material:2.1.1'
+	gwt 'com.github.gwtmaterialdesign:gwt-material-themes:2.1.1'
+	gwt 'com.github.gwtmaterialdesign:gwt-material-addins:2.1.1'
+	gwt ('com.google.gwt.eventbinder:eventbinder:1.1.0') {
+        exclude module: 'gwt-user'
+	}
 	
 	testCompile 'org.testng:testng:6.+'
 }
@@ -127,15 +119,15 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
+/*task javadocJar(type: Jar, dependsOn: javadoc) {
 	javadoc.failOnError=false
     classifier = 'javadoc'
     from javadoc.destinationDir
-}
+}*/
 
 artifacts {
     archives sourcesJar
-    archives javadocJar
+    //archives javadocJar
 }
 
 configurations.all {
