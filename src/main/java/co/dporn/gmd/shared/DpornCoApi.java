@@ -9,7 +9,7 @@ import javax.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public interface DpornCoApi {
-	@GET
 	@Path("ping")
+	@GET
 	PingResponse ping();
 }
