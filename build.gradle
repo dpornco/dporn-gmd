@@ -1,26 +1,26 @@
 buildscript {
 	repositories {
         jcenter()
-        maven { url 'http://repo.spring.io/plugins-release' }
+        mavenCentral()
+        //maven { url 'http://repo.spring.io/plugins-release' }
     }
-    dependencies {
-		classpath 'org.gretty:gretty:+'
-	}
 }
 
 plugins {
     id "net.ltgt.apt-eclipse" version "0.15"
     id "de.esoco.gwt" version "1.0.3"
-    id "org.springframework.boot" version "2.0.6.RELEASE"
+    id 'org.springframework.boot' version '2.0.1.RELEASE'
 }
 
 apply plugin: 'java'
 apply plugin: 'war'
 apply plugin: 'eclipse'
-apply plugin: 'eclipse-wtp'
+//apply plugin: 'eclipse-wtp'
+//apply plugin: 'idea'
 apply plugin: 'net.ltgt.apt-eclipse'
+apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
-apply plugin: 'org.gretty'
+//apply plugin: 'org.gretty'
 
 version = '20181028'
 group = "dpornco"
@@ -41,10 +41,11 @@ bootWar {
 	mainClassName = 'co.dporn.gmd.servlet.DpornCoBoot'
 }
 
-
+/*
 farm {
 	webapp ':'
 }
+*/
 
 war {
 	archiveName (baseName+"."+extension)
@@ -52,22 +53,17 @@ war {
 	rootSpec.exclude('**/*.gwt.xml')
 }
 
-/*jar {
-	sourceSets.main.output.classesDir = new File(buildDir, "classes/main")
-	from project.sourceSets.main.allSource
-  	from project.sourceSets.main.output
-  	from ('src/main/resources')  
-}*/
-
+/*
 gretty {
 	httpPort = 8080;
 	servletContainer = 'tomcat9'
 	extraResourceBase 'build/gwt/out'
 	jvmArgs = ['-Dfile.encoding=UTF-8', '-Xmx512M']
 	managedClassReload = false
-	springBootVersion = "2.0.6.RELEASE"
+	springBootVersion = "2.0.1.RELEASE"
 	springBoot = false
 }
+*/
 
 repositories {
     jcenter()
@@ -78,30 +74,29 @@ repositories {
     args "-noincremental"
 }**/
 
+
 gwt {
 	gwtVersion='2.8.2'
     googlePluginEclipse = true
     gwtServletLib = false
-	module 'co.dporn.gmd.MainModule'
+	module 'co.dporn.gmd.DpornCo'
 	compile {
         logLevel = "INFO"
         compileReport = false
-        draftCompile = false
+        draftCompile = true
         checkAssertions = false
 		style = "OBF" // (OBF, PRETTY, DETAILED)
-        optimize = 9
+        optimize = 0 //0 to 9
         failOnError = true
         sourceLevel = "1.8"
         localWorkers = 8
         localWorkersMem = 4096
         methodNameDisplayMode = "FULL"
-        jsInteropMode = "JS"
         generateJsInteropExports = false
         strict = true
     	//src += files("build/generated/source/apt/main");
 	}
     jetty {
-		/** interface to listen on. */
 		bindAddress = "0.0.0.0"
 		port = 8080
 		stopPort = 8089
@@ -115,19 +110,17 @@ gwt {
 		javaArgs = ["-Xmx256m", "-Xms256m"]
 	}
     dev {
-		/** The ip address of the code server. */
 		bindAddress = "0.0.0.0"
 		failOnError = true
 		precompile = true
 		port = 9876
-		/** EXPERIMENTAL: Don't implicitly depend on "client" and "public" when a module doesn't define anydependencies. */
+		// EXPERIMENTAL: Don't implicitly depend on "client" and "public" when a module doesn't define anydependencies.
 		enforceStrictResources = true
 		sourceLevel = "1.8"
 		logLevel = "INFO"
-		jsInteropMode = "JS"
 		generateJsInteropExports = false
 		methodNameDisplayMode = "FULL" //(NONE, ONLY_METHOD_NAME, ABBREVIATED, FULL)
-		/** shown all compile errors */
+		// shown all compile errors 
         strict = true
         noServer = false
 		maxHeapSize="1024m"
@@ -145,26 +138,32 @@ configurations {
 }
 
 dependencies {
-	providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
-	providedCompile 'com.google.gwt:gwt-servlet:'+gwt.gwtVersion
-	
+	compileOnly 'javax.servlet:javax.servlet-api:3.0.1'
 	compile 'javax.ws.rs:javax.ws.rs-api:2.0.1'
+	compile('javax.validation:validation-api:1.0.0.GA')
 	
 	//gwt 'org.fusesource.restygwt:restygwt:2.2.+'
 	//gwt 'com.google.code.findbugs:jsr305:3.0.0' //required for restygwt compile
 	//gwt 'de.knightsoft-net:gwt-commons-lang3:3.6-0'
-	compile 'com.fasterxml.jackson.core:jackson-annotations:2.9.+'
-	providedCompile 'com.github.nmorel.gwtjackson:gwt-jackson:0.15.+'
+	
+	/*
+	compile 'com.fasterxml.jackson.core:jackson-annotations:2.9.6'
+	compile 'com.fasterxml.jackson.core:jackson-databind:2.9.6'
+	compile 'org.glassfish.jersey.containers:jersey-container-servlet:2.22.4'
+	compile 'org.glassfish.jersey.media:jersey-media-json-jackson:2.22.4'
+	*/
+	
+	compileOnly 'com.github.nmorel.gwtjackson:gwt-jackson:0.15.4'
 	
 	//regexp replacement for client side use
     compile 'com.github.tommyettinger:RegExodus:v0.1.10'
 	
-	providedCompile 'com.github.gwtmaterialdesign:gwt-material:2.1+'
-	providedCompile 'com.github.gwtmaterialdesign:gwt-material-themes:2.1+'
-	providedCompile 'com.github.gwtmaterialdesign:gwt-material-addins:2.1+'
+	compileOnly 'com.github.gwtmaterialdesign:gwt-material:2.+'
+	compileOnly 'com.github.gwtmaterialdesign:gwt-material-themes:2.+'
+	compileOnly 'com.github.gwtmaterialdesign:gwt-material-addins:2.+'
 	
     //client side event bus
-	providedCompile ('com.google.gwt.eventbinder:eventbinder:1.1.0') {
+	compileOnly ('com.google.gwt.eventbinder:eventbinder:1.1.0') {
         exclude module: 'gwt-user'
 	}
 	
@@ -172,14 +171,65 @@ dependencies {
 	compile 'com.github.tommyettinger:blazingchain:1.4.+'
 	providedCompile group: 'com.github.tommyettinger', name: 'blazingchain', version: '1.4.+', classifier: 'sources'
 	
-	compile 'org.springframework.boot:spring-boot-starter-web'
-	providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+	
+	//compile('org.springframework.boot:spring-boot-starter-tomcat')
+	//compile('org.springframework.boot:spring-boot-starter-security')
+	//compile('org.springframework.boot:spring-boot-starter-web:2.0.1.RELEASE')
+	/*compile('org.glassfish.jersey.core:jersey-server:2.22.4')*/
+	compile('org.glassfish.jersey.containers:jersey-container-servlet-core:2.22.4')
+	compile('org.glassfish.jersey.containers:jersey-container-servlet:2.22.4') 
+	compile('org.glassfish.hk2.external:javax.inject:2.4.0-b34')
+	compile('org.glassfish.hk2.external:aopalliance-repackaged:2.4.0-b34')
+	compile('org.glassfish.jersey.core:jersey-common:2.22.4')
+	compile('org.glassfish.jersey.core:jersey-server:2.22.4')
+	compile('org.glassfish.jersey.core:jersey-client:2.22.4')
+	compile('org.glassfish.jersey.media:jersey-media-jaxb:2.22.4')
+	compile('org.glassfish.jersey.media:jersey-media-json-jackson:2.22.4')
+	compile('org.glassfish.jersey.ext:jersey-bean-validation:2.22.4')
+	compile('org.glassfish.hk2:hk2-api:2.4.0-b34')
+	compile('org.glassfish.hk2:hk2-locator:2.4.0-b34')
+	compile('org.glassfish.hk2:hk2-utils:2.4.0-b34')
+	compile('javax.annotation:javax.annotation-api:1.2')
+	compile('org.glassfish.jersey.ext:jersey-entity-filtering:2.22.4')
+	compile('org.osgi:org.osgi.core:4.2.0')
+	
+	compile ('org.springframework.boot:spring-boot-starter-jersey:2.0.1.RELEASE') {
+		exclude module: 'hibernate-validator'
+		exclude module: 'spring-boot-starter-logging'
+		exclude module: 'spring-webmvc'
+		exclude module: 'jersey-spring4'
+	}
+	compile 'org.glassfish.jersey.ext:jersey-spring3:2.22.4'
+	
+	compile ('org.springframework.boot:spring-boot:2.0.1.RELEASE')
+	compile ('org.springframework.boot:spring-boot-starter-validation:2.0.1.RELEASE')
+	compile ('org.springframework.boot:spring-boot-starter-tomcat:2.0.1.RELEASE')
+	compile ('org.springframework.boot:spring-boot-starter-logging:2.0.1.RELEASE')
+	compile ('org.springframework.boot:spring-boot-autoconfigure:2.0.1.RELEASE')
+	compile ('org.springframework.boot:spring-boot-starter:2.0.1.RELEASE')
+	compile ('org.springframework.boot:spring-boot-devtools:2.0.1.RELEASE') 	
+	compile ('org.springframework.boot:spring-boot-starter-log4j2:2.0.1.RELEASE')
+	
+	//annotationProcessor('org.springframework.boot:spring-boot-configuration-processor')
 	
 	//Use steemj for server side account history as steem api appbase endpoint is failing
 	compile 'com.github.muksihs.steem-java-api-wrapper:steemj-core:d9f07155e7'
 	
 	testCompile 'org.testng:testng:6.+'
-	testCompile 'org.seleniumhq.selenium:selenium-server:+'
+	//testCompile 'org.seleniumhq.selenium:selenium-server:+'
+	testCompile('org.springframework.boot:spring-boot-starter-test:2.0.1.RELEASE')
+}
+
+
+project.configurations.all { config ->
+  config.resolutionStrategy.dependencySubstitution({ 
+      it.substitute(
+         it.module('javax.validation:validation-api')
+      ).with(
+       //because "because newer versions won't compile with GWT"
+         it.module('javax.validation:validation-api:1.0.0.GA')
+      )
+  } as Action<DependencySubstitutions>)    
 }
  
 /*sourceSets {
@@ -211,7 +261,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 
 artifacts {
     archives sourcesJar
-    /*archives javadocJar*/
+    archives javadocJar
 }
 
 configurations.all {
