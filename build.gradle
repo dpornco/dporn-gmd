@@ -40,11 +40,11 @@ war {
 
 
 gretty {
-	loggingLevel="ALL"
+	loggingLevel="INFO"
 	httpPort = 8080;
 	servletContainer = 'tomcat9'
 	extraResourceBase 'build/gwt/out'
-	jvmArgs = ['-Dfile.encoding=UTF-8'] //, '-Xmx1024M']
+	jvmArgs = ['-Dfile.encoding=UTF-8', '-Xmx1024M']
 	managedClassReload = true
 	contextPath='/'
 }

@@ -10,7 +10,7 @@ import co.dporn.gmd.shared.PingResponse;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Path("dpornco/1.0")
+@Path("1.0")
 public class DpornCoApiImpl implements DpornCoApi {
 	@Override
 	public PingResponse ping() {
