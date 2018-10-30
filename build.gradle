@@ -31,6 +31,19 @@ farm {
 	webapp ':'
 }
 
+products {
+	product 'Dev', {
+		loggingLevel="INFO"
+		httpPort = 4001;
+		servletContainer = 'tomcat9'
+	}
+	product 'Beta', {
+		loggingLevel="INFO"
+		httpPort = 4002;
+		servletContainer = 'tomcat9'
+	}
+}
+
 
 war {
 	archiveName baseName+"."+extension
