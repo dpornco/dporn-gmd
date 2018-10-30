@@ -13,11 +13,11 @@ import gwt.material.design.client.ui.MaterialTab;
 
 public class AppLayoutUi extends Composite implements AppLayoutView {
 	
-	@UiField
-    protected MaterialSplashScreen splash;
+//	@UiField
+//    protected MaterialSplashScreen splash;
 
-    @UiField
-    protected MaterialTab tab;
+//    @UiField
+//    protected MaterialTab tab;
 
 	private static AppLayoutUiUiBinder uiBinder = GWT.create(AppLayoutUiUiBinder.class);
 
