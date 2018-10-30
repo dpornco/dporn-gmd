@@ -1,0 +1,9 @@
+/bin/
+/.gradle/
+/build/
+/.generated-sources/
+/war/
+/.classpath
+/.factorypath
+/.project
+/.settings/

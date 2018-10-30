@@ -1,0 +1,206 @@
+buildscript {
+	repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'org.wisepersist:gwt-gradle-plugin:1.+'
+    }
+}
+plugins {
+    id "net.ltgt.apt-eclipse" version "0.15"
+    id "org.gretty" version "2.2.0"
+}
+apply plugin: 'java'
+apply plugin: 'war'
+apply plugin: 'gwt'
+apply plugin: 'eclipse'
+apply plugin: 'eclipse-wtp'
+apply plugin: 'idea'
+apply plugin: 'net.ltgt.apt-eclipse'
+apply plugin: 'org.gretty'
+
+version = '20181029'
+group = "dpornco"
+
+sourceCompatibility = 1.8
+compileJava.options.encoding = 'UTF-8'
+compileTestJava.options.encoding = 'UTF-8'
+webAppDirName = 'src/main/webapp'
+
+farm {
+	webapp ':'
+}
+
+
+war {
+	archiveName baseName+"."+extension
+	rootSpec.exclude('co/dporn/gmd/client/**/*.class')
+	rootSpec.exclude('**/*.gwt.xml')
+}
+
+
+gretty {
+	loggingLevel="ALL"
+	httpPort = 8080;
+	servletContainer = 'tomcat9'
+	extraResourceBase 'build/gwt/out'
+	jvmArgs = ['-Dfile.encoding=UTF-8'] //, '-Xmx1024M']
+	managedClassReload = true
+	contextPath='/'
+}
+
+
+repositories {
+    jcenter()
+    maven { url 'https://jitpack.io' }
+}
+
+/**tasks.withType(org.wisepersist.gradle.plugins.gwt.AbstractGwtActionTask) {
+    args "-noincremental"
+}**/
+
+
+gwt {
+	logLevel = 'INFO'
+	gwtVersion='2.8.2'
+	eclipse {
+		addGwtContainer = true;
+	}
+	modules 'co.dporn.gmd.DpornCo'
+	compiler {
+		disableClassMetadata = false;
+		strict = true;
+		style = "OBF";
+		localWorkers = 4;
+	}
+	superDev {
+		noPrecompile = false;
+		failOnError = false;
+		bindAddress = "0.0.0.0";
+	}
+	maxHeapSize = "2048M";
+}
+
+configurations {
+  provided
+}
+
+dependencies {
+	providedCompile 'javax.servlet:javax.servlet-api:3.0.1'
+	compile 'javax.ws.rs:javax.ws.rs-api:2.0.1'
+	compile 'org.glassfish.jersey.containers:jersey-container-servlet:2.27'
+	compile 'org.glassfish.jersey.media:jersey-media-json-jackson:2.27'
+	compile 'org.glassfish.jersey.inject:jersey-hk2:2.27'
+	compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.9.6'
+	
+	compile 'com.github.muksihs.steem-java-api-wrapper:steemj-core:d9f07155e7'
+    compile 'com.github.tommyettinger:RegExodus:v0.1.10'
+    
+	compile 'com.github.tommyettinger:blazingchain:1.4.4.2'
+	gwt group: 'com.github.tommyettinger', name: 'blazingchain', version: '1.4.4.2', classifier: 'sources'
+	
+	gwt 'com.google.gwt:gwt-user:'+gwt.gwtVersion
+	providedCompile 'com.google.gwt:gwt-servlet:'+gwt.gwtVersion
+	gwt 'com.github.nmorel.gwtjackson:gwt-jackson:0.15.4'
+	gwt 'com.github.gwtmaterialdesign:gwt-material:2.1.1'
+	gwt 'com.github.gwtmaterialdesign:gwt-material-themes:2.1.1'
+	gwt 'com.github.gwtmaterialdesign:gwt-material-addins:2.1.1'
+	gwt ('com.google.gwt.eventbinder:eventbinder:1.1.0') {
+        exclude module: 'gwt-user'
+	}
+	
+	testCompile 'org.testng:testng:6.+'
+}
+
+task "create-dirs" {
+	doLast{
+	sourceSets*.java.srcDirs*.each { it.mkdirs() }
+	sourceSets*.resources.srcDirs*.each { it.mkdirs() }
+	new File(webAppDirName).mkdirs();
+}}
+clean.doLast {
+    file('war').deleteDir()
+    file('.generated-sources').deleteDir()
+}
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+	javadoc.failOnError=false
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives sourcesJar
+    archives javadocJar
+}
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 3000, 'seconds'
+}
+
+eclipseJdt {
+	doLast{
+    File f = file('.settings/org.eclipse.core.resources.prefs')
+    f.write('eclipse.preferences.version=1\n')
+    f.append('encoding/<project>=utf-8')
+    f = file('.settings/org.eclipse.core.runtime.prefs')
+    f.write('eclipse.preferences.version=1\n')
+    f.append('line.separator=\\n\n')
+}}
+
+eclipse {
+	project {
+		name = 'dporn-gmd'
+		referencedProjects
+		//webAppDirName = project.webAppDirName //'src/main/webapp'
+	}
+
+	classpath {
+		plusConfigurations += [configurations.provided]
+		downloadSources = true
+		downloadJavadoc = true
+	}
+
+	jdt {
+		sourceCompatibility=1.8
+		targetCompatibility=1.8
+		
+		apt {
+		      // whether annotation processing is enabled in Eclipse
+		      // (isAptEnabled in Kotlin)
+		      aptEnabled = compileJava.aptOptions.annotationProcessing
+		      // where Eclipse will output the generated sources; value is interpreted as per project.file()
+		      genSrcDir = file('.generated-sources/annotations')
+		      // whether annotation processing is enabled in the editor
+		      // (isReconcileEnabled in Kotlin)
+		      reconcileEnabled = true
+		      // a map of annotation processor options; a null value will pass the argument as -Akey rather than -Akey=value
+		      processorOptions = compileJava.aptOptions.processorArgs
+      	}
+      factorypath {
+		    plusConfigurations = [ configurations.apt, configurations.testApt ]
+		    minusConfigurations = []
+		}
+	}
+
+	wtp {
+		facet {
+			facets = []
+			facet name: 'jst.java', version: '1.8'
+			facet name: 'jst.web', version: '3.0'
+		}
+	}
+}
+
+test {
+  useTestNG()
+  outputs.upToDateWhen { false }
+  dependsOn 'compileJava', 'compileGwt'
+  maxHeapSize = "1024m"
+}
+ 
