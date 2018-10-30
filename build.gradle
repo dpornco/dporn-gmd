@@ -95,6 +95,11 @@ dependencies {
 	
 	compile 'com.github.muksihs.steem-java-api-wrapper:steemj-core:d9f07155e7'
     compile 'com.github.tommyettinger:RegExodus:v0.1.10'
+    compile 'org.mongodb:mongodb-driver-sync:3.8.2'
+    
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-jdk14
+	compile group: 'org.slf4j', name: 'slf4j-jdk14', version: '1.7.25'
+    
     
 	compile 'com.github.tommyettinger:blazingchain:1.4.4.2'
 	gwt group: 'com.github.tommyettinger', name: 'blazingchain', version: '1.4.4.2', classifier: 'sources'
