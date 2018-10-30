@@ -26,10 +26,7 @@ public class ManualTestsMain {
 			while (find.hasNext()) {
 				Document item = find.next();
 				System.out.println(" -> https://dporn.co/watch/@" + item.getString("username") + "/"
-						+ item.getString("permlink") + " [" + item.getString("originalHash") + "]");
-				if (!item.getString("originalHash").startsWith("Q")) {
-					System.out.println(" : "+item.toJson());
-				}
+						+ item.getString("permlink") + " [" + item.getString("originalHash") + ", "+  item.getString("posterHash") + "]");
 			}
 			find.close();
 		} finally {

@@ -29,19 +29,21 @@
 <!-- 	<inherits name="elemental2.dom.Dom" /> -->
 
 	<!-- UI -->
-	<inherits name="gwt.material.design.GwtMaterialWithJQuery" />
+	<inherits name="gwt.material.design.jquery.JQuery" />
+	<inherits name="gwt.material.design.GwtMaterialBasicWithJQuery" />
+	
 	<inherits name="gwt.material.design.addins.GwtMaterialAddins" />
 
 	<inherits name="gwt.material.design.themes.ThemeRed" />
-	<inherits name="gwt.material.design.themes.ThemeBlue" />
-	<inherits name="gwt.material.design.themes.ThemeAmber" />
-	<inherits name="gwt.material.design.themes.ThemeBrown" />
-	<inherits name="gwt.material.design.themes.ThemeGreen" />
-	<inherits name="gwt.material.design.themes.ThemeGrey" />
-	<inherits name="gwt.material.design.themes.ThemeOrange" />
-	<inherits name="gwt.material.design.themes.ThemePink" />
-	<inherits name="gwt.material.design.themes.ThemePurple" />
-	<inherits name="gwt.material.design.themes.ThemeYellow" />
+<!-- 	<inherits name="gwt.material.design.themes.ThemeBlue" /> -->
+<!-- 	<inherits name="gwt.material.design.themes.ThemeAmber" /> -->
+<!-- 	<inherits name="gwt.material.design.themes.ThemeBrown" /> -->
+<!-- 	<inherits name="gwt.material.design.themes.ThemeGreen" /> -->
+<!-- 	<inherits name="gwt.material.design.themes.ThemeGrey" /> -->
+<!-- 	<inherits name="gwt.material.design.themes.ThemeOrange" /> -->
+<!-- 	<inherits name="gwt.material.design.themes.ThemePink" /> -->
+<!-- 	<inherits name="gwt.material.design.themes.ThemePurple" /> -->
+<!-- 	<inherits name="gwt.material.design.themes.ThemeYellow" /> -->
 	
 	
 <!-- 	<set-configuration-property name="CssResource.conversionMode" -->

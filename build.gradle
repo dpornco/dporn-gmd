@@ -107,6 +107,7 @@ dependencies {
 	gwt 'com.google.gwt:gwt-user:'+gwt.gwtVersion
 	providedCompile 'com.google.gwt:gwt-servlet:'+gwt.gwtVersion
 	gwt 'com.github.nmorel.gwtjackson:gwt-jackson:0.15.4'
+	gwt 'com.github.gwtmaterialdesign:gwt-material-jquery:2.1.1'
 	gwt 'com.github.gwtmaterialdesign:gwt-material:2.1.1'
 	gwt 'com.github.gwtmaterialdesign:gwt-material-themes:2.1.1'
 	gwt 'com.github.gwtmaterialdesign:gwt-material-addins:2.1.1'
