@@ -29,8 +29,8 @@
 <!-- 	<inherits name="elemental2.dom.Dom" /> -->
 
 	<!-- UI -->
-	<inherits name="gwt.material.design.jquery.JQuery" />
 	<inherits name="gwt.material.design.GwtMaterialBasicWithJQuery" />
+	<inherits name="gwt.material.design.jquery.JQuery" />
 	
 	<inherits name="gwt.material.design.addins.GwtMaterialAddins" />
 
