@@ -3,7 +3,6 @@ package co.dporn.gmd.client.presenters;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.ui.HasWidgets;
 
-import co.dporn.gmd.client.views.AppLayoutView;
 import gwt.material.design.client.ui.MaterialLoader;
 
 public class AppPresenterImpl implements AppPresenter, ScheduledCommand {

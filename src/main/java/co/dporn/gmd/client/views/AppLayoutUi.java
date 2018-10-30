@@ -7,6 +7,7 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
 
 import co.dporn.gmd.client.presenters.AppPresenter;
+import co.dporn.gmd.client.presenters.AppPresenter.AppLayoutView;
 import gwt.material.design.client.ui.MaterialSplashScreen;
 import gwt.material.design.client.ui.MaterialTab;
 
