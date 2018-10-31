@@ -23,7 +23,7 @@
 		</m:MaterialHeader>
 
 		<!-- SideNav -->
-		<m:MaterialSideNavPush hideOn="NONE" ui:field="sidenav" m:id="sidenav" autoHideOnResize="true"
+		<m:MaterialSideNavPush ui:field="sidenav" m:id="sidenav" 
 			width="250" withHeader="true" top="70">
 			<m:MaterialLink text="Home" iconType="HOME" />
 			<m:MaterialLink text="Search" iconType="SEARCH" />
@@ -46,7 +46,8 @@
 				iconType="ANNOUNCEMENT" href="https://discord.gg/sP7YHdU" target="_blank"/>
 			<m:MaterialLink text="Help / Feedback" iconType="HELP" href="https://discord.gg/28NwJ8u" target="_blank"/>
 		</m:MaterialSideNavPush>
-		
+		<m:MaterialContainer ui:field="container" paddingLeft="250"
+			paddingRight="140" paddingTop="100"/>
 		<!-- FAB -->
 		<m:MaterialFAB>
 			<m:MaterialAnchorButton target="_blank"

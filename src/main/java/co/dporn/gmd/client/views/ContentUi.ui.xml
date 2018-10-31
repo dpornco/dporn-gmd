@@ -6,8 +6,7 @@
 	
 	</ui:style>
 	<!-- Container -->
-		<m:MaterialContainer ui:field="container" paddingLeft="250"
-			paddingRight="140" paddingTop="100">
+		<m:MaterialContainer ui:field="container" padding="0" margin="0">
 			<!-- Cards -->
 			<m:MaterialLabel text="Featured Collections"
 				marginLeft="12" />
