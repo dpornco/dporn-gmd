@@ -130,6 +130,7 @@ dependencies {
 	gwt ('com.google.gwt.eventbinder:eventbinder:1.1.0') {
         exclude module: 'gwt-user'
 	}
+	gwt 'com.ekotrope:gwt-completablefuture:1.0.0'
 	
 	testCompile 'org.testng:testng:6.+'
 }

@@ -22,6 +22,9 @@
 	<!-- eventbinder -->
 	<inherits name='com.google.web.bindery.event.EventBinder'/>
 	
+	<!-- https://github.com/OneGeek/GWT-CompletableFuture -->
+	<inherits name='com.ekotrope.gwt.CompletableFuture'/>
+	
 	<!-- compression for the cache -->
 	<inherits name='blazing.chain' />
 	
