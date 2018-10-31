@@ -6,6 +6,7 @@ set -o pipefail
 cd "$(dirname "$0")"
 
 gradle clean
+gradle compileGwt
 gradle build
 gradle buildProductDev
 
@@ -13,7 +14,17 @@ gradle buildProductDev
 
 cd build/output
 
-rsync -e "ssh -p $PORT" --progress --verbose --human-readable --compress --delete-after -a Dev/ "$USER"@"$HOST":Dev/
+#do includes *before* excludes
+
+rsync	--include '/webapps/*.*' --exclude '/webapps/*/' \
+		--exclude /work/ \
+		--exclude /temp/ \
+		-e "ssh -p $PORT" --progress --verbose --human-readable --compress --delete-after -a \
+	Dev/ "$USER"@"$HOST":Dev/
+	
+#rsync	--include '*.*' --exclude '*/' \
+#	-e "ssh -p $PORT" --progress --verbose --human-readable --compress --delete-after -a \
+#	Dev/webapps/ "$USER"@"$HOST":Dev/webapps/
 
 ssh -p "$PORT" "$USER"@"$HOST" 'cd Dev; bash stop.sh'
 
