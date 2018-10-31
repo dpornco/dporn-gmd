@@ -27,20 +27,23 @@ compileJava.options.encoding = 'UTF-8'
 compileTestJava.options.encoding = 'UTF-8'
 webAppDirName = 'src/main/webapp'
 
-farm {
-	webapp ':'
+farms {
+	farm 'Dev', {
+		loggingLevel="INFO"
+		httpPort = 9001;
+		servletContainer = 'tomcat9'
+	}
+	farm 'Beta', {
+		loggingLevel="INFO"
+		httpPort = 9002;
+		servletContainer = 'tomcat9'
+	}
 }
 
 products {
 	product 'Dev', {
-		loggingLevel="INFO"
-		httpPort = 4001;
-		servletContainer = 'tomcat9'
 	}
 	product 'Beta', {
-		loggingLevel="INFO"
-		httpPort = 4002;
-		servletContainer = 'tomcat9'
 	}
 }
 
