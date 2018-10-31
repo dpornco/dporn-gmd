@@ -48,7 +48,7 @@
 		</m:MaterialSideNavPush>
 
 		<!-- Container -->
-		<m:MaterialContainer paddingLeft="250"
+		<m:MaterialContainer ui:field="container" paddingLeft="250"
 			paddingRight="140" paddingTop="100">
 			<!-- Cards -->
 			<m:MaterialLabel text="Featured Collections"
