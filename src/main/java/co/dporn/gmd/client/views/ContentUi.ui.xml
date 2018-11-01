@@ -6,7 +6,9 @@
 	
 	</ui:style>
 	<!-- Container -->
-		<m:MaterialContainer ui:field="container" padding="0" margin="0">
+	<m:MaterialContainer ui:field="container" paddingLeft="250"
+			paddingRight="140" paddingTop="100">
+<!-- 		<m:MaterialContainer ui:field="container" padding="0" margin="0"> -->
 			<!-- Cards -->
 			<m:MaterialLabel text="Featured Collections"
 				marginLeft="12" />
@@ -42,7 +44,7 @@
 						<m:MaterialCardContent height="120px">
 							<m:MaterialImage layoutPosition="ABSOLUTE"
 								marginTop="-32"
-								url="https://steemitimages.com/600x800/https://steemitimages.com/0x0/https://gateway.ipfs.io/ipfs/Qmc4jbUWfHMn8B6jFbuJxCyMLkSiXud314x7eEJuG29VvF"
+								url="https://steemitimages.com/600x800/https://gateway.ipfs.io/ipfs/Qmc4jbUWfHMn8B6jFbuJxCyMLkSiXud314x7eEJuG29VvF"
 								circle="true" width="32px" height="32px" />
 							<m:MaterialLabel
 								text="King Leonidas and the 300 Spartans" />
@@ -64,7 +66,7 @@
 						<m:MaterialCardContent height="120px">
 							<m:MaterialImage layoutPosition="ABSOLUTE"
 								marginTop="-32"
-								url="https://steemitimages.com/600x800/https://steemitimages.com/0x0/https://gateway.ipfs.io/ipfs/QmU4NLhftX82F191N558zYSEnAiAU4QCzC1euZtSfyYXaw"
+								url="https://steemitimages.com/600x800/https://gateway.ipfs.io/ipfs/QmU4NLhftX82F191N558zYSEnAiAU4QCzC1euZtSfyYXaw"
 								circle="true" width="32px" height="32px" />
 							<m:MaterialLabel text="RESEARCH" />
 							<m:MaterialLabel opacity="0.6" marginTop="4"
@@ -80,7 +82,7 @@
 					<m:MaterialCard>
 						<m:MaterialCardImage>
 							<m:MaterialImage
-								url="https://steemitimages.com/600x800/https://steemitimages.com/0x0/https://gateway.ipfs.io/ipfs/QmPa18Dcz6mTzizSoAcFLMDHHMGaW9yMGF5iQcW3cZs7kV" />
+								url="https://steemitimages.com/600x800/https://gateway.ipfs.io/ipfs/QmPa18Dcz6mTzizSoAcFLMDHHMGaW9yMGF5iQcW3cZs7kV" />
 						</m:MaterialCardImage>
 						<m:MaterialCardContent height="120px">
 							<m:MaterialImage layoutPosition="ABSOLUTE"
@@ -102,14 +104,14 @@
 			<!-- Cards -->
 			<m:MaterialLabel text="Featured Posts"
 				marginLeft="12" />
-			<ma:masonry.MaterialMasonry>
+			<ma:masonry.MaterialMasonry ui:field="masonry">
 				<!-- Post 1 -->
 				<m:MaterialColumn grid="l6 m6 s12">
 					<m:MaterialCard>
 						<m:MaterialCardContent>
 							<m:MaterialRow marginBottom="0">
 								<m:MaterialImage
-									url="https://steemitimages.com/600x800/https://steemitimages.com/0x0/https://gateway.ipfs.io/ipfs/QmQ2eENesNYXBGy8H9dNFaw2BU73dWCN6UKaToX9zWtfS4"
+									url="https://steemitimages.com/600x800/https://gateway.ipfs.io/ipfs/QmQ2eENesNYXBGy8H9dNFaw2BU73dWCN6UKaToX9zWtfS4"
 									width="50" height="50" circle="true" float="LEFT"
 									marginRight="20" />
 								<m:MaterialLabel text="Mark Kevin Baldemor"
@@ -151,7 +153,7 @@
 							<m:MaterialCollection>
 								<m:MaterialCollectionItem type="AVATAR">
 									<m:MaterialImage
-										url="https://steemitimages.com/600x800/https://steemitimages.com/0x0/https://gateway.ipfs.io/ipfs/QmcXkEvsDZYR1H979buWnWaHLygj1rEeFaMzkRSJq8jSnf" circle="true"
+										url="https://steemitimages.com/600x800/https://gateway.ipfs.io/ipfs/QmcXkEvsDZYR1H979buWnWaHLygj1rEeFaMzkRSJq8jSnf" circle="true"
 										width="40px" height="40px" />
 									<m:MaterialLabel text="Yuna" />
 									<m:MaterialLabel
@@ -192,7 +194,7 @@
 						</m:MaterialCardContent>
 						<m:MaterialCardImage>
 							<m:MaterialImage
-								url="https://steemitimages.com/600x800/https://steemitimages.com/0x0/https://gateway.ipfs.io/ipfs/QmbQX3tX78wzHKrAQGdTM6DVDeZFhzD71QNi3o2ggumXqf" />
+								url="https://steemitimages.com/600x800/https://gateway.ipfs.io/ipfs/QmbQX3tX78wzHKrAQGdTM6DVDeZFhzD71QNi3o2ggumXqf" />
 						</m:MaterialCardImage>
 						<m:MaterialCardAction padding="0">
 							<m:MaterialRow margin="12">
@@ -209,7 +211,7 @@
 							<m:MaterialCollection>
 								<m:MaterialCollectionItem type="AVATAR">
 									<m:MaterialImage
-										url="https://steemitimages.com/600x800/https://steemitimages.com/0x0/https://gateway.ipfs.io/ipfs/QmTMyZhRHH2Rn4iKTpy13jon4mgCxRh76oCgFCWdoHQQZU" circle="true"
+										url="https://steemitimages.com/600x800/https://gateway.ipfs.io/ipfs/QmTMyZhRHH2Rn4iKTpy13jon4mgCxRh76oCgFCWdoHQQZU" circle="true"
 										width="40px" height="40px" />
 									<m:MaterialLabel text="Yuna" />
 									<m:MaterialLabel
@@ -283,7 +285,7 @@
 						<m:MaterialCardContent>
 							<m:MaterialRow marginBottom="0">
 								<m:MaterialImage
-									url="https://steemitimages.com/600x800/https://steemitimages.com/0x0/https://gateway.ipfs.io/ipfs/QmRyEAfGwhKjy613tLY2LAt3cL81VW6ma9A21ZSTMhhkww"
+									url="https://steemitimages.com/600x800/https://gateway.ipfs.io/ipfs/QmRyEAfGwhKjy613tLY2LAt3cL81VW6ma9A21ZSTMhhkww"
 									width="50" height="50" circle="true" float="LEFT"
 									marginRight="20" />
 								<m:MaterialLabel text="Mark Kevin Baldemor"
@@ -308,7 +310,7 @@
 						</m:MaterialCardContent>
 						<m:MaterialCardImage>
 							<m:MaterialImage
-								url="https://steemitimages.com/600x800/https://steemitimages.com/0x0/https://gateway.ipfs.io/ipfs/QmWNMW4mon16cPrVSTwdQdx4DqqKusYmv2LrGhzG2WyY9G" />
+								url="https://steemitimages.com/600x800/https://gateway.ipfs.io/ipfs/QmWNMW4mon16cPrVSTwdQdx4DqqKusYmv2LrGhzG2WyY9G" />
 						</m:MaterialCardImage>
 						<m:MaterialCardAction padding="0">
 							<m:MaterialRow margin="12">
@@ -325,7 +327,7 @@
 							<m:MaterialCollection>
 								<m:MaterialCollectionItem type="AVATAR">
 									<m:MaterialImage
-										url="https://steemitimages.com/600x800/https://steemitimages.com/0x0/https://gateway.ipfs.io/ipfs/QmShmW2CMpDZJrvEdpagMbcsHvpusBBCnEtD5YaoBpdPsC" circle="true"
+										url="https://steemitimages.com/600x800/https://gateway.ipfs.io/ipfs/QmShmW2CMpDZJrvEdpagMbcsHvpusBBCnEtD5YaoBpdPsC" circle="true"
 										width="40px" height="40px" />
 									<m:MaterialLabel text="Yuna" />
 									<m:MaterialLabel
@@ -341,7 +343,7 @@
 						<m:MaterialCardContent>
 							<m:MaterialRow marginBottom="0">
 								<m:MaterialImage
-									url="https://steemitimages.com/600x800/https://steemitimages.com/0x0/http://gateway.ipfs.io/ipfs/QmUd6uKstvdLVWoz4qU1dqUiqNNAdvG4niuY2jJaMC8PQx"
+									url="https://steemitimages.com/600x800/http://gateway.ipfs.io/ipfs/QmUd6uKstvdLVWoz4qU1dqUiqNNAdvG4niuY2jJaMC8PQx"
 									width="50" height="50" circle="true" float="LEFT"
 									marginRight="20" />
 								<m:MaterialLabel text="Mark Kevin Baldemor"

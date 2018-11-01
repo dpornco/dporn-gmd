@@ -9,7 +9,7 @@ import com.google.gwt.user.client.ui.Widget;
 import co.dporn.gmd.client.presenters.AppPresenter;
 import co.dporn.gmd.client.presenters.AppPresenter.AppLayoutView;
 import co.dporn.gmd.client.presenters.ContentPresenter;
-import gwt.material.design.client.ui.MaterialContainer;
+import co.dporn.gmd.client.presenters.ContentPresenter.ContentView;
 import gwt.material.design.client.ui.MaterialPanel;
 import gwt.material.design.client.ui.MaterialSideNavPush;
 
@@ -21,8 +21,7 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 	@UiField
 	protected MaterialPanel panel;
 	
-
-	@UiField protected MaterialContainer container;
+	private ContentView container;
 	
 	private static AppLayoutUiUiBinder uiBinder = GWT.create(AppLayoutUiUiBinder.class);
 
@@ -31,6 +30,7 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 
 	public AppLayoutUi() {
 		initWidget(uiBinder.createAndBindUi(this));
+//		container.clear();
 	}
 
 	@Override
@@ -52,7 +52,11 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 
 	@Override
 	public void replaceContentPresenter(ContentPresenter childPresenter) {
-		container.clear();
-		container.add(childPresenter.getContentView().asWidget());
+		ContentView view = childPresenter.getContentView();
+		panel.insert(view.asWidget(), panel.getWidgetIndex(sidenav.asWidget()));
+		if (container!=null) {
+			panel.remove(container.asWidget());
+		} 
+		container=view;
 	}
 }
