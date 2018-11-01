@@ -10,10 +10,16 @@ import org.fusesource.restygwt.client.REST;
 
 import com.google.gwt.core.client.GWT;
 
+import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.DpornCoApi;
 import co.dporn.gmd.shared.PingResponse;
 
 public class RestClient {
+	
+	private static RestClient _instance;
+	public static RestClient get() {
+		return _instance==null?_instance=new RestClient():_instance;
+	}
 
 	public RestClient() {
 		String serviceRoot = GWT.getHostPageBaseURL() + "dpornco/api/1.0";
@@ -29,6 +35,13 @@ public class RestClient {
 	public CompletableFuture<PingResponse> ping() {
 		MethodCallbackAsFuture<PingResponse> callback = new MethodCallbackAsFuture<>();
 		call(callback).ping();
+		return callback.getFuture();
+	}
+	
+	public CompletableFuture<ActiveBlogsResponse> listFeatured() {
+		GWT.log("-> listFeatured");
+		MethodCallbackAsFuture<ActiveBlogsResponse> callback = new MethodCallbackAsFuture<>();
+		call(callback).blogsRecent();
 		return callback.getFuture();
 	}
 
@@ -47,11 +60,13 @@ public class RestClient {
 			return new MethodCallback<T>() {
 				@Override
 				public void onFailure(Method method, Throwable exception) {
+					GWT.log(" [api] onFailure");
 					future.completeExceptionally(new RuntimeException(method.getResponse().getStatusText(), exception));
 				}
 
 				@Override
 				public void onSuccess(Method method, T response) {
+					GWT.log(" [api] onSuccess");
 					future.complete(response);
 				}
 			};

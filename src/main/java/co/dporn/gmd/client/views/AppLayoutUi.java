@@ -1,6 +1,7 @@
 package co.dporn.gmd.client.views;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
@@ -52,11 +53,18 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 
 	@Override
 	public void replaceContentPresenter(ContentPresenter childPresenter) {
+		GWT.log(this.getClass().getSimpleName()+"#replaceContentPresenter: "+childPresenter.getClass().getSimpleName());
 		ContentView view = childPresenter.getContentView();
-		panel.insert(view.asWidget(), panel.getWidgetIndex(sidenav.asWidget()));
 		if (container!=null) {
 			panel.remove(container.asWidget());
+			GWT.log("remove");
 		} 
-		container=view;
+		Scheduler.get().scheduleDeferred(()->{
+			int sidenavix = panel.getWidgetIndex(sidenav);
+			GWT.log("sidenavix: "+sidenavix);
+			panel.insert(view.asWidget(), sidenavix+1);
+			GWT.log("insert");
+			container=view;
+		});
 	}
 }

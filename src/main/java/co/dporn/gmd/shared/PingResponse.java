@@ -1,13 +1,16 @@
 package co.dporn.gmd.shared;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class PingResponse {
 	private boolean pong;
 
 	public PingResponse() {
 	}
-	
+
 	public PingResponse(boolean pong) {
-		this.pong=pong;
+		this.pong = pong;
 	}
 
 	public boolean isPong() {

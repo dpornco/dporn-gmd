@@ -3,6 +3,7 @@ package co.dporn.gmd.client.app;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.Post;
 import co.dporn.gmd.shared.SortField;
 
@@ -18,5 +19,7 @@ import co.dporn.gmd.shared.SortField;
 public interface AppControllerModel {
 
 	CompletableFuture<List<Post>> listPosts(int i, SortField byDate);
+
+	CompletableFuture<ActiveBlogsResponse> listFeatured();
 
 }

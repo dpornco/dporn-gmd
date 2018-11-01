@@ -62,7 +62,7 @@
 	<inherits name="com.github.nmorel.gwtjackson.GwtJackson" />
 	<inherits name="org.fusesource.restygwt.RestyGWT" />
 	<set-property name="restygwt.encodeDecode.useGwtJackson" value="true" />
-<!-- 	<extend-configuration-property name="gwtjackson.configuration.extension" value="client.GwtJacksonConfiguration" /> -->
+	<extend-configuration-property name="gwtjackson.configuration.extension" value="co.dporn.gmd.client.GwtJacksonConfiguration" />
 
 	<inherits name="com.google.gwt.logging.Logging" />
 	<set-property name="gwt.logging.logLevel" value="INFO" />

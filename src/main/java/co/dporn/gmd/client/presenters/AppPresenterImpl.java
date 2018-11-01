@@ -1,6 +1,7 @@
 package co.dporn.gmd.client.presenters;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.user.client.ui.HasWidgets;
 
 import co.dporn.gmd.client.app.AppControllerModel;
@@ -14,9 +15,10 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand {
 	public AppPresenterImpl() {
 	}
 	
-	public AppPresenterImpl(HasWidgets rootDisplay, AppLayoutView appLayoutView) {
+	public AppPresenterImpl(AppControllerModel model, HasWidgets rootDisplay, AppLayoutView appLayoutView) {
 		this.rootDisplay=rootDisplay;
 		this.view=appLayoutView;
+		this.model=model;
 	}
 	
 	@Override
@@ -31,9 +33,12 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand {
 
 	@Override
 	public void execute() {
+		GWT.log(this.getClass().getSimpleName()+"#execute");
 		rootDisplay.clear();
 		rootDisplay.add(view.asWidget());
-		view.replaceContentPresenter(new ContentPresenterImpl(model, new ContentUi()));
+		ContentPresenterImpl childPresenter = new ContentPresenterImpl(model, new ContentUi());
+		view.replaceContentPresenter(childPresenter);
+		deferred(childPresenter);
 	}
 
 	@Override

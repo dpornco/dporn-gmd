@@ -61,7 +61,7 @@ gretty {
 	servletContainer = 'tomcat9'
 	extraResourceBase 'build/gwt/out'
 	jvmArgs = ['-Dfile.encoding=UTF-8', '-Xmx1024M']
-	managedClassReload = true
+	managedClassReload = false
 	contextPath='/'
 }
 

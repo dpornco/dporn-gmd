@@ -17,4 +17,8 @@ public interface DpornCoApi {
 	@Path("post/list/{page}")
 	@GET
 	PostListResponse posts(@PathParam("page")int page);
+	
+	@Path("blogs/recent")
+	@GET
+	ActiveBlogsResponse blogsRecent();
 }

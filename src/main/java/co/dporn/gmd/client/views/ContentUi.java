@@ -4,15 +4,19 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
 
 import co.dporn.gmd.client.presenters.ContentPresenter;
 import co.dporn.gmd.client.presenters.ContentPresenter.ContentView;
-import gwt.material.design.addins.client.masonry.MaterialMasonry;
 import gwt.material.design.client.ui.MaterialContainer;
+import gwt.material.design.client.ui.MaterialRow;
 
 public class ContentUi extends Composite implements ContentView {
+	
+	@UiField
+	protected MaterialRow featuredChannels;
 	
 	@UiField
     protected MaterialContainer mainContent;
@@ -46,6 +50,23 @@ public class ContentUi extends Composite implements ContentView {
 	public void unbindPresenter() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void clear() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public HasWidgets getFeatured() {
+		return featuredChannels;
+	}
+
+	@Override
+	public HasWidgets getPosts() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
