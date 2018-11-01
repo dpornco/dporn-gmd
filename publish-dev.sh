@@ -22,6 +22,6 @@ rsync	--exclude /work/ \
 		-e "ssh -p $PORT" \
 	Dev/ "$USER"@"$HOST":Dev/
 	
-ssh -p "$PORT" "$USER"@"$HOST" 'cd Dev; bash stop.sh'
+ssh -p "$PORT" "$USER"@"$HOST" 'cd Dev; bash stop.sh' || true
 
-ssh -p "$PORT" "$USER"@"$HOST" 'cd Dev; (bash start.sh < /dev/null > /dev/null 2>&1) & sleep 3'
+ssh -p "$PORT" "$USER"@"$HOST" 'cd Dev; (bash start.sh < /dev/null > /dev/null 2>&1) & sleep 3' || true
