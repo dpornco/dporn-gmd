@@ -7,7 +7,7 @@ public class PingResponse {
 	}
 	
 	public PingResponse(boolean pong) {
-		pong=pong;
+		this.pong=pong;
 	}
 
 	public boolean isPong() {

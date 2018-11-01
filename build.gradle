@@ -131,6 +131,9 @@ dependencies {
         exclude module: 'gwt-user'
 	}
 	gwt 'com.ekotrope:gwt-completablefuture:1.0.0'
+	gwt 'org.fusesource.restygwt:restygwt:2.2.+'
+	//gwt 'com.google.code.findbugs:jsr305:3.0.0'
+	//gwt 'javax.xml.bind:jaxb-api:2.3.+'
 	
 	testCompile 'org.testng:testng:6.+'
 }
