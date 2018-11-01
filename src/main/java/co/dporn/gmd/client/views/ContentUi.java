@@ -1,7 +1,6 @@
 package co.dporn.gmd.client.views;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
@@ -16,14 +15,11 @@ import gwt.material.design.client.ui.MaterialContainer;
 public class ContentUi extends Composite implements ContentView {
 	
 	@UiField
-    protected MaterialContainer container;
+    protected MaterialContainer mainContent;
 	
-	@UiField
-	protected MaterialMasonry masonry;
-
 	@Override
 	public IsWidget getContainer() {
-		return container;
+		return mainContent;
 	}
 
 	private static ContainerUiUiBinder uiBinder = GWT.create(ContainerUiUiBinder.class);
