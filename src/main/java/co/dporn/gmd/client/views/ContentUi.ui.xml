@@ -3,312 +3,43 @@
 	xmlns:m='urn:import:gwt.material.design.client.ui'
 	xmlns:ma="urn:import:gwt.material.design.addins.client">
 	<ui:style>
+	.container {
+		padding-left: 250px;
+		padding-right: 140px;
+		padding-top: 100px;
+	}
 	
+	.label {
+		font-size: 2em;
+		font-weight: bold;
+		margin-left: 12px;
+	}
+	
+	.row {
+		min-height: 335px;
+	}
 	</ui:style>
 	<!-- Container -->
 	<m:MaterialContainer ui:field="mainContent"
-		paddingLeft="250" paddingRight="140" paddingTop="100">
-		<!-- <m:MaterialContainer ui:field="container" padding="0" margin="0"> -->
-		<!-- Cards -->
-		<m:MaterialLabel text="Featured Channels"
-			marginLeft="12" fontSize="2em" fontWeight="BOLD"/>
-		<m:MaterialRow ui:field="featuredChannels">
-		</m:MaterialRow>
+		addStyleNames="{style.container}">
 
 		<!-- Cards -->
-		<m:MaterialLabel text="Featured Posts" marginLeft="12"
-			fontSize="2em" fontWeight="BOLD"/>
-		<ma:masonry.MaterialMasonry>
-			<!-- Post 1 -->
-			<m:MaterialColumn grid="l3 m4 s12">
-				<m:MaterialCard>
-					<m:MaterialCardContent>
-						<m:MaterialRow marginBottom="0">
-							<m:MaterialImage
-								url="https://steemitimages.com/600x800/https://gateway.ipfs.io/ipfs/QmQ2eENesNYXBGy8H9dNFaw2BU73dWCN6UKaToX9zWtfS4"
-								width="50" height="50" circle="true" float="LEFT"
-								marginRight="20" />
-							<m:MaterialLabel text="Mark Kevin Baldemor"
-								float="LEFT" marginTop="20" />
-							<m:MaterialLabel text="2d" float="RIGHT"
-								marginTop="20" marginRight="20" />
-						</m:MaterialRow>
-						<m:MaterialRow marginBottom="0" padding="20">
-							<m:MaterialLabel
-								text="Amazingly clear seas of the Philippines" />
-							<m:MaterialRow marginBottom="0">
-								<m:MaterialChip margin="4" text="#philippines"
-									float="LEFT" />
-								<m:MaterialChip margin="4" text="#vacation"
-									float="LEFT" />
-								<m:MaterialChip margin="4" text="#holiday"
-									float="LEFT" />
-								<m:MaterialChip margin="4" text="#sea"
-									float="LEFT" />
-							</m:MaterialRow>
-						</m:MaterialRow>
-					</m:MaterialCardContent>
-					<m:MaterialCardImage>
-						<m:MaterialImage
-							url="https://steemitimages.com/600x800/https://static1.e621.net/data/9d/11/9d1161e6a4b4a762c31d07e31b40b8d8.jpg" />
-					</m:MaterialCardImage>
-					<m:MaterialCardAction padding="0">
-						<m:MaterialRow margin="12">
-							<m:MaterialButton type="FLOATING"
-								iconType="PLUS_ONE" shadow="0" float="LEFT" />
-							<m:MaterialLabel text="310" float="LEFT"
-								marginTop="8" marginLeft="12" />
-							<m:MaterialLabel text="1000" float="RIGHT"
-								marginTop="8" marginLeft="12" />
-							<m:MaterialButton type="FLOATING"
-								iconType="SHARE" shadow="0" float="RIGHT" />
-						</m:MaterialRow>
-						<!-- Collection items for comments -->
-						<m:MaterialCollection>
-							<m:MaterialCollectionItem type="AVATAR">
-								<m:MaterialImage
-									url="https://steemitimages.com/600x800/https://gateway.ipfs.io/ipfs/QmcXkEvsDZYR1H979buWnWaHLygj1rEeFaMzkRSJq8jSnf"
-									circle="true" width="40px" height="40px" />
-								<m:MaterialLabel text="Yuna" />
-								<m:MaterialLabel
-									text="I grew up in the island of the Philippines. The water is clear. Some are not sandy. Water is just the right temperature." />
-							</m:MaterialCollectionItem>
-						</m:MaterialCollection>
-					</m:MaterialCardAction>
-				</m:MaterialCard>
-			</m:MaterialColumn>
-			<!-- Post 2 -->
-			<m:MaterialColumn grid="l3 m4 s12">
-				<m:MaterialCard>
-					<m:MaterialCardContent>
-						<m:MaterialRow marginBottom="0">
-							<m:MaterialImage
-								url="https://steemitimages.com/600x800/http://www.jinchess.com/chessboard/?p=1N4R1/1B1K4/1bNR4/pb2P2P/7n/2r2p2/1p1B2p1/1k1r4&amp;tm=w&amp;s=xl&amp;bp=wooden-dark&amp;c=&amp;a=&amp;filename=chessboard-rotated.png"
-								width="50" height="50" circle="true" float="LEFT"
-								marginRight="20" />
-							<m:MaterialLabel text="Mark Kevin Baldemor"
-								float="LEFT" marginTop="20" />
-							<m:MaterialLabel text="2d" float="RIGHT"
-								marginTop="20" marginRight="20" />
-						</m:MaterialRow>
-						<m:MaterialRow marginBottom="0" padding="20">
-							<m:MaterialLabel
-								text="Matinloc Island, El Nido, Palawan" />
-							<m:MaterialRow marginBottom="0">
-								<m:MaterialChip margin="4" text="#philippines"
-									float="LEFT" />
-								<m:MaterialChip margin="4" text="#vacation"
-									float="LEFT" />
-								<m:MaterialChip margin="4" text="#holiday"
-									float="LEFT" />
-								<m:MaterialChip margin="4" text="#sea"
-									float="LEFT" />
-							</m:MaterialRow>
-						</m:MaterialRow>
-					</m:MaterialCardContent>
-					<m:MaterialCardImage>
-						<m:MaterialImage
-							url="https://steemitimages.com/600x800/https://gateway.ipfs.io/ipfs/QmbQX3tX78wzHKrAQGdTM6DVDeZFhzD71QNi3o2ggumXqf" />
-					</m:MaterialCardImage>
-					<m:MaterialCardAction padding="0">
-						<m:MaterialRow margin="12">
-							<m:MaterialButton type="FLOATING"
-								iconType="PLUS_ONE" shadow="0" float="LEFT" />
-							<m:MaterialLabel text="310" float="LEFT"
-								marginTop="8" marginLeft="12" />
-							<m:MaterialLabel text="1000" float="RIGHT"
-								marginTop="8" marginLeft="12" />
-							<m:MaterialButton type="FLOATING"
-								iconType="SHARE" shadow="0" float="RIGHT" />
-						</m:MaterialRow>
-						<!-- Collection items for comments -->
-						<m:MaterialCollection>
-							<m:MaterialCollectionItem type="AVATAR">
-								<m:MaterialImage
-									url="https://steemitimages.com/600x800/https://gateway.ipfs.io/ipfs/QmTMyZhRHH2Rn4iKTpy13jon4mgCxRh76oCgFCWdoHQQZU"
-									circle="true" width="40px" height="40px" />
-								<m:MaterialLabel text="Yuna" />
-								<m:MaterialLabel
-									text="I grew up in the island of the Philippines. The water is clear. Some are not sandy. Water is just the right temperature." />
-							</m:MaterialCollectionItem>
-						</m:MaterialCollection>
-					</m:MaterialCardAction>
-				</m:MaterialCard>
-			</m:MaterialColumn>
-			<!-- Post 3 -->
-			<m:MaterialColumn grid="l3 m4 s12">
-				<m:MaterialCard>
-					<m:MaterialCardContent>
-						<m:MaterialRow marginBottom="0">
-							<m:MaterialImage
-								url="https://steemitimages.com/600x800/https://static1.e621.net/data/98/35/9835f0fc0f5af0d70625a3054b10cbb4.jpg"
-								width="50" height="50" circle="true" float="LEFT"
-								marginRight="20" />
-							<m:MaterialLabel text="Mark Kevin Baldemor"
-								float="LEFT" marginTop="20" />
-							<m:MaterialLabel text="2d" float="RIGHT"
-								marginTop="20" marginRight="20" />
-						</m:MaterialRow>
-						<m:MaterialRow marginBottom="0" padding="20">
-							<m:MaterialLabel
-								text="Matinloc Island, El Nido, Palawan" />
-							<m:MaterialRow marginBottom="0">
-								<m:MaterialChip margin="4" text="#philippines"
-									float="LEFT" />
-								<m:MaterialChip margin="4" text="#vacation"
-									float="LEFT" />
-								<m:MaterialChip margin="4" text="#holiday"
-									float="LEFT" />
-								<m:MaterialChip margin="4" text="#sea"
-									float="LEFT" />
-							</m:MaterialRow>
-						</m:MaterialRow>
-					</m:MaterialCardContent>
-					<m:MaterialCardImage>
-						<m:MaterialImage
-							url="https://steemitimages.com/600x800/https://cdn.steemitimages.com/DQmbuKJ2fQt5KAVqY1BF1vdzwz5HTPYYULtg2tt42G2HoDS/pleaides_small.jpg" />
-					</m:MaterialCardImage>
-					<m:MaterialCardAction padding="0">
-						<m:MaterialRow margin="12">
-							<m:MaterialButton type="FLOATING"
-								iconType="PLUS_ONE" shadow="0" float="LEFT" />
-							<m:MaterialLabel text="310" float="LEFT"
-								marginTop="8" marginLeft="12" />
-							<m:MaterialLabel text="1000" float="RIGHT"
-								marginTop="8" marginLeft="12" />
-							<m:MaterialButton type="FLOATING"
-								iconType="SHARE" shadow="0" float="RIGHT" />
-						</m:MaterialRow>
-						<!-- Collection items for comments -->
-						<m:MaterialCollection>
-							<m:MaterialCollectionItem type="AVATAR">
-								<m:MaterialImage
-									url="https://steemitimages.com/600x800/https://cdn.steemitimages.com/DQmegtVR8uZYEaoYBKtsFdu5VdNnNPTgmjHYNzrGpeNUzki/hard_time.jpg"
-									circle="true" width="40px" height="40px" />
-								<m:MaterialLabel text="Yuna" />
-								<m:MaterialLabel
-									text="I grew up in the island of the Philippines. The water is clear. Some are not sandy. Water is just the right temperature." />
-							</m:MaterialCollectionItem>
-						</m:MaterialCollection>
-					</m:MaterialCardAction>
-				</m:MaterialCard>
-			</m:MaterialColumn>
-			<!-- Post 4 -->
-			<m:MaterialColumn grid="l3 m4 s12">
-				<m:MaterialCard>
-					<m:MaterialCardContent>
-						<m:MaterialRow marginBottom="0">
-							<m:MaterialImage
-								url="https://steemitimages.com/600x800/https://gateway.ipfs.io/ipfs/QmRyEAfGwhKjy613tLY2LAt3cL81VW6ma9A21ZSTMhhkww"
-								width="50" height="50" circle="true" float="LEFT"
-								marginRight="20" />
-							<m:MaterialLabel text="Mark Kevin Baldemor"
-								float="LEFT" marginTop="20" />
-							<m:MaterialLabel text="2d" float="RIGHT"
-								marginTop="20" marginRight="20" />
-						</m:MaterialRow>
-						<m:MaterialRow marginBottom="0" padding="20">
-							<m:MaterialLabel
-								text="The SM Mall Of Asia is a tourist destination that has raised the standard of shopping, leisure and entertainment in the Philippines." />
-							<m:MaterialRow marginBottom="0">
-								<m:MaterialChip margin="4" text="#philippines"
-									float="LEFT" />
-								<m:MaterialChip margin="4" text="#vacation"
-									float="LEFT" />
-								<m:MaterialChip margin="4" text="#holiday"
-									float="LEFT" />
-								<m:MaterialChip margin="4" text="#sea"
-									float="LEFT" />
-							</m:MaterialRow>
-						</m:MaterialRow>
-					</m:MaterialCardContent>
-					<m:MaterialCardImage>
-						<m:MaterialImage
-							url="https://steemitimages.com/600x800/https://gateway.ipfs.io/ipfs/QmWNMW4mon16cPrVSTwdQdx4DqqKusYmv2LrGhzG2WyY9G" />
-					</m:MaterialCardImage>
-					<m:MaterialCardAction padding="0">
-						<m:MaterialRow margin="12">
-							<m:MaterialButton type="FLOATING"
-								iconType="PLUS_ONE" shadow="0" float="LEFT" />
-							<m:MaterialLabel text="310" float="LEFT"
-								marginTop="8" marginLeft="12" />
-							<m:MaterialLabel text="1000" float="RIGHT"
-								marginTop="8" marginLeft="12" />
-							<m:MaterialButton type="FLOATING"
-								iconType="SHARE" shadow="0" float="RIGHT" />
-						</m:MaterialRow>
-						<!-- Collection items for comments -->
-						<m:MaterialCollection>
-							<m:MaterialCollectionItem type="AVATAR">
-								<m:MaterialImage
-									url="https://steemitimages.com/600x800/https://gateway.ipfs.io/ipfs/QmShmW2CMpDZJrvEdpagMbcsHvpusBBCnEtD5YaoBpdPsC"
-									circle="true" width="40px" height="40px" />
-								<m:MaterialLabel text="Yuna" />
-								<m:MaterialLabel
-									text="I grew up in the island of the Philippines. The water is clear. Some are not sandy. Water is just the right temperature." />
-							</m:MaterialCollectionItem>
-						</m:MaterialCollection>
-					</m:MaterialCardAction>
-				</m:MaterialCard>
-			</m:MaterialColumn>
-			<!-- Post 5 -->
-			<m:MaterialColumn grid="l3 m4 s12">
-				<m:MaterialCard>
-					<m:MaterialCardContent>
-						<m:MaterialRow marginBottom="0">
-							<m:MaterialImage
-								url="https://steemitimages.com/600x800/http://gateway.ipfs.io/ipfs/QmUd6uKstvdLVWoz4qU1dqUiqNNAdvG4niuY2jJaMC8PQx"
-								width="50" height="50" circle="true" float="LEFT"
-								marginRight="20" />
-							<m:MaterialLabel text="Mark Kevin Baldemor"
-								float="LEFT" marginTop="20" />
-							<m:MaterialLabel text="2d" float="RIGHT"
-								marginTop="20" marginRight="20" />
-						</m:MaterialRow>
-						<m:MaterialRow marginBottom="0" padding="20">
-							<m:MaterialLabel
-								text="The crystal clear waters of the Philippines  as well appreciated in this transparent canoe!" />
-							<m:MaterialRow marginBottom="0">
-								<m:MaterialChip margin="4" text="#philippines"
-									float="LEFT" />
-								<m:MaterialChip margin="4" text="#vacation"
-									float="LEFT" />
-								<m:MaterialChip margin="4" text="#holiday"
-									float="LEFT" />
-								<m:MaterialChip margin="4" text="#sea"
-									float="LEFT" />
-							</m:MaterialRow>
-						</m:MaterialRow>
-					</m:MaterialCardContent>
-					<m:MaterialCardImage>
-						<m:MaterialImage
-							url="https://steemitimages.com/600x800/https://static1.e621.net/data/17/e0/17e0981eb46f803247416c59be7eea5c.jpg" />
-					</m:MaterialCardImage>
-					<m:MaterialCardAction padding="0">
-						<m:MaterialRow margin="12">
-							<m:MaterialButton type="FLOATING"
-								iconType="PLUS_ONE" shadow="0" float="LEFT" />
-							<m:MaterialLabel text="310" float="LEFT"
-								marginTop="8" marginLeft="12" />
-							<m:MaterialLabel text="1000" float="RIGHT"
-								marginTop="8" marginLeft="12" />
-							<m:MaterialButton type="FLOATING"
-								iconType="SHARE" shadow="0" float="RIGHT" />
-						</m:MaterialRow>
-						<!-- Collection items for comments -->
-						<m:MaterialCollection>
-							<m:MaterialCollectionItem type="AVATAR">
-								<m:MaterialImage
-									url="https://steemitimages.com/600x800/https://cdn.steemitimages.com/DQma3YeCgMKWcVbxdbKLreHS5uszqLRaqV61GuG9iTB2EBr/20181003%20DocienRoo-Final.png"
-									circle="true" width="40px" height="40px" />
-								<m:MaterialLabel text="Yuna" />
-								<m:MaterialLabel
-									text="I grew up in the island of the Philippines. The water is clear. Some are not sandy. Water is just the right temperature." />
-							</m:MaterialCollectionItem>
-						</m:MaterialCollection>
-					</m:MaterialCardAction>
-				</m:MaterialCard>
-			</m:MaterialColumn>
-		</ma:masonry.MaterialMasonry>
+		<m:MaterialLabel text="Featured Channels"
+			addStyleNames="{style.label}" />
+		<m:MaterialRow ui:field="featuredChannels"
+			addStyleNames="{style.row}" />
+
+		<!-- Cards -->
+		<m:MaterialLabel text="Featured Posts"
+			addStyleNames="{style.label}" />
+		<m:MaterialRow ui:field="featuredPosts"
+			addStyleNames="{style.row}" />
+
+		<!-- Cards -->
+		<m:MaterialLabel text="Recent Posts"
+			addStyleNames="{style.label}" />
+		<m:MaterialRow ui:field="recentPosts"
+			addStyleNames="{style.row}" />
+
 	</m:MaterialContainer>
 </ui:UiBinder> 

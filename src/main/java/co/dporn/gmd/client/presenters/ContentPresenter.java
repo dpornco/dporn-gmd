@@ -5,7 +5,6 @@ import com.google.gwt.user.client.ui.IsWidget;
 
 import co.dporn.gmd.client.presenters.ContentPresenter.ContentView;
 import co.dporn.gmd.client.views.IsView;
-import gwt.material.design.client.constants.ImageType;
 
 public interface ContentPresenter extends IsPresenter<ContentView> {
 	public static interface ContentView extends IsView<ContentPresenter> {
@@ -20,8 +19,15 @@ public interface ContentPresenter extends IsPresenter<ContentView> {
 		void setImageUrl(String url);
 		void setAvatarUrl(String url);
 		void setAuthorName(String name);
-		void setBlurb(String blurb);
-		void setType(ImageType type);
+		void setTitle(String title);
+		void setShowDelay(int showDelay);
+	}
+	public static interface VideoCardView extends BlogCardView {
+		void setHlsVideoUrl(String url);
+		void setIpfsVideoUrl(String url);
+	}
+	public static interface PhotoGalleryCardView extends BlogCardView {
+		void setGallerySourceUrl(String url);
 	}
 	public ContentView getContentView();
 }

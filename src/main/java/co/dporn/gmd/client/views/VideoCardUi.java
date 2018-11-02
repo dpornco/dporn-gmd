@@ -3,19 +3,19 @@ package co.dporn.gmd.client.views;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
 
 import co.dporn.gmd.client.presenters.ContentPresenter;
-import co.dporn.gmd.client.presenters.ContentPresenter.BlogCardView;
+import co.dporn.gmd.client.presenters.ContentPresenter.VideoCardView;
 import gwt.material.design.client.ui.MaterialCard;
 import gwt.material.design.client.ui.MaterialImage;
 import gwt.material.design.client.ui.MaterialLabel;
 import gwt.material.design.client.ui.animate.MaterialAnimation;
 import gwt.material.design.client.ui.animate.Transition;
 
-public class BlogCardUi extends Composite implements BlogCardView {
+public class VideoCardUi extends Composite implements VideoCardView {
+
 	@UiField
 	protected MaterialImage postImage;
 	@UiField
@@ -27,26 +27,14 @@ public class BlogCardUi extends Composite implements BlogCardView {
 	@UiField
 	protected MaterialCard card;
 	private int showDelay;
+	
+	private static VideoCardUiUiBinder uiBinder = GWT.create(VideoCardUiUiBinder.class);
 
-	private static BlogCardUiUiBinder uiBinder = GWT.create(BlogCardUiUiBinder.class);
-
-	interface BlogCardUiUiBinder extends UiBinder<Widget, BlogCardUi> {
+	interface VideoCardUiUiBinder extends UiBinder<Widget, VideoCardUi> {
 	}
 
-	public BlogCardUi() {
+	public VideoCardUi() {
 		initWidget(uiBinder.createAndBindUi(this));
-	}
-
-	@Override
-	public void bindPresenter(ContentPresenter presenter) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void unbindPresenter() {
-		// TODO Auto-generated method stub
-		
 	}
 	
 	@Override
@@ -59,7 +47,7 @@ public class BlogCardUi extends Composite implements BlogCardView {
 		animation.setDuration(250+showDelay);
 		animation.animate(card);
 	}
-	
+
 	@Override
 	public void setImageUrl(String url) {
 		postImage.setUrl(url);
@@ -83,6 +71,30 @@ public class BlogCardUi extends Composite implements BlogCardView {
 	@Override
 	public void setShowDelay(int showDelay) {
 		this.showDelay=showDelay;
+	}
+
+	@Override
+	public void bindPresenter(ContentPresenter presenter) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void unbindPresenter() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setHlsVideoUrl(String url) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void setIpfsVideoUrl(String url) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

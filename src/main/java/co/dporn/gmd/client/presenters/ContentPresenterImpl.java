@@ -12,7 +12,6 @@ import co.dporn.gmd.client.views.BlogCardUi;
 import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.Post;
 import co.dporn.gmd.shared.SortField;
-import gwt.material.design.client.constants.ImageType;
 
 public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand {
 
@@ -39,9 +38,12 @@ public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand 
 			getContentView().hideFeatured();
 			getContentView().getFeatured().clear();
 			List<BlogCardUi> cards = new ArrayList<>();
+			int[] showDelay= {0};
 			f.getAuthors().forEach((a) -> {
 				BlogCardUi card = new BlogCardUi();
 				card.setAuthorName(a);
+				card.setShowDelay(showDelay[0]);
+				showDelay[0]+=75;
 				AccountInfo i = f.getInfoMap().get(a);
 				if (i == null) {
 					return;
@@ -57,7 +59,7 @@ public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand 
 					}
 				}
 				card.setAvatarUrl(profileImage);
-				card.setBlurb(i.getAbout());
+				card.setTitle(i.getAbout());
 				String coverImage = i.getCoverImage();
 				if (coverImage == null) {
 					return;
@@ -68,7 +70,6 @@ public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand 
 					}
 				}
 				card.setImageUrl(coverImage);
-				card.setType(ImageType.MATERIALBOXED);
 				cards.add(card);
 			});
 			cards.subList(0, Math.min(4, cards.size())).forEach((w) -> {
