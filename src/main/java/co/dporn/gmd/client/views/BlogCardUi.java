@@ -8,8 +8,12 @@ import com.google.gwt.user.client.ui.Widget;
 
 import co.dporn.gmd.client.presenters.ContentPresenter;
 import co.dporn.gmd.client.presenters.ContentPresenter.BlogCardView;
+import gwt.material.design.client.constants.ImageType;
+import gwt.material.design.client.ui.MaterialCard;
 import gwt.material.design.client.ui.MaterialImage;
 import gwt.material.design.client.ui.MaterialLabel;
+import gwt.material.design.client.ui.animate.MaterialAnimation;
+import gwt.material.design.client.ui.animate.Transition;
 
 public class BlogCardUi extends Composite implements BlogCardView {
 	@UiField
@@ -20,6 +24,8 @@ public class BlogCardUi extends Composite implements BlogCardView {
 	protected MaterialLabel authorName;
 	@UiField
 	protected MaterialLabel authorBlurb;
+	@UiField
+	protected MaterialCard card;
 
 	private static BlogCardUiUiBinder uiBinder = GWT.create(BlogCardUiUiBinder.class);
 
@@ -41,10 +47,25 @@ public class BlogCardUi extends Composite implements BlogCardView {
 		// TODO Auto-generated method stub
 		
 	}
+	
+	@Override
+	protected void onLoad() {
+		super.onLoad();
+		MaterialAnimation animation = new MaterialAnimation();
+		animation.setTransition(Transition.FADE_IN_IMAGE);
+		animation.setDelay(0);
+		animation.setDuration(1000);
+		animation.animate(card);
+	}
 
 	@Override
 	public void setImageUrl(String url) {
 		postImage.setUrl(url);
+	}
+	
+	@Override
+	public void setType(ImageType type) {
+		postImage.setType(type);
 	}
 
 	@Override

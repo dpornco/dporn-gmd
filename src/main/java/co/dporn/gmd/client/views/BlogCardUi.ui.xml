@@ -6,19 +6,20 @@
 	
 	</ui:style>
 	<m:MaterialColumn grid="l3 m4 s12">
-		<m:MaterialCard>
-			<m:MaterialCardImage>
+		<m:MaterialCard ui:field="card" opacity="0">
+			<m:MaterialCardImage height="160px" width="400px"
+				style="overflow: hidden;" marginBottom="-32">
 				<m:MaterialImage ui:field="postImage"
-					url="images/coverImagePlaceholder.png" />
+					layoutPosition="ABSOLUTE" url="images/coverImagePlaceholder.png" />
 			</m:MaterialCardImage>
 			<m:MaterialCardContent height="120px">
 				<m:MaterialImage ui:field="avatarImage"
-					layoutPosition="ABSOLUTE" marginTop="-32"
-					url="images/avatarImagePlaceholder.png" circle="true" width="32px"
-					height="32px" />
-				<m:MaterialLabel ui:field="authorName" text="@" />
-				<m:MaterialLabel ui:field="authorBlurb"
-					opacity="0.6" marginTop="4" text="..." />
+					layoutPosition="ABSOLUTE" marginTop="-18" circle="true"
+					width="64px" height="64px" url="images/avatarImagePlaceholder.png" />
+				<m:MaterialLabel truncate="true"
+					ui:field="authorName" text="@" marginTop="48" fontSize="1.25em" />
+				<m:MaterialLabel truncate="true"
+					ui:field="authorBlurb" opacity="0.6" marginTop="4" text="..." />
 			</m:MaterialCardContent>
 			<m:MaterialCardAction>
 				<m:MaterialLink text="FOLLOW" />

@@ -14,13 +14,13 @@ import gwt.material.design.client.ui.MaterialContainer;
 import gwt.material.design.client.ui.MaterialRow;
 
 public class ContentUi extends Composite implements ContentView {
-	
+
 	@UiField
 	protected MaterialRow featuredChannels;
-	
+
 	@UiField
-    protected MaterialContainer mainContent;
-	
+	protected MaterialContainer mainContent;
+
 	@Override
 	public IsWidget getContainer() {
 		return mainContent;
@@ -34,7 +34,7 @@ public class ContentUi extends Composite implements ContentView {
 	public ContentUi() {
 		initWidget(uiBinder.createAndBindUi(this));
 	}
-	
+
 	@Override
 	protected void onLoad() {
 		super.onLoad();
@@ -43,24 +43,32 @@ public class ContentUi extends Composite implements ContentView {
 	@Override
 	public void bindPresenter(ContentPresenter presenter) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void unbindPresenter() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void clear() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public HasWidgets getFeatured() {
 		return featuredChannels;
+	}
+
+	@Override
+	public void animateFeatured() {
+	}
+	
+	@Override
+	public void hideFeatured() {
 	}
 
 	@Override
