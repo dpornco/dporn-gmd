@@ -30,8 +30,7 @@
 			} catch(e) {
 			}
 			var sources = this.cache_.sources;
-			var bad = sources.shift();
-			//sources.push(bad);
+			sources.push(sources.shift()); //rotate
 			//this.reset();
 			this.src(sources);
 		});
