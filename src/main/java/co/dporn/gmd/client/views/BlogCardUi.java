@@ -3,6 +3,7 @@ package co.dporn.gmd.client.views;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
+import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
 
@@ -51,11 +52,19 @@ public class BlogCardUi extends Composite implements BlogCardView {
 	@Override
 	protected void onLoad() {
 		super.onLoad();
+		GWT.log("onLoad");
 		MaterialAnimation animation = new MaterialAnimation();
 		animation.setTransition(Transition.FADE_IN_IMAGE);
 		animation.setDelay(0);
 		animation.setDuration(1000);
 		animation.animate(card);
+	}
+	
+
+	@Override
+	public void onBrowserEvent(Event event) {
+		super.onBrowserEvent(event);
+		GWT.log(event.getClass().getSimpleName());
 	}
 
 	@Override

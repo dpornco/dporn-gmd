@@ -13,8 +13,6 @@ import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.Post;
 import co.dporn.gmd.shared.SortField;
 import gwt.material.design.client.constants.ImageType;
-import gwt.material.design.client.ui.animate.MaterialAnimation;
-import gwt.material.design.client.ui.animate.Transition;
 
 public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand {
 
