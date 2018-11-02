@@ -13,6 +13,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
+
+import co.dporn.gmd.shared.Post;
 
 @Produces(MediaType.TEXT_HTML)
 @Consumes(MediaType.TEXT_HTML)
@@ -36,23 +39,42 @@ public class DpornCoEmbed {
 	@Path("@{authorname}/{permlink}")
 	@GET
 	public String player(@PathParam("authorname") String author, @PathParam("permlink") String permlink, @QueryParam("base-url") String baseUrl) {
-		if (false) {
-			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-			return "NOT FOUND";
+		Post post = MongoDpornoCo.getPost(author, permlink);
+		isValid: {
+			if (post==null) {
+				break isValid;
+			}
+			if (!author.equals(post.getAuthor())) {
+				break isValid;
+			}
+			String coverImageIpfs = post.getCoverImageIpfs();
+			if (coverImageIpfs==null) {
+				break isValid;
+			}
+			coverImageIpfs=coverImageIpfs.trim();
+			if (coverImageIpfs.length()!=46) {
+				break isValid;
+			}
+			String videoIpfs = post.getVideoIpfs();
+			if (videoIpfs==null) {
+				break isValid;
+			}
+			videoIpfs=videoIpfs.trim();
+			if (videoIpfs.length()!=46) {
+				break isValid;
+			}
+			response.setCharacterEncoding("UTF-8");
+			response.setContentType(MediaType.TEXT_HTML);
+			String embedHtml = template();
+			embedHtml=embedHtml.replace("__TITLE__", StringEscapeUtils.escapeXml10(post.getTitle()));
+			embedHtml=embedHtml.replace("__POSTERHASH__", StringEscapeUtils.escapeXml10(coverImageIpfs));
+			embedHtml=embedHtml.replace("__VIDEOHASH__", StringEscapeUtils.escapeXml10(videoIpfs));
+			return embedHtml;
 		}
 		
-		response.setCharacterEncoding("UTF-8");
-		response.setContentType(MediaType.TEXT_HTML);
+		response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+		return "NOT FOUND";
 		
-//			response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-//			return "SERVICE UNAVAILABLE";
-		
-		//https://steemitimages.com/0x0/https://steemitimages.com/0x0/http://gateway.ipfs.io/ipfs/Qmc4jbUWfHMn8B6jFbuJxCyMLkSiXud314x7eEJuG29VvF
-		String embedHtml = template();
-		embedHtml=embedHtml.replace("__TITLE__", "DPORNCO VIDEO PLAYER");
-		embedHtml=embedHtml.replace("__POSTERHASH__", "Qmc4jbUWfHMn8B6jFbuJxCyMLkSiXud314x7eEJuG29VvF");
-		embedHtml=embedHtml.replace("__VIDEOHASH__", "QmPRobJum5KF7Ge9f2XKskycduWbsTn71C2CFPbP2iHUKU");
-		return embedHtml;
 	}
 	
 }
