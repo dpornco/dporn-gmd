@@ -1,6 +1,9 @@
 package co.dporn.gmd.servlet;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
@@ -35,10 +38,17 @@ public class DpornCoEmbed {
 	@Context
 	private HttpServletResponse response;
 	
+	private static Map<String, String> cache = Collections.synchronizedMap(new HashMap<>());
 	@Produces(MediaType.TEXT_HTML)
 	@Path("@{authorname}/{permlink}")
 	@GET
 	public String player(@PathParam("authorname") String author, @PathParam("permlink") String permlink, @QueryParam("base-url") String baseUrl) {
+		response.setCharacterEncoding("UTF-8");
+		response.setContentType(MediaType.TEXT_HTML);
+		String key = author.trim()+"|"+permlink.trim();
+		if (cache.containsKey(key)) {
+			return cache.get(key);
+		}
 		Post post = MongoDpornoCo.getPost(author, permlink);
 		isValid: {
 			if (post==null) {
@@ -63,12 +73,14 @@ public class DpornCoEmbed {
 			if (videoIpfs.length()!=46) {
 				break isValid;
 			}
-			response.setCharacterEncoding("UTF-8");
-			response.setContentType(MediaType.TEXT_HTML);
 			String embedHtml = template();
 			embedHtml=embedHtml.replace("__TITLE__", StringEscapeUtils.escapeXml10(post.getTitle()));
 			embedHtml=embedHtml.replace("__POSTERHASH__", StringEscapeUtils.escapeXml10(coverImageIpfs));
 			embedHtml=embedHtml.replace("__VIDEOHASH__", StringEscapeUtils.escapeXml10(videoIpfs));
+			if (cache.size()>100) {
+				cache.clear();
+			}
+			cache.put(key, embedHtml);
 			return embedHtml;
 		}
 		
