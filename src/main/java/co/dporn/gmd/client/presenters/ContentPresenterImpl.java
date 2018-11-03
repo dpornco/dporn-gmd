@@ -97,7 +97,7 @@ public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand 
 						return;
 					}
 					String embedUrl = GWT.getHostPageBaseURL() + "embed/@" + p.getAuthor() + "/" + p.getPermlink();
-					card.setVideoEmbedUrl(embedUrl);
+					card.setVideoEmbedUrl(embedUrl+"?"+System.currentTimeMillis());
 					getContentView().getRecentPosts().add(card);
 					if (timer[0] != null) {
 						timer[0].cancel();
