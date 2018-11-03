@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -16,7 +17,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;import com.gargoylesoftware.htmlunit.javascript.host.fetch.Request;
 
 import co.dporn.gmd.shared.Post;
 
@@ -37,12 +38,23 @@ public class DpornCoEmbed {
 	
 	@Context
 	private HttpServletResponse response;
+	@Context
+	private HttpServletRequest request;
+	private static final long LAST_MODIFIED=System.currentTimeMillis();
 	
 	private static Map<String, String> cache = Collections.synchronizedMap(new HashMap<>());
 	@Produces(MediaType.TEXT_HTML)
 	@Path("@{authorname}/{permlink}")
 	@GET
 	public String player(@PathParam("authorname") String author, @PathParam("permlink") String permlink, @QueryParam("base-url") String baseUrl) {
+		long ifModifiedSince = request.getDateHeader("If-Modified-Since");
+		if (ifModifiedSince>=0) {
+			if (ifModifiedSince>=LAST_MODIFIED) {
+				response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+		        return "";
+			}
+		}
+		response.addDateHeader("Last-Modified", LAST_MODIFIED);
 		response.setCharacterEncoding("UTF-8");
 		response.setContentType(MediaType.TEXT_HTML);
 		String key = author.trim()+"|"+permlink.trim();
