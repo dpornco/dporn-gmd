@@ -56,13 +56,14 @@ public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand 
 	private String lastRecentId = null;
 
 	private void loadRecentPosts() {
+		showLoading(true);
 		Timer[] timer = { null };
 		CompletableFuture<PostListResponse> listPosts;
 		if (lastRecentId == null) {
 			listPosts = model.listPosts(4);
 			getContentView().getRecentPosts().clear();
 		} else {
-			listPosts = model.listPosts(lastRecentId, 8);
+			listPosts = model.listPosts(lastRecentId, 5);
 		}
 		listPosts.thenAccept((l) -> {
 			GWT.log("Recent posts: " + l.getPosts().size());
@@ -106,12 +107,17 @@ public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand 
 						@Override
 						public void run() {
 							activateScrollfire(card);
+							showLoading(false);
 						}
 					};
 					timer[0].schedule(500);
 				});
 			});
 		});
+	}
+
+	private void showLoading(boolean loading) {
+		getContentView().showLoading(loading);
 	}
 
 	private void loadFeaturedBlogs() {

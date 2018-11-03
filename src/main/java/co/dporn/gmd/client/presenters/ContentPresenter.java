@@ -13,6 +13,7 @@ public interface ContentPresenter extends IsPresenter<ContentView> {
 		HasWidgets getFeaturedChannels();
 		HasWidgets getFeaturedPosts();
 		HasWidgets getRecentPosts();
+		void showLoading(boolean loading);
 	}
 	public static interface BlogCardView extends IsView<ContentPresenter> {
 		void setImageUrl(String url);

@@ -11,10 +11,13 @@ import com.google.gwt.user.client.ui.Widget;
 import co.dporn.gmd.client.presenters.ContentPresenter;
 import co.dporn.gmd.client.presenters.ContentPresenter.ContentView;
 import gwt.material.design.client.ui.MaterialContainer;
-import gwt.material.design.client.ui.MaterialPanel;
+import gwt.material.design.client.ui.MaterialProgress;
 import gwt.material.design.client.ui.MaterialRow;
 
 public class ContentUi extends Composite implements ContentView {
+	
+	@UiField 
+	protected MaterialProgress progress;
 
 	@UiField
 	protected MaterialRow featuredChannels;
@@ -78,5 +81,10 @@ public class ContentUi extends Composite implements ContentView {
 	@Override
 	public HasWidgets getRecentPosts() {
 		return recentPosts;
+	}
+
+	@Override
+	public void showLoading(boolean loading) {
+		progress.setVisible(loading);
 	}
 }

@@ -40,6 +40,6 @@
 			addStyleNames="{style.label}" />
 		<m:MaterialRow ui:field="recentPosts"
 			addStyleNames="{style.row}" />
-
+		<m:MaterialProgress style="margin-bottom: 32px;" ui:field="progress"></m:MaterialProgress>
 	</m:MaterialContainer>
 </ui:UiBinder> 
