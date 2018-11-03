@@ -17,9 +17,6 @@ import gwt.material.design.client.ui.MaterialRow;
 public class ContentUi extends Composite implements ContentView {
 
 	@UiField
-	protected MaterialPanel bottom;
-
-	@UiField
 	protected MaterialRow featuredChannels;
 
 	@UiField
@@ -82,10 +79,4 @@ public class ContentUi extends Composite implements ContentView {
 	public HasWidgets getRecentPosts() {
 		return recentPosts;
 	}
-
-	@Override
-	public IsWidget getBottomMarker() {
-		return bottom;
-	}
-
 }

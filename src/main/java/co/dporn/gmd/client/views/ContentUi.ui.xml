@@ -41,7 +41,5 @@
 		<m:MaterialRow ui:field="recentPosts"
 			addStyleNames="{style.row}" />
 
-	<m:MaterialPanel ui:field="bottom"></m:MaterialPanel>
-
 	</m:MaterialContainer>
 </ui:UiBinder> 

@@ -7,6 +7,8 @@ import java.util.concurrent.CompletableFuture;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.ui.IsWidget;
 
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.views.BlogCardUi;
@@ -39,29 +41,28 @@ public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand 
 
 	}
 
-	private void activateScrollfire() {
+	private void activateScrollfire(IsWidget widget) {
 		GWT.log("activateScrollfire");
 		MaterialScrollfire scrollfire = new MaterialScrollfire();
-		scrollfire.setCallback(()->{
+		scrollfire.setCallback(() -> {
 			GWT.log("activateScrollfire#callback");
-			activateScrollfire();
-			loadRecentPosts();			
+			loadRecentPosts();
 		});
 		scrollfire.setOffset(0);
-		scrollfire.setElement(view.getBottomMarker().asWidget().getElement());
+		scrollfire.setElement(widget.asWidget().getElement());
 		scrollfire.apply();
 	}
 
 	private String lastRecentId = null;
 
 	private void loadRecentPosts() {
-		
+		Timer[] timer = { null };
 		CompletableFuture<PostListResponse> listPosts;
 		if (lastRecentId == null) {
 			listPosts = model.listPosts(4);
 			getContentView().getRecentPosts().clear();
 		} else {
-			listPosts = model.listPosts(lastRecentId, 5);
+			listPosts = model.listPosts(lastRecentId, 8);
 		}
 		listPosts.thenAccept((l) -> {
 			GWT.log("Recent posts: " + l.getPosts().size());
@@ -80,8 +81,8 @@ public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand 
 					VideoCardUi card = new VideoCardUi();
 					card.setAuthorName(p.getAuthor());
 					card.setShowDelay(showDelay[0]);
-					showDelay[0] += 150; //75
-					String displayName = i.getDisplayName()==null?p.getAuthor():i.getDisplayName();
+					showDelay[0] += 150; // 75
+					String displayName = i.getDisplayName() == null ? p.getAuthor() : i.getDisplayName();
 					card.setAuthorName(displayName);
 					String profileImage = i.getProfileImage();
 					if (profileImage != null && !profileImage.isEmpty()) {
@@ -98,10 +99,19 @@ public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand 
 					String embedUrl = GWT.getHostPageBaseURL() + "embed/@" + p.getAuthor() + "/" + p.getPermlink();
 					card.setVideoEmbedUrl(embedUrl);
 					getContentView().getRecentPosts().add(card);
+					if (timer[0] != null) {
+						timer[0].cancel();
+					}
+					timer[0] = new Timer() {
+						@Override
+						public void run() {
+							activateScrollfire(card);
+						}
+					};
+					timer[0].schedule(500);
 				});
 			});
-		}).thenRun(this::activateScrollfire);
-
+		});
 	}
 
 	private void loadFeaturedBlogs() {
