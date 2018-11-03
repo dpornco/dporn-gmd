@@ -11,16 +11,20 @@ import com.google.gwt.user.client.ui.Widget;
 import co.dporn.gmd.client.presenters.ContentPresenter;
 import co.dporn.gmd.client.presenters.ContentPresenter.ContentView;
 import gwt.material.design.client.ui.MaterialContainer;
+import gwt.material.design.client.ui.MaterialPanel;
 import gwt.material.design.client.ui.MaterialRow;
 
 public class ContentUi extends Composite implements ContentView {
 
 	@UiField
+	protected MaterialPanel bottom;
+
+	@UiField
 	protected MaterialRow featuredChannels;
-	
+
 	@UiField
 	protected MaterialRow featuredPosts;
-	
+
 	@UiField
 	protected MaterialRow recentPosts;
 
@@ -77,6 +81,11 @@ public class ContentUi extends Composite implements ContentView {
 	@Override
 	public HasWidgets getRecentPosts() {
 		return recentPosts;
+	}
+
+	@Override
+	public IsWidget getBottomMarker() {
+		return bottom;
 	}
 
 }
