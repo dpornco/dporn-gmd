@@ -5,7 +5,7 @@ import java.util.concurrent.CompletableFuture;
 
 import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.Post;
-import co.dporn.gmd.shared.SortField;
+import co.dporn.gmd.shared.PostListResponse;
 
 /**
  * MVP: Model: Models encapsulate the data MODEL and LOGIC. Does <b>NOT</b> know
@@ -18,7 +18,9 @@ import co.dporn.gmd.shared.SortField;
  */
 public interface AppControllerModel {
 
-	CompletableFuture<List<Post>> listPosts(int i, SortField byDate);
+	CompletableFuture<PostListResponse> listPosts(int count);
+	
+	CompletableFuture<PostListResponse> listPosts(String startId, int count);
 
 	CompletableFuture<ActiveBlogsResponse> listFeatured();
 

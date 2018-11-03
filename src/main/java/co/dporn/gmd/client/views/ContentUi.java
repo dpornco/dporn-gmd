@@ -17,6 +17,12 @@ public class ContentUi extends Composite implements ContentView {
 
 	@UiField
 	protected MaterialRow featuredChannels;
+	
+	@UiField
+	protected MaterialRow featuredPosts;
+	
+	@UiField
+	protected MaterialRow recentPosts;
 
 	@UiField
 	protected MaterialContainer mainContent;
@@ -65,14 +71,12 @@ public class ContentUi extends Composite implements ContentView {
 
 	@Override
 	public HasWidgets getFeaturedPosts() {
-		// TODO Auto-generated method stub
-		return null;
+		return featuredPosts;
 	}
 
 	@Override
 	public HasWidgets getRecentPosts() {
-		// TODO Auto-generated method stub
-		return null;
+		return recentPosts;
 	}
 
 }

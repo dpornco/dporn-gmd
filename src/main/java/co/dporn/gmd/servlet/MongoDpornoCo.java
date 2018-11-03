@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -36,10 +37,9 @@ public class MongoDpornoCo {
 				return post;
 			}
 			post.setAuthor(item.getString("username"));
-			// post.setCoverImage("https://cloudflare-ipfs.com/ipfs/"+item.getString("posterHash"));
 			post.setCoverImageIpfs(item.getString("posterHash"));
 			post.setCreated(item.getDate("posteddate"));
-			post.setId(item.getString("_id"));
+			post.setId(item.getObjectId("_id").toHexString());
 			post.setPermlink(item.getString("permlink"));
 			post.setScore(-1);
 			post.setTitle(item.getString("title"));
@@ -64,7 +64,7 @@ public class MongoDpornoCo {
 			MongoCollection<Document> collection = db.getCollection("videos");
 			MongoCursor<Document> find;
 			if (startId!=null && !startId.trim().isEmpty()) {
-				find = collection.find(Filters.lte("_)id", startId) )//
+				find = collection.find(Filters.lte("_id", new ObjectId(startId)) )//
 						.sort(Sorts.descending("_id"))//
 						.limit(count).iterator();
 			} else {
@@ -79,7 +79,7 @@ public class MongoDpornoCo {
 				// post.setCoverImage("https://cloudflare-ipfs.com/ipfs/"+item.getString("posterHash"));
 				post.setCoverImageIpfs(item.getString("posterHash"));
 				post.setCreated(item.getDate("posteddate"));
-				post.setId(item.getString("_id"));
+				post.setId(item.getObjectId("_id").toHexString());
 				post.setPermlink(item.getString("permlink"));
 				post.setScore(-1);
 				post.setTitle(item.getString("title"));

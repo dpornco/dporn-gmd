@@ -18,6 +18,10 @@ public interface DpornCoApi {
 	@GET
 	PostListResponse posts(@PathParam("startId")String startId, @PathParam("count")int count);
 	
+	@Path("posts/{count}")
+	@GET
+	PostListResponse posts(@PathParam("count")int count);
+	
 	@Path("blogs/recent")
 	@GET
 	ActiveBlogsResponse blogsRecent();

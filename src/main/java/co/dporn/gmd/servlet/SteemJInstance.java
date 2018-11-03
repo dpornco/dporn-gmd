@@ -2,6 +2,7 @@ package co.dporn.gmd.servlet;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -41,7 +42,7 @@ public class SteemJInstance {
 		}
 	}
 	
-	public static synchronized Map<String, AccountInfo> getBlogDetails(List<String> active) {
+	public static synchronized Map<String, AccountInfo> getBlogDetails(Collection<String> active) {
 		List<AccountName> activeAccounts = new ArrayList<>();
 		for (String a: active) {
 			activeAccounts.add(new AccountName(a));

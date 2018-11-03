@@ -89,7 +89,7 @@ public class VideoCardUi extends Composite implements VideoCardView {
 
 	@Override
 	public void setVideoEmbedUrl(String url) {
-		
+		videoEmbedUrl.setUrl(url);
 	}
 
 }

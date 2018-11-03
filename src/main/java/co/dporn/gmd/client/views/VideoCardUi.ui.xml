@@ -39,10 +39,9 @@
 	}
 	</ui:style>
 	<m:MaterialColumn grid="l3 m4 s12" addStyleNames="{style.column}">
-		<m:MaterialCard ui:field="card" addStyleNames="{style.no-overflow}">
-			<m:MaterialCardImage
-				addStyleNames="{style.image-card} {style.no-overflow}">
-				<m:MaterialVideo ui:field="videoEmbedUrl" url=""/>
+		<m:MaterialCard ui:field="card" > <!-- addStyleNames="{style.no-overflow}" -->
+			<m:MaterialCardImage addStyleNames="{style.image-card} {style.no-overflow}">
+				<m:MaterialVideo fullscreen="true" ui:field="videoEmbedUrl"/>
 			</m:MaterialCardImage>
 			<m:MaterialCardContent
 				addStyleNames="{style.blog-card}">

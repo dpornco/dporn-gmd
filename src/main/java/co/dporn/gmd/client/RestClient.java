@@ -13,6 +13,7 @@ import com.google.gwt.core.client.GWT;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.DpornCoApi;
 import co.dporn.gmd.shared.PingResponse;
+import co.dporn.gmd.shared.PostListResponse;
 
 public class RestClient {
 	
@@ -44,6 +45,20 @@ public class RestClient {
 		call(callback).blogsRecent();
 		return callback.getFuture();
 	}
+	
+	public CompletableFuture<PostListResponse> posts(int count) {
+		GWT.log("-> most recent posts");
+		MethodCallbackAsFuture<PostListResponse> callback = new MethodCallbackAsFuture<>();
+		call(callback).posts(count);
+		return callback.getFuture();
+	}
+	
+	public CompletableFuture<PostListResponse> posts(String startId, int count) {
+		GWT.log("-> posts starting at");
+		MethodCallbackAsFuture<PostListResponse> callback = new MethodCallbackAsFuture<>();
+		call(callback).posts(startId, count);
+		return callback.getFuture();
+	}
 
 	private <T> DpornCoRestApi call(MethodCallbackAsFuture<T> callback) {
 		return REST.withCallback(callback.callback()).call(rest);
@@ -60,7 +75,7 @@ public class RestClient {
 			return new MethodCallback<T>() {
 				@Override
 				public void onFailure(Method method, Throwable exception) {
-					GWT.log(" [api] onFailure");
+					GWT.log(" [api] onFailure", exception);
 					future.completeExceptionally(new RuntimeException(method.getResponse().getStatusText(), exception));
 				}
 
