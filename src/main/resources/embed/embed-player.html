@@ -64,7 +64,8 @@ html, body {
 			} catch (e) {
 			}
 			var sources = this.cache_.sources;
-			sources.push(sources.shift()); //rotate
+			sources.shift();
+			//sources.push(); //rotate
 			//this.reset();
 			this.src(sources);
 		});
