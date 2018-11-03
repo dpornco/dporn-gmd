@@ -19,8 +19,8 @@ public class VideoCardUi extends Composite implements VideoCardView {
 
 	@UiField
 	protected MaterialVideo videoEmbedUrl;
-	@UiField
-	protected MaterialImage avatarImage;
+//	@UiField
+//	protected MaterialImage avatarImage;
 	@UiField
 	protected MaterialLabel authorName;
 	@UiField
@@ -56,7 +56,7 @@ public class VideoCardUi extends Composite implements VideoCardView {
 	
 	@Override
 	public void setAvatarUrl(String url) {
-		avatarImage.setUrl(url);
+//		avatarImage.setUrl(url);
 	}
 
 	@Override

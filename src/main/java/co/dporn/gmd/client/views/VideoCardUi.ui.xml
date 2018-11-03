@@ -6,52 +6,63 @@
 	.no-overflow {
 		overflow: hidden;
 	}
+	
 	.column {
 		max-width: 400px;
 	}
+	
 	.image-card {
- 		width: 100%;
-		height: 160px;
-		margin-bottom: -32px;
+		width: 100%;
+		height: 100%;
+		margin-bottom: 0px;
 	}
+	
 	.image {
 		width: 100%;
 	}
+	
 	.blog-card {
-		height: 120px;
+		height: 80px;
+		margin-top: 0px;
 	}
-	.avatar {
-		position: absolute;
-		margin-top: -18px;
-		width: 64px;
-		height: 64px;
-	}
+	
 	.author-name {
-		margin-top: 48px;
+		margin-top: -8px;
 		font-size: 1.25em;
 	}
+	
 	.blurb {
-		opacity: 0.6;
-		margin-top: 4;
+		padding: 0px;
+		margin-top: 0px;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
+	
+	iframe {
+		box-sizing: content-box;
+		border-style: none;
+		border: 0px;
+		overflow: hidden;
+		padding: 0px;
+		margin: 0px;
+	}
 	</ui:style>
-	<m:MaterialColumn grid="l3 m4 s12" addStyleNames="{style.column}">
-		<m:MaterialCard ui:field="card" > <!-- addStyleNames="{style.no-overflow}" -->
-			<m:MaterialCardImage addStyleNames="{style.image-card} {style.no-overflow}">
-				<m:MaterialVideo fullscreen="true" ui:field="videoEmbedUrl"/>
+	<m:MaterialColumn grid="l3 m4 s12"
+		addStyleNames="{style.column}">
+		<m:MaterialCard ui:field="card"
+			addStyleNames="{style.no-overflow}">
+			<m:MaterialCardImage
+				addStyleNames="{style.image-card} {style.no-overflow}">
+				<m:MaterialVideo fullscreen="true"
+					ui:field="videoEmbedUrl" />
 			</m:MaterialCardImage>
 			<m:MaterialCardContent
 				addStyleNames="{style.blog-card}">
-				<m:MaterialImage ui:field="avatarImage"
-					addStyleNames="{style.avatar}" circle="true"
-					url="images/avatarImagePlaceholder.png" />
 				<m:MaterialLabel truncate="true"
 					ui:field="authorName" text="@" addStyleNames="{style.author-name}" />
-				<m:MaterialLabel addStyleNames="{style.blurb}" 
-				ui:field="authorBlurb" text="..." />
+				<m:MaterialLabel addStyleNames="{style.blurb}"
+					ui:field="authorBlurb" text="..." />
 			</m:MaterialCardContent>
 			<m:MaterialCardAction>
 				<m:MaterialLink text="VIEW" />
