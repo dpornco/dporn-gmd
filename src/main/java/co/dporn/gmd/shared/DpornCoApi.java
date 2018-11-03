@@ -14,9 +14,9 @@ public interface DpornCoApi {
 	@GET
 	PingResponse ping();
 	
-	@Path("post/list/{page}")
+	@Path("posts/{startId}/{count}")
 	@GET
-	PostListResponse posts(@PathParam("page")int page);
+	PostListResponse posts(@PathParam("startId")String startId, @PathParam("count")int count);
 	
 	@Path("blogs/recent")
 	@GET

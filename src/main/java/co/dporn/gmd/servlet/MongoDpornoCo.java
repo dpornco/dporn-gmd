@@ -19,8 +19,6 @@ import co.dporn.gmd.shared.Post;
 
 public class MongoDpornoCo {
 
-	private static final int PAGE_SIZE = 25;
-
 	static {
 		Logger mongoLogger = Logger.getLogger("org.mongodb");
 		mongoLogger.setLevel(Level.WARNING);
@@ -41,7 +39,7 @@ public class MongoDpornoCo {
 			// post.setCoverImage("https://cloudflare-ipfs.com/ipfs/"+item.getString("posterHash"));
 			post.setCoverImageIpfs(item.getString("posterHash"));
 			post.setCreated(item.getDate("posteddate"));
-			post.setId(-1);
+			post.setId(item.getString("_id"));
 			post.setPermlink(item.getString("permlink"));
 			post.setScore(-1);
 			post.setTitle(item.getString("title"));
@@ -52,17 +50,28 @@ public class MongoDpornoCo {
 		}
 	}
 
-	public static synchronized List<Post> listPosts(int page) {
+	public static synchronized List<Post> listPosts(String startId, int count) {
+		if (count<1) {
+			count = 1;
+		}
+		if (count>50) {
+			count = 50;
+		}
 		List<Post> list = new ArrayList<>();
 		MongoClient client = MongoClients.create();
 		try {
 			MongoDatabase db = client.getDatabase("dpdb");
 			MongoCollection<Document> collection = db.getCollection("videos");
-			MongoCursor<Document> find = collection.find()//
-					.sort(Sorts.descending("posteddate"))//
-					.skip(PAGE_SIZE * page)//
-					.limit(50).iterator();
-			int id = 50 * page;
+			MongoCursor<Document> find;
+			if (startId!=null && !startId.trim().isEmpty()) {
+				find = collection.find(Filters.lte("_)id", startId) )//
+						.sort(Sorts.descending("_id"))//
+						.limit(count).iterator();
+			} else {
+				find = collection.find()//
+						.sort(Sorts.descending("_id"))//
+						.limit(count).iterator();
+			}
 			while (find.hasNext()) {
 				Document item = find.next();
 				Post post = new Post();
@@ -70,7 +79,7 @@ public class MongoDpornoCo {
 				// post.setCoverImage("https://cloudflare-ipfs.com/ipfs/"+item.getString("posterHash"));
 				post.setCoverImageIpfs(item.getString("posterHash"));
 				post.setCreated(item.getDate("posteddate"));
-				post.setId(id++);
+				post.setId(item.getString("_id"));
 				post.setPermlink(item.getString("permlink"));
 				post.setScore(-1);
 				post.setTitle(item.getString("title"));

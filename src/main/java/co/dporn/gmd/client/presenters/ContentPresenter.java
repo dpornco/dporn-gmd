@@ -10,10 +10,9 @@ public interface ContentPresenter extends IsPresenter<ContentView> {
 	public static interface ContentView extends IsView<ContentPresenter> {
 		IsWidget getContainer();
 		void clear();
-		HasWidgets getFeatured();
-		HasWidgets getPosts();
-		void animateFeatured();
-		void hideFeatured();
+		HasWidgets getFeaturedChannels();
+		HasWidgets getFeaturedPosts();
+		HasWidgets getRecentPosts();
 	}
 	public static interface BlogCardView extends IsView<ContentPresenter> {
 		void setImageUrl(String url);
@@ -23,8 +22,7 @@ public interface ContentPresenter extends IsPresenter<ContentView> {
 		void setShowDelay(int showDelay);
 	}
 	public static interface VideoCardView extends BlogCardView {
-		void setHlsVideoUrl(String url);
-		void setIpfsVideoUrl(String url);
+		void setVideoEmbedUrl(String url);
 	}
 	public static interface PhotoGalleryCardView extends BlogCardView {
 		void setGallerySourceUrl(String url);

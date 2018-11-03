@@ -42,9 +42,7 @@
 		<m:MaterialCard ui:field="card" addStyleNames="{style.no-overflow}">
 			<m:MaterialCardImage
 				addStyleNames="{style.image-card} {style.no-overflow}">
-				<m:MaterialImage ui:field="postImage"
-					addStyleNames="{style.image}" type="MATERIALBOXED"
-					url="images/coverImagePlaceholder.png" />
+				<m:MaterialVideo ui:field="videoEmbedUrl" url=""/>
 			</m:MaterialCardImage>
 			<m:MaterialCardContent
 				addStyleNames="{style.blog-card}">

@@ -59,20 +59,18 @@ public class ContentUi extends Composite implements ContentView {
 	}
 
 	@Override
-	public HasWidgets getFeatured() {
+	public HasWidgets getFeaturedChannels() {
 		return featuredChannels;
 	}
 
 	@Override
-	public void animateFeatured() {
-	}
-	
-	@Override
-	public void hideFeatured() {
+	public HasWidgets getFeaturedPosts() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public HasWidgets getPosts() {
+	public HasWidgets getRecentPosts() {
 		// TODO Auto-generated method stub
 		return null;
 	}

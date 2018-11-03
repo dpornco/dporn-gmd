@@ -24,7 +24,7 @@ public class Post {
 	private String coverImage;
 	private String coverImageIpfs;
 	private String videoIpfs;
-	private int id;
+	private String id;
 	private double score;
 	public String getAuthor() {
 		return author;
@@ -50,11 +50,11 @@ public class Post {
 	public void setCoverImage(String coverImage) {
 		this.coverImage = coverImage;
 	}
-	public int getId() {
+	public String getId() {
 		return id;
 	}
-	public void setId(int id) {
-		this.id = id;
+	public void setId(String string) {
+		this.id = string;
 	}
 	public double getScore() {
 		return score;

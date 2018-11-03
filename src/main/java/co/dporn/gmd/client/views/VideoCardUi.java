@@ -11,13 +11,14 @@ import co.dporn.gmd.client.presenters.ContentPresenter.VideoCardView;
 import gwt.material.design.client.ui.MaterialCard;
 import gwt.material.design.client.ui.MaterialImage;
 import gwt.material.design.client.ui.MaterialLabel;
+import gwt.material.design.client.ui.MaterialVideo;
 import gwt.material.design.client.ui.animate.MaterialAnimation;
 import gwt.material.design.client.ui.animate.Transition;
 
 public class VideoCardUi extends Composite implements VideoCardView {
 
 	@UiField
-	protected MaterialImage postImage;
+	protected MaterialVideo videoEmbedUrl;
 	@UiField
 	protected MaterialImage avatarImage;
 	@UiField
@@ -50,7 +51,7 @@ public class VideoCardUi extends Composite implements VideoCardView {
 
 	@Override
 	public void setImageUrl(String url) {
-		postImage.setUrl(url);
+		//do nothing
 	}
 	
 	@Override
@@ -85,15 +86,9 @@ public class VideoCardUi extends Composite implements VideoCardView {
 		
 	}
 
-	@Override
-	public void setHlsVideoUrl(String url) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	@Override
-	public void setIpfsVideoUrl(String url) {
-		// TODO Auto-generated method stub
+	public void setVideoEmbedUrl(String url) {
 		
 	}
 

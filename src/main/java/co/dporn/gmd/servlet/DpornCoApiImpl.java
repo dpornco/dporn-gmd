@@ -24,8 +24,8 @@ public class DpornCoApiImpl implements DpornCoApi {
 	}
 
 	@Override
-	public PostListResponse posts(int page) {
-		List<Post> posts = MongoDpornoCo.listPosts(page);
+	public PostListResponse posts(String startId, int count) {
+		List<Post> posts = MongoDpornoCo.listPosts(startId, count);
 		PostListResponse response = new PostListResponse();
 		response.setPosts(posts);
 		return response;

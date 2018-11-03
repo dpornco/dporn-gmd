@@ -2,7 +2,6 @@ package co.dporn.gmd.client.presenters;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -28,22 +27,25 @@ public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand 
 		this.view = view;
 	}
 
-	private void loadInitialPosts() {
-		CompletableFuture<List<Post>> futurePosts = model.listPosts(0, SortField.BY_DATE);
+	private List<Post> recentPosts = new ArrayList<>();
+	private void loadRecentPosts() {
+		model.listPosts(0, SortField.BY_DATE).thenAccept((l)->{
+			recentPosts.clear();
+			recentPosts.addAll(l);
+		});
 	}
 
 	private void loadFeaturedBlogs() {
 		model.listFeatured().thenAccept((f) -> {
 			GWT.log("Featured blogs.");
-			getContentView().hideFeatured();
-			getContentView().getFeatured().clear();
+			getContentView().getFeaturedChannels().clear();
 			List<BlogCardUi> cards = new ArrayList<>();
-			int[] showDelay= {0};
+			int[] showDelay = { 0 };
 			f.getAuthors().forEach((a) -> {
 				BlogCardUi card = new BlogCardUi();
 				card.setAuthorName(a);
 				card.setShowDelay(showDelay[0]);
-				showDelay[0]+=75;
+				showDelay[0] += 75;
 				AccountInfo i = f.getInfoMap().get(a);
 				if (i == null) {
 					return;
@@ -73,7 +75,7 @@ public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand 
 				cards.add(card);
 			});
 			cards.subList(0, Math.min(4, cards.size())).forEach((w) -> {
-				deferred(()->getContentView().getFeatured().add(w.asWidget()));
+				deferred(() -> getContentView().getFeaturedChannels().add(w.asWidget()));
 			});
 		});
 	}
@@ -91,7 +93,7 @@ public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand 
 	@Override
 	public void execute() {
 		GWT.log(this.getClass().getSimpleName() + "#execute");
-		loadInitialPosts();
+		loadRecentPosts();
 		loadFeaturedBlogs();
 	}
 }
