@@ -1,10 +1,8 @@
 package co.dporn.gmd.client.app;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import co.dporn.gmd.shared.ActiveBlogsResponse;
-import co.dporn.gmd.shared.Post;
 import co.dporn.gmd.shared.PostListResponse;
 
 /**
@@ -23,5 +21,10 @@ public interface AppControllerModel {
 	CompletableFuture<PostListResponse> listPosts(String startId, int count);
 
 	CompletableFuture<ActiveBlogsResponse> listFeatured();
+	
+	CompletableFuture<PostListResponse> featuredPosts(int count);
+	default CompletableFuture<PostListResponse> featuredPosts() {
+		return featuredPosts(4);
+	}
 
 }
