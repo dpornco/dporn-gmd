@@ -19,5 +19,8 @@ public class DpornCoEp implements EntryPoint {
 			GWT.log(e.getMessage(),e);
 			return null;
 		});
+		steem.SteemApi.getActiveVotes("muksihs", "20181025t024103563zdporn").thenAccept((list)->{
+			GWT.log("Vote count: "+list.size());
+		});
 	}
 }
