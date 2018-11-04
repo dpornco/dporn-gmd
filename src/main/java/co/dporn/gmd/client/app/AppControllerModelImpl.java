@@ -32,6 +32,9 @@ public class AppControllerModelImpl implements AppControllerModel {
 		return RestClient.get().listFeatured();
 	}
 
+	/**
+	 * TODO: Move this into the servlet and cache for 30 minutes.
+	 */
 	@Override
 	public CompletableFuture<PostListResponse> featuredPosts(int count) {
 		CompletableFuture<PostListResponse> finalFuture=new CompletableFuture<>();
