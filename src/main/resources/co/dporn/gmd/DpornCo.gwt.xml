@@ -7,53 +7,56 @@
 <module rename-to='dpornco'>
 
 	<!-- System.getProperties() -->
-	<define-configuration-property name="version" is-multi-valued='false'/>
-	<set-configuration-property name="version" value="20181024"/>
+	<define-configuration-property
+		name="version" is-multi-valued='false' />
+	<set-configuration-property name="version"
+		value="20181024" />
 
 	<entry-point class='co.dporn.gmd.client.DpornCoEp' />
 
 	<source path='client' />
 	<source path='shared' />
 	<source path='ui' />
-	
+
 	<!-- string handling -->
-<!-- 	<inherits name="org.apache.commons.GWTCommonsLang3" /> -->
-	
+	<!-- <inherits name="org.apache.commons.GWTCommonsLang3" /> -->
+
 	<!-- eventbinder -->
-	<inherits name='com.google.web.bindery.event.EventBinder'/>
-	
+	<inherits name='com.google.web.bindery.event.EventBinder' />
+
 	<!-- https://github.com/OneGeek/GWT-CompletableFuture -->
-	<inherits name='com.ekotrope.gwt.CompletableFuture'/>
-	
+	<inherits name='com.ekotrope.gwt.CompletableFuture' />
+
 	<!-- compression for the cache -->
 	<inherits name='blazing.chain' />
-	
+
 	<!-- HTML5 -->
-<!-- 	<inherits name="elemental2.dom.Dom" /> -->
+	<!-- <inherits name="elemental2.dom.Dom" /> -->
 
 	<!-- UI -->
-	<inherits name="gwt.material.design.GwtMaterialBasicWithJQuery" />
+	<inherits
+		name="gwt.material.design.GwtMaterialBasicWithJQuery" />
 	<inherits name="gwt.material.design.jquery.JQuery" />
-	
+
 	<inherits name="gwt.material.design.addins.GwtMaterialAddins" />
 
 	<inherits name="gwt.material.design.themes.ThemeRed" />
-<!-- 	<inherits name="gwt.material.design.themes.ThemeBlue" /> -->
-<!-- 	<inherits name="gwt.material.design.themes.ThemeAmber" /> -->
-<!-- 	<inherits name="gwt.material.design.themes.ThemeBrown" /> -->
-<!-- 	<inherits name="gwt.material.design.themes.ThemeGreen" /> -->
-<!-- 	<inherits name="gwt.material.design.themes.ThemeGrey" /> -->
-<!-- 	<inherits name="gwt.material.design.themes.ThemeOrange" /> -->
-<!-- 	<inherits name="gwt.material.design.themes.ThemePink" /> -->
-<!-- 	<inherits name="gwt.material.design.themes.ThemePurple" /> -->
-<!-- 	<inherits name="gwt.material.design.themes.ThemeYellow" /> -->
-	
-	
-<!-- 	<set-configuration-property name="CssResource.conversionMode" -->
-<!-- 		value="strict" /> -->
+	<!-- <inherits name="gwt.material.design.themes.ThemeBlue" /> -->
+	<!-- <inherits name="gwt.material.design.themes.ThemeAmber" /> -->
+	<!-- <inherits name="gwt.material.design.themes.ThemeBrown" /> -->
+	<!-- <inherits name="gwt.material.design.themes.ThemeGreen" /> -->
+	<!-- <inherits name="gwt.material.design.themes.ThemeGrey" /> -->
+	<!-- <inherits name="gwt.material.design.themes.ThemeOrange" /> -->
+	<!-- <inherits name="gwt.material.design.themes.ThemePink" /> -->
+	<!-- <inherits name="gwt.material.design.themes.ThemePurple" /> -->
+	<!-- <inherits name="gwt.material.design.themes.ThemeYellow" /> -->
+
+
+	<!-- <set-configuration-property name="CssResource.conversionMode" -->
+	<!-- value="strict" /> -->
 
 	<!-- shared code and libraries -->
-<!-- 	<inherits name='org.apache.commons.GWTCommonsLang3' /> -->
+	<!-- <inherits name='org.apache.commons.GWTCommonsLang3' /> -->
 
 	<!-- ui stuff -->
 	<inherits name='com.google.gwt.user.User' />
@@ -61,18 +64,27 @@
 	<!-- JSON CODECs -->
 	<inherits name="com.github.nmorel.gwtjackson.GwtJackson" />
 	<inherits name="org.fusesource.restygwt.RestyGWT" />
-	<set-property name="restygwt.encodeDecode.useGwtJackson" value="true" />
-	<extend-configuration-property name="gwtjackson.configuration.extension" value="co.dporn.gmd.client.GwtJacksonConfiguration" />
+	<set-property name="restygwt.encodeDecode.useGwtJackson"
+		value="true" />
+	<extend-configuration-property
+		name="gwtjackson.configuration.extension"
+		value="co.dporn.gmd.client.GwtJacksonConfiguration" />
+
+	<!-- steemjs -->
+	<inherits name="steem.Steem" />
 
 	<inherits name="com.google.gwt.logging.Logging" />
 	<set-property name="gwt.logging.logLevel" value="INFO" />
 	<set-property name="gwt.logging.enabled" value="TRUE" />
-	<set-property name="gwt.logging.consoleHandler" value="DISABLED" />
+	<set-property name="gwt.logging.consoleHandler"
+		value="DISABLED" />
 	<set-property name="gwt.logging.developmentModeHandler"
 		value="DISABLED" />
-	<set-property name="gwt.logging.systemHandler" value="ENABLED" />
+	<set-property name="gwt.logging.systemHandler"
+		value="ENABLED" />
 
-	<set-property-fallback name="user.agent" value="safari" />
-	<set-configuration-property name="user.agent.runtimeWarning"
-		value="false" />
+	<set-property-fallback name="user.agent"
+		value="safari" />
+	<set-configuration-property
+		name="user.agent.runtimeWarning" value="false" />
 </module>

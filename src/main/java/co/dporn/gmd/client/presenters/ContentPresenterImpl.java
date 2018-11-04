@@ -33,12 +33,43 @@ public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand 
 	}
 
 	/*
-	 * TODO: for Featured Posts, take most recent 14 mongoid desc, divide vote count
-	 * by (list position+1), use as sort value desc, select first 4.
+	 * For Featured Posts, take most recent 12 mongoid desc, use scaled vote count
+	 * based on list index, use as sort value desc, select first 4.
 	 */
 
-	protected void loadNextRecentPosts() {
-
+	protected void loadFeaturedPosts() {
+		model.featuredPosts(4).thenAccept(posts -> {
+			getContentView().getFeaturedPosts().clear();
+			int[] showDelay = { 0 };
+			Map<String, AccountInfo> infoMap = posts.getInfoMap();
+			posts.getPosts().forEach(p -> {
+				showDelay[0] += 500;
+				AccountInfo i = infoMap.get(p.getAuthor());
+				if (i == null) {
+					return;
+				}
+				VideoCardUi card = new VideoCardUi();
+				card.setAuthorName(p.getAuthor());
+				card.setShowDelay(showDelay[0]);
+				String displayName = i.getDisplayName() == null ? p.getAuthor() : i.getDisplayName();
+				card.setAuthorName(displayName);
+				String profileImage = i.getProfileImage();
+				if (profileImage != null && !profileImage.isEmpty()) {
+					if (!profileImage.toLowerCase().startsWith("https://steemitimages.com/")) {
+						profileImage = "https://steemitimages.com/150x150/" + profileImage;
+					}
+					card.setAvatarUrl(profileImage);
+				}
+				card.setTitle(p.getTitle());
+				String videoIpfs = p.getVideoIpfs();
+				if (videoIpfs == null || videoIpfs.trim().isEmpty() || videoIpfs.length() != 46) {
+					return;
+				}
+				String embedUrl = GWT.getHostPageBaseURL() + "embed/@" + p.getAuthor() + "/" + p.getPermlink();
+				card.setVideoEmbedUrl(embedUrl);
+				getContentView().getFeaturedPosts().add(card);
+			});
+		});
 	}
 
 	private void activateScrollfire(IsWidget widget) {
@@ -180,5 +211,6 @@ public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand 
 		GWT.log(this.getClass().getSimpleName() + "#execute");
 		loadRecentPosts();
 		loadFeaturedBlogs();
+		loadFeaturedPosts();
 	}
 }
