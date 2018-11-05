@@ -72,6 +72,11 @@
 
 	<!-- steemjs -->
 	<inherits name="steem.Steem" />
+	
+	<!-- routing -->
+	<inherits name="org.apache.commons.GWTCommonsLang3" />
+	<inherits name="elemental.Elemental" />
+	<inherits name="com.wallissoftware.pushstate.PushState" />
 
 	<inherits name="com.google.gwt.logging.Logging" />
 	<set-property name="gwt.logging.logLevel" value="INFO" />

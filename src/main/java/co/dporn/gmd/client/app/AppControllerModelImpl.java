@@ -7,6 +7,8 @@ import java.util.concurrent.CompletableFuture;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.core.shared.GWT;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
 
 import co.dporn.gmd.client.RestClient;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
@@ -16,6 +18,11 @@ import steem.SteemApi;
 import steem.model.Vote;
 
 public class AppControllerModelImpl implements AppControllerModel {
+	
+	public AppControllerModelImpl() {
+		
+	}
+	
 	private static final int FEATURED_POST_POOL_SIZE = 16;
 	@Override
 	public CompletableFuture<PostListResponse> listPosts(int count) {
@@ -69,5 +76,4 @@ public class AppControllerModelImpl implements AppControllerModel {
 	private void deferred(ScheduledCommand cmd) {
 		Scheduler.get().scheduleDeferred(cmd);
 	}
-
 }
