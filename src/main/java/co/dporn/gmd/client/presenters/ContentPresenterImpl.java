@@ -11,6 +11,7 @@ import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.IsWidget;
 
 import co.dporn.gmd.client.app.AppControllerModel;
+import co.dporn.gmd.client.app.Routes;
 import co.dporn.gmd.client.views.BlogCardUi;
 import co.dporn.gmd.client.views.VideoCardUi;
 import co.dporn.gmd.shared.AccountInfo;
@@ -49,24 +50,18 @@ public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand 
 					return;
 				}
 				VideoCardUi card = new VideoCardUi();
-				card.setAuthorName(p.getAuthor());
+				card.setDisplayName(p.getAuthor());
 				card.setShowDelay(showDelay[0]);
 				String displayName = i.getDisplayName() == null ? p.getAuthor() : i.getDisplayName();
-				card.setAuthorName(displayName);
-				String profileImage = i.getProfileImage();
-				if (profileImage != null && !profileImage.isEmpty()) {
-					if (!profileImage.toLowerCase().startsWith("https://steemitimages.com/")) {
-						profileImage = "https://steemitimages.com/150x150/" + profileImage;
-					}
-					card.setAvatarUrl(profileImage);
-				}
+				card.setDisplayName(displayName);
+				card.setAvatarUrl(Routes.avatarImage(p.getAuthor()));
 				card.setTitle(p.getTitle());
 				String videoIpfs = p.getVideoIpfs();
 				if (videoIpfs == null || videoIpfs.trim().isEmpty() || videoIpfs.length() != 46) {
 					return;
 				}
-				String embedUrl = GWT.getHostPageBaseURL() + "embed/@" + p.getAuthor() + "/" + p.getPermlink();
-				card.setVideoEmbedUrl(embedUrl);
+				card.setVideoEmbedUrl(Routes.embedVideo(p.getAuthor(), p.getPermlink()));
+				card.setViewLink(Routes.post(p.getAuthor(), p.getPermlink()));
 				getContentView().getFeaturedPosts().add(card);
 			});
 		});
@@ -111,25 +106,19 @@ public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand 
 						return;
 					}
 					VideoCardUi card = new VideoCardUi();
-					card.setAuthorName(p.getAuthor());
+					card.setDisplayName(p.getAuthor());
 					card.setShowDelay(showDelay[0]);
 					showDelay[0] += 150; // 75
 					String displayName = i.getDisplayName() == null ? p.getAuthor() : i.getDisplayName();
-					card.setAuthorName(displayName);
-					String profileImage = i.getProfileImage();
-					if (profileImage != null && !profileImage.isEmpty()) {
-						if (!profileImage.toLowerCase().startsWith("https://steemitimages.com/")) {
-							profileImage = "https://steemitimages.com/150x150/" + profileImage;
-						}
-						card.setAvatarUrl(profileImage);
-					}
+					card.setDisplayName(displayName);
+					card.setAvatarUrl(Routes.avatarImage(p.getAuthor()));
 					card.setTitle(p.getTitle());
 					String videoIpfs = p.getVideoIpfs();
 					if (videoIpfs == null || videoIpfs.trim().isEmpty() || videoIpfs.length() != 46) {
 						return;
 					}
-					String embedUrl = GWT.getHostPageBaseURL() + "embed/@" + p.getAuthor() + "/" + p.getPermlink();
-					card.setVideoEmbedUrl(embedUrl);
+					card.setViewLink(Routes.post(p.getAuthor(), p.getPermlink()));
+					card.setVideoEmbedUrl(Routes.embedVideo(p.getAuthor(), p.getPermlink()));
 					getContentView().getRecentPosts().add(card);
 					if (timer[0] != null) {
 						timer[0].cancel();
@@ -153,41 +142,35 @@ public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand 
 
 	private void loadFeaturedBlogs() {
 		model.listFeatured().thenAccept((f) -> {
-			GWT.log("Featured blogs.");
+			GWT.log("Featured channels.");
 			getContentView().getFeaturedChannels().clear();
 			List<BlogCardUi> cards = new ArrayList<>();
 			int[] showDelay = { 0 };
-			f.getAuthors().forEach((a) -> {
+			f.getAuthors().forEach((username) -> {
 				BlogCardUi card = new BlogCardUi();
-				card.setAuthorName(a);
+				card.setDisplayName(username);
 				card.setShowDelay(showDelay[0]);
 				showDelay[0] += 75;
-				AccountInfo i = f.getInfoMap().get(a);
+				AccountInfo i = f.getInfoMap().get(username);
 				if (i == null) {
 					return;
 				}
-				card.setAuthorName(i.getDisplayName());
-				String profileImage = i.getProfileImage();
-				if (profileImage == null) {
-					return;
-					// profileImage=GWT.getHostPageBaseURL()+"images/avatarImagePlaceholder.png";
-				} else {
-					if (!profileImage.startsWith("https://steemitimages.com/")) {
-						profileImage = "https://steemitimages.com/150x150/" + profileImage;
-					}
+				String displayName = i.getDisplayName();
+				if (displayName != null && !displayName.trim().isEmpty()) {
+					card.setDisplayName(displayName);
 				}
-				card.setAvatarUrl(profileImage);
+				card.setAvatarUrl(Routes.avatarImage(username));
 				card.setTitle(i.getAbout());
 				String coverImage = i.getCoverImage();
 				if (coverImage == null) {
 					return;
-					// coverImage=GWT.getHostPageBaseURL()+"images/coverImagePlaceholder.png";
 				} else {
 					if (!coverImage.startsWith("https://steemitimages.com/")) {
 						coverImage = "https://steemitimages.com/500x500/" + coverImage;
 					}
 				}
 				card.setImageUrl(coverImage);
+				card.setViewLink(Routes.channel(username));
 				cards.add(card);
 			});
 			cards.subList(0, Math.min(4, cards.size())).forEach((w) -> {

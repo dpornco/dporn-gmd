@@ -4,44 +4,54 @@
 
 <!-- Configuration file for UrlRewriteFilter http://www.tuckey.org/urlrewrite/ -->
 <urlrewrite>
+
+	<rule>
+		<note>Application assets</note>
+		<from>.+(/dpornco_application/.+)</from>
+		<to type="redirect">$1</to>
+	</rule>
+
+	<rule>
+		<note>View post</note>
+		<from>^/@[^/]+/[^/]+</from>
+		<to>/</to>
+	</rule>
+
 	<rule>
 		<note>Channel page</note>
-		<from>^/@([^/]+)</from>
-		<to>/index.html</to>
+		<from>^/@[^/]+</from>
+		<to>/</to>
 	</rule>
-	<rule>
-		<note>View post page</note>
-		<from>^/@([^/]+)/([^/]+)</from>
-		<to>/index.html</to>
-	</rule>
+
 	<rule>
 		<note>Search/Filter results</note>
 		<from>^/search/tags/(.*)</from>
-		<to>/index.html</to>
+		<to>/index-level.html</to>
 	</rule>
+
 	<rule>
 		<note>Search dialog</note>
 		<from>^/search</from>
-		<to>/index.html</to>
+		<to>/</to>
 	</rule>
 	<rule>
 		<note>Post Photogallery</note>
 		<from>^/upload/photos</from>
-		<to>/index.html</to>
+		<to>/</to>
 	</rule>
 	<rule>
 		<note>Post Video</note>
 		<from>^/upload/video</from>
-		<to>/index.html</to>
+		<to>/</to>
 	</rule>
 	<rule>
 		<note>Show Verified NSFW channel selection list</note>
 		<from>^/verified</from>
-		<to>/index.html</to>
+		<to>/</to>
 	</rule>
 	<rule>
 		<note>Show Client browser settings</note>
 		<from>^/settings</from>
-		<to>/index.html</to>
+		<to>/</to>
 	</rule>
 </urlrewrite>

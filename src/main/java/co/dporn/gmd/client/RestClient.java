@@ -23,7 +23,7 @@ public class RestClient {
 	}
 
 	public RestClient() {
-		String serviceRoot = GWT.getHostPageBaseURL() + "dpornco/api/1.0";
+		String serviceRoot = "/dpornco_application/api/1.0";
 		Defaults.setServiceRoot(serviceRoot);
 		rest = GWT.create(DpornCoRestApi.class);
 	}

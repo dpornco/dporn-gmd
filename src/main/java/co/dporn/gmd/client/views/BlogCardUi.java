@@ -3,15 +3,16 @@ package co.dporn.gmd.client.views;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
-import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
+import com.wallissoftware.pushstate.client.PushStateHistorian;
 
 import co.dporn.gmd.client.presenters.ContentPresenter;
 import co.dporn.gmd.client.presenters.ContentPresenter.BlogCardView;
 import gwt.material.design.client.ui.MaterialCard;
 import gwt.material.design.client.ui.MaterialImage;
 import gwt.material.design.client.ui.MaterialLabel;
+import gwt.material.design.client.ui.MaterialLink;
 import gwt.material.design.client.ui.animate.MaterialAnimation;
 import gwt.material.design.client.ui.animate.Transition;
 
@@ -21,11 +22,14 @@ public class BlogCardUi extends Composite implements BlogCardView {
 	@UiField
 	protected MaterialImage avatarImage;
 	@UiField
-	protected MaterialLabel authorName;
+	protected MaterialLabel displayName;
 	@UiField
 	protected MaterialLabel authorBlurb;
 	@UiField
 	protected MaterialCard card;
+	@UiField
+	protected MaterialLink viewLink;
+
 	private int showDelay;
 
 	private static BlogCardUiUiBinder uiBinder = GWT.create(BlogCardUiUiBinder.class);
@@ -40,15 +44,15 @@ public class BlogCardUi extends Composite implements BlogCardView {
 	@Override
 	public void bindPresenter(ContentPresenter presenter) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void unbindPresenter() {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 	@Override
 	protected void onLoad() {
 		super.onLoad();
@@ -56,23 +60,23 @@ public class BlogCardUi extends Composite implements BlogCardView {
 		MaterialAnimation animation = new MaterialAnimation();
 		animation.setTransition(Transition.ZOOMIN);
 		animation.setDelay(0);
-		animation.setDuration(250+showDelay);
+		animation.setDuration(250 + showDelay);
 		animation.animate(card);
 	}
-	
+
 	@Override
 	public void setImageUrl(String url) {
 		postImage.setUrl(url);
 	}
-	
+
 	@Override
 	public void setAvatarUrl(String url) {
 		avatarImage.setUrl(url);
 	}
 
 	@Override
-	public void setAuthorName(String name) {
-		authorName.setText(name);
+	public void setDisplayName(String name) {
+		displayName.setText(name);
 	}
 
 	@Override
@@ -82,7 +86,15 @@ public class BlogCardUi extends Composite implements BlogCardView {
 
 	@Override
 	public void setShowDelay(int showDelay) {
-		this.showDelay=showDelay;
+		this.showDelay = showDelay;
 	}
 
+	@Override
+	public void setViewLink(String linkUrl) {
+		this.viewLink.setHref(linkUrl);
+		this.viewLink.addClickHandler((e) -> {
+			e.preventDefault();
+			new PushStateHistorian().newItem(linkUrl, true);
+		});
+	}
 }

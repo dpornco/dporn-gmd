@@ -65,7 +65,7 @@
 					ui:field="authorBlurb" text="..." />
 			</m:MaterialCardContent>
 			<m:MaterialCardAction>
-				<m:MaterialLink text="VIEW" />
+				<m:MaterialLink ui:field="viewLink" text="VIEW" />
 				<m:MaterialLink text="FOLLOW" float="RIGHT" />
 			</m:MaterialCardAction>
 		</m:MaterialCard>

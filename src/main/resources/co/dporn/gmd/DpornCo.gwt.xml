@@ -4,7 +4,7 @@
  PUBLIC
  "-//Google Inc.//DTD Google Web Toolkit 2.8.2//EN"
  "https://raw.githubusercontent.com/gwtproject/gwt/master/distro-source/core/src/gwt-module.dtd">
-<module rename-to='dpornco'>
+<module rename-to='dpornco_application'>
 
 	<!-- System.getProperties() -->
 	<define-configuration-property

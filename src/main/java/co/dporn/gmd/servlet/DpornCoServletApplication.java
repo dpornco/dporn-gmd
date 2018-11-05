@@ -4,7 +4,7 @@ import javax.ws.rs.ApplicationPath;
 
 import org.glassfish.jersey.server.ResourceConfig;
 
-@ApplicationPath("dpornco/api")
+@ApplicationPath("dpornco_application/api")
 public class DpornCoServletApplication extends ResourceConfig {
 	public DpornCoServletApplication() {
 		register(DpornCoApiImpl.class);

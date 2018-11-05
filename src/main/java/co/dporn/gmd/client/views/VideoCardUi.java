@@ -5,12 +5,13 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
+import com.wallissoftware.pushstate.client.PushStateHistorian;
 
 import co.dporn.gmd.client.presenters.ContentPresenter;
 import co.dporn.gmd.client.presenters.ContentPresenter.VideoCardView;
 import gwt.material.design.client.ui.MaterialCard;
-import gwt.material.design.client.ui.MaterialImage;
 import gwt.material.design.client.ui.MaterialLabel;
+import gwt.material.design.client.ui.MaterialLink;
 import gwt.material.design.client.ui.MaterialVideo;
 import gwt.material.design.client.ui.animate.MaterialAnimation;
 import gwt.material.design.client.ui.animate.Transition;
@@ -19,14 +20,15 @@ public class VideoCardUi extends Composite implements VideoCardView {
 
 	@UiField
 	protected MaterialVideo videoEmbedUrl;
-//	@UiField
-//	protected MaterialImage avatarImage;
 	@UiField
 	protected MaterialLabel authorName;
 	@UiField
 	protected MaterialLabel authorBlurb;
 	@UiField
 	protected MaterialCard card;
+	@UiField
+	protected MaterialLink viewLink;
+	
 	private int showDelay;
 	
 	private static VideoCardUiUiBinder uiBinder = GWT.create(VideoCardUiUiBinder.class);
@@ -60,7 +62,7 @@ public class VideoCardUi extends Composite implements VideoCardView {
 	}
 
 	@Override
-	public void setAuthorName(String name) {
+	public void setDisplayName(String name) {
 		authorName.setText(name);
 	}
 
@@ -90,6 +92,15 @@ public class VideoCardUi extends Composite implements VideoCardView {
 	@Override
 	public void setVideoEmbedUrl(String url) {
 		videoEmbedUrl.setUrl(url);
+	}
+
+	@Override
+	public void setViewLink(String linkUrl) {
+		this.viewLink.setHref(linkUrl);
+		this.viewLink.addClickHandler((e) -> {
+			e.preventDefault();
+			new PushStateHistorian().newItem(linkUrl, true);
+		});
 	}
 
 }

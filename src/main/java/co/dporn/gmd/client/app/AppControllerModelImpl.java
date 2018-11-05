@@ -7,8 +7,6 @@ import java.util.concurrent.CompletableFuture;
 
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
-import com.google.gwt.core.shared.GWT;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
 
 import co.dporn.gmd.client.RestClient;
 import co.dporn.gmd.shared.ActiveBlogsResponse;

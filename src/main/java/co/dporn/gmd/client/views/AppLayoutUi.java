@@ -6,15 +6,20 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
+import com.wallissoftware.pushstate.client.PushStateHistorian;
 
 import co.dporn.gmd.client.presenters.AppPresenter;
 import co.dporn.gmd.client.presenters.AppPresenter.AppLayoutView;
 import co.dporn.gmd.client.presenters.ContentPresenter;
 import co.dporn.gmd.client.presenters.ContentPresenter.ContentView;
+import gwt.material.design.client.ui.MaterialLink;
 import gwt.material.design.client.ui.MaterialPanel;
 import gwt.material.design.client.ui.MaterialSideNavPush;
 
 public class AppLayoutUi extends Composite implements AppLayoutView {
+	
+	@UiField
+	MaterialLink linkHome;
 	
 	@UiField
     protected MaterialSideNavPush sidenav;
@@ -31,7 +36,10 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 
 	public AppLayoutUi() {
 		initWidget(uiBinder.createAndBindUi(this));
-//		container.clear();
+		linkHome.addClickHandler(e->{
+			e.preventDefault();
+			new PushStateHistorian().newItem("/", true);
+		});
 	}
 
 	@Override
