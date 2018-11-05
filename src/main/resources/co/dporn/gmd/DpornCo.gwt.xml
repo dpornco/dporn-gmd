@@ -4,7 +4,7 @@
  PUBLIC
  "-//Google Inc.//DTD Google Web Toolkit 2.8.2//EN"
  "https://raw.githubusercontent.com/gwtproject/gwt/master/distro-source/core/src/gwt-module.dtd">
-<module rename-to='dpornco'>
+<module rename-to='dpornco_application'>
 
 	<!-- System.getProperties() -->
 	<define-configuration-property
@@ -72,6 +72,11 @@
 
 	<!-- steemjs -->
 	<inherits name="steem.Steem" />
+	
+	<!-- routing -->
+	<inherits name="org.apache.commons.GWTCommonsLang3" />
+	<inherits name="elemental.Elemental" />
+	<inherits name="com.wallissoftware.pushstate.PushState" />
 
 	<inherits name="com.google.gwt.logging.Logging" />
 	<set-property name="gwt.logging.logLevel" value="INFO" />

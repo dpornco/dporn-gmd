@@ -26,5 +26,7 @@ public interface AppControllerModel {
 	default CompletableFuture<PostListResponse> featuredPosts() {
 		return featuredPosts(4);
 	}
+	
+	
 
 }

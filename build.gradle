@@ -71,11 +71,10 @@ repositories {
     maven { url 'https://jitpack.io' }
 }
 
-/**tasks.withType(org.wisepersist.gradle.plugins.gwt.AbstractGwtActionTask) {
+
+tasks.withType(org.wisepersist.gradle.plugins.gwt.AbstractGwtActionTask) {
     args "-noincremental"
-}**/
-
-
+}
 gwt {
 	logLevel = 'INFO'
 	gwtVersion='2.8.2'
@@ -115,7 +114,12 @@ dependencies {
     
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-jdk14
 	compile group: 'org.slf4j', name: 'slf4j-jdk14', version: '1.7.25'
-    
+	
+	// for html5 push-state and servlet url rewrite back to index page
+	gwt 'de.knightsoft-net:gwt-pushstate:2.0.0.14'
+	gwt 'de.knightsoft-net:gwt-commons-lang3:3.8.1-0'
+	gwt group: 'com.google.gwt', name: 'gwt-elemental', version: '2.8.2'
+	compile 'org.tuckey:urlrewritefilter:4.0.3'	    
     
 	compile 'com.github.tommyettinger:blazingchain:1.4.4.2'
 	gwt group: 'com.github.tommyettinger', name: 'blazingchain', version: '1.4.4.2', classifier: 'sources'

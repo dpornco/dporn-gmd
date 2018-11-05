@@ -44,20 +44,20 @@
 				addStyleNames="{style.image-card} {style.no-overflow}">
 				<m:MaterialImage ui:field="postImage"
 					addStyleNames="{style.image}" type="MATERIALBOXED"
-					url="images/coverImagePlaceholder.png" />
+					url="/images/coverImagePlaceholder.png" />
 			</m:MaterialCardImage>
 			<m:MaterialCardContent
 				addStyleNames="{style.blog-card}">
 				<m:MaterialImage ui:field="avatarImage"
 					addStyleNames="{style.avatar}" circle="true"
-					url="images/avatarImagePlaceholder.png" />
+					url="/images/avatarImagePlaceholder.png" />
 				<m:MaterialLabel truncate="true"
-					ui:field="authorName" text="@" addStyleNames="{style.author-name}" />
+					ui:field="displayName" text="@" addStyleNames="{style.author-name}" />
 				<m:MaterialLabel addStyleNames="{style.blurb}" 
 				ui:field="authorBlurb" text="..." />
 			</m:MaterialCardContent>
 			<m:MaterialCardAction>
-				<m:MaterialLink text="VIEW" />
+				<m:MaterialLink ui:field="viewLink" text="VIEW" />
 				<m:MaterialLink text="FOLLOW" float="RIGHT" />
 			</m:MaterialCardAction>
 		</m:MaterialCard>

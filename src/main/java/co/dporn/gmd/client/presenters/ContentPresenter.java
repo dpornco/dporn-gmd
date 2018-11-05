@@ -18,9 +18,10 @@ public interface ContentPresenter extends IsPresenter<ContentView> {
 	public static interface BlogCardView extends IsView<ContentPresenter> {
 		void setImageUrl(String url);
 		void setAvatarUrl(String url);
-		void setAuthorName(String name);
+		void setDisplayName(String name);
 		void setTitle(String title);
 		void setShowDelay(int showDelay);
+		void setViewLink(String linkUrl);
 	}
 	public static interface VideoCardView extends BlogCardView {
 		void setVideoEmbedUrl(String url);

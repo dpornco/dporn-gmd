@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE urlrewrite PUBLIC "-//tuckey.org//DTD UrlRewrite 4.0//EN"
+        "http://www.tuckey.org/res/dtds/urlrewrite4.0.dtd">
+
+<!-- Configuration file for UrlRewriteFilter http://www.tuckey.org/urlrewrite/ -->
+<urlrewrite>
+
+	<rule>
+		<note>Application assets</note>
+		<from>.+(/dpornco_application/.+)</from>
+		<to type="redirect">$1</to>
+	</rule>
+
+	<rule>
+		<note>View post</note>
+		<from>^/@[^/]+/[^/]+</from>
+		<to>/</to>
+	</rule>
+
+	<rule>
+		<note>Channel page</note>
+		<from>^/@[^/]+</from>
+		<to>/</to>
+	</rule>
+
+	<rule>
+		<note>Search/Filter results</note>
+		<from>^/search/tags/(.*)</from>
+		<to>/index-level.html</to>
+	</rule>
+
+	<rule>
+		<note>Search dialog</note>
+		<from>^/search</from>
+		<to>/</to>
+	</rule>
+	<rule>
+		<note>Post Photogallery</note>
+		<from>^/upload/photos</from>
+		<to>/</to>
+	</rule>
+	<rule>
+		<note>Post Video</note>
+		<from>^/upload/video</from>
+		<to>/</to>
+	</rule>
+	<rule>
+		<note>Show Verified NSFW channel selection list</note>
+		<from>^/verified</from>
+		<to>/</to>
+	</rule>
+	<rule>
+		<note>Show Client browser settings</note>
+		<from>^/settings</from>
+		<to>/</to>
+	</rule>
+</urlrewrite>

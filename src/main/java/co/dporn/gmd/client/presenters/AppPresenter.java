@@ -1,6 +1,7 @@
 package co.dporn.gmd.client.presenters;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.ui.HasWidgets;
 
 import co.dporn.gmd.client.presenters.AppPresenter.AppLayoutView;

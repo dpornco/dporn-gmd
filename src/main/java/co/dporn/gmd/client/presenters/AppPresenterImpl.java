@@ -2,6 +2,8 @@ package co.dporn.gmd.client.presenters;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.core.shared.GWT;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.place.shared.PlaceHistoryHandler.Historian;
 import com.google.gwt.user.client.ui.HasWidgets;
 
 import co.dporn.gmd.client.app.AppControllerModel;
@@ -11,14 +13,21 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand {
 	private AppLayoutView view;
 	private HasWidgets rootDisplay;
 	private AppControllerModel model;
+	private Historian historian;
 	
 	public AppPresenterImpl() {
 	}
 	
-	public AppPresenterImpl(AppControllerModel model, HasWidgets rootDisplay, AppLayoutView appLayoutView) {
+	public void onRouteChange(ValueChangeEvent<String> routeEvent) {
+		GWT.log("routeEvent: "+routeEvent.getValue());
+	}
+	
+	public AppPresenterImpl(Historian historian, AppControllerModel model, HasWidgets rootDisplay, AppLayoutView appLayoutView) {
+		this.historian = historian;
 		this.rootDisplay=rootDisplay;
 		this.view=appLayoutView;
 		this.model=model;
+		this.historian.addValueChangeHandler(this::onRouteChange);
 	}
 	
 	@Override

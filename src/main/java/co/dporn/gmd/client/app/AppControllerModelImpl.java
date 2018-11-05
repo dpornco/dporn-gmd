@@ -16,6 +16,11 @@ import steem.SteemApi;
 import steem.model.Vote;
 
 public class AppControllerModelImpl implements AppControllerModel {
+	
+	public AppControllerModelImpl() {
+		
+	}
+	
 	private static final int FEATURED_POST_POOL_SIZE = 16;
 	@Override
 	public CompletableFuture<PostListResponse> listPosts(int count) {
@@ -69,5 +74,4 @@ public class AppControllerModelImpl implements AppControllerModel {
 	private void deferred(ScheduledCommand cmd) {
 		Scheduler.get().scheduleDeferred(cmd);
 	}
-
 }

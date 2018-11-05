@@ -5,12 +5,12 @@
 	<m:MaterialPanel ui:field="panel">
 		<!-- Header -->
 		<m:MaterialHeader layoutPosition="FIXED" width="100%"
-			 depth="996">
+			depth="996">
 			<!-- NavBar -->
 			<m:MaterialNavBar activates="sidenav">
-			<m:MaterialImage circle="false" width="40px"
-						height="40px" marginTop="12" marginRight="4"
-						url="https://dporn.co/imgs/dpornsitelogo.png" />
+				<m:MaterialImage circle="false" width="40px"
+					height="40px" marginTop="12" marginRight="4"
+					url="https://dporn.co/imgs/dpornsitelogo.png" />
 				<m:MaterialNavBrand paddingLeft="4"
 					text="DPORNCO" />
 				<m:MaterialNavSection float="RIGHT">
@@ -23,37 +23,35 @@
 		</m:MaterialHeader>
 
 		<!-- SideNav -->
-		<m:MaterialSideNavPush ui:field="sidenav" m:id="sidenav" 
-			width="250" withHeader="true" top="70">
-			<m:MaterialLink text="Home" iconType="HOME" />
-			<m:MaterialLink text="Search" iconType="SEARCH" />
-<!-- 			<m:MaterialLink text="Collections" -->
-<!-- 				iconType="COLLECTIONS" /> -->
-<!-- 			<m:MaterialLink text="Communities" -->
-<!-- 				iconType="GROUP_WORK" /> -->
-<!-- 			<m:MaterialLink text="Profile" -->
-<!-- 				iconType="ACCOUNT_CIRCLE" /> -->
-				<m:MaterialLink enabled="false" text="Post Photogallery" iconType="ADD_A_PHOTO"
+		<m:MaterialSideNavPush ui:field="sidenav"
+			m:id="sidenav" width="250" withHeader="true" top="70">
+			<m:MaterialLink ui:field="linkHome" text="Home"
+				iconType="HOME" href="/" />
+			<m:MaterialLink ui:field="linkSearch" text="Search"
+				iconType="SEARCH" href="/search" />
+			<m:MaterialLink ui:field="linkUploadPhotos" href="/upload/photos" enabled="false"
+				text="Post Photogallery" iconType="ADD_A_PHOTO" separator="true" />
+			<m:MaterialLink ui:field="linkUploadVideo" href="/upload/video" text="Upload Video"
+				iconType="FILE_UPLOAD" separator="true" />
+			<m:MaterialLink ui:field="linkVerified" href="/verified" text="Verified NSFW" iconType="PEOPLE"
 				separator="true" />
-			<m:MaterialLink text="Upload Video" iconType="FILE_UPLOAD"
-				separator="true" />
-			<m:MaterialLink text="Verified NSFW" iconType="PEOPLE"
-				separator="true" />
-			<m:MaterialLink text="Settings" iconType="COLLECTIONS" />
-<!-- 			<m:MaterialLink text="Send Feedback" -->
-<!-- 				iconType="ANNOUNCEMENT" href="https://discord.gg/28NwJ8u" target="_blank"/> -->
+			<m:MaterialLink ui:field="linkSettings" href="/settings" text="Settings" iconType="COLLECTIONS" />
+			<!-- <m:MaterialLink text="Send Feedback" -->
+			<!-- iconType="ANNOUNCEMENT" href="https://discord.gg/28NwJ8u" target="_blank"/> -->
 			<m:MaterialLink text="Get Verified"
-				iconType="ANNOUNCEMENT" href="https://discord.gg/sP7YHdU" target="_blank"/>
-			<m:MaterialLink text="Help / Feedback" iconType="HELP" href="https://discord.gg/28NwJ8u" target="_blank"/>
+				iconType="ANNOUNCEMENT" href="https://discord.gg/sP7YHdU"
+				target="_blank" />
+			<m:MaterialLink text="Help / Feedback" iconType="HELP"
+				href="https://discord.gg/28NwJ8u" target="_blank" />
 		</m:MaterialSideNavPush>
-<!-- 		<m:MaterialContainer ui:field="container" paddingLeft="250" -->
-<!-- 			paddingRight="140" paddingTop="100"/> -->
+		<!-- <m:MaterialContainer ui:field="container" paddingLeft="250" -->
+		<!-- paddingRight="140" paddingTop="100"/> -->
 		<!-- FAB -->
 		<m:MaterialFAB>
 			<m:MaterialAnchorButton target="_blank"
-				href="https://github.com/muksihs/dporn-gmd"
-				waves="DEFAULT" type="FLOATING" tooltip="Get Code"
-				tooltipPosition="LEFT" iconType="CODE" size="LARGE" />
+				href="https://github.com/muksihs/dporn-gmd" waves="DEFAULT"
+				type="FLOATING" tooltip="Get Code" tooltipPosition="LEFT"
+				iconType="CODE" size="LARGE" />
 		</m:MaterialFAB>
 	</m:MaterialPanel>
 </ui:UiBinder>
