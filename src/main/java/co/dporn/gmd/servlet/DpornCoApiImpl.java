@@ -1,6 +1,5 @@
 package co.dporn.gmd.servlet;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -58,5 +57,28 @@ public class DpornCoApiImpl implements DpornCoApi {
 		ActiveBlogsResponse activeBlogsResponse = new ActiveBlogsResponse(sublist);
 		activeBlogsResponse.setInfoMap(SteemJInstance.getBlogDetails(sublist));
 		return activeBlogsResponse;
+	}
+
+	@Override
+	public PostListResponse postsFor(String username, String startId, int count) {
+		if (count < 1) {
+			count = 1;
+		}
+		if (count > 50) {
+			count = 50;
+		}
+		List<Post> posts = MongoDpornoCo.listPostsFor(username, startId, count);
+		Set<String> accountNameList = new HashSet<>();
+		posts.forEach(p -> accountNameList.add(p.getAuthor()));
+		Map<String, AccountInfo> infoMap = SteemJInstance.getBlogDetails(accountNameList);
+		PostListResponse response = new PostListResponse();
+		response.setPosts(posts);
+		response.setInfoMap(infoMap);
+		return response;
+	}
+
+	@Override
+	public PostListResponse postsFor(String username, int count) {
+		return postsFor(username, "", count);
 	}
 }

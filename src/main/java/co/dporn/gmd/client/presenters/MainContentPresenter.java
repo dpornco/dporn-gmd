@@ -8,6 +8,7 @@ import java.util.concurrent.CompletableFuture;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.IsWidget;
 
 import co.dporn.gmd.client.app.AppControllerModel;
@@ -18,12 +19,12 @@ import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.PostListResponse;
 import gwt.material.design.addins.client.scrollfire.MaterialScrollfire;
 
-public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand {
+public class MainContentPresenter implements ContentPresenter, ScheduledCommand {
 
 	private ContentView view;
 	private AppControllerModel model;
 
-	public ContentPresenterImpl(AppControllerModel model, ContentView view) {
+	public MainContentPresenter(AppControllerModel model, ContentView view) {
 		this.view = view;
 		this.model = model;
 	}
@@ -188,7 +189,7 @@ public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand 
 	public void setModel(AppControllerModel model) {
 		this.model = model;
 	}
-
+	
 	@Override
 	public void execute() {
 		GWT.log(this.getClass().getSimpleName() + "#execute");
@@ -196,4 +197,16 @@ public class ContentPresenterImpl implements ContentPresenter, ScheduledCommand 
 		loadFeaturedBlogs();
 		loadFeaturedPosts();
 	}
-}
+
+	private int posX=0;
+	private int posY=0;
+	@Override
+	public void saveScrollPosition() {
+		posX=Window.getScrollLeft();
+		posY=Window.getScrollTop();
+	}
+
+	@Override
+	public void restoreScrollPosition() {
+		Window.scrollTo(posX, posY);
+	}}

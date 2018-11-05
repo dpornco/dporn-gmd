@@ -14,6 +14,14 @@ public interface DpornCoApi {
 	@GET
 	PingResponse ping();
 	
+	@Path("posts/@{username}/{startId}/{count}")
+	@GET
+	PostListResponse postsFor(@PathParam("username")String username, @PathParam("startId")String startId, @PathParam("count")int count);
+	
+	@Path("posts/@{username}/{count}")
+	@GET
+	PostListResponse postsFor(@PathParam("username")String username, @PathParam("count")int count);
+	
 	@Path("posts/{startId}/{count}")
 	@GET
 	PostListResponse posts(@PathParam("startId")String startId, @PathParam("count")int count);
