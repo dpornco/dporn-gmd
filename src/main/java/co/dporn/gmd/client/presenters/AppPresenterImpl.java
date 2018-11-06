@@ -17,38 +17,42 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand {
 	private HasWidgets rootDisplay;
 	private AppControllerModel model;
 	private Historian historian;
-	
+
 	public AppPresenterImpl() {
 	}
-	
-	private final Map<String, ContentPresenter> presenters=new HashMap<>();
+
+	private final Map<String, ContentPresenter> presenters = new HashMap<>();
 	private ContentPresenter activeChildPresenter;
+
 	public void onRouteChange(ValueChangeEvent<String> routeEvent) {
 		String route = routeEvent.getValue();
-		GWT.log("=== routeEvent: "+route);
+		GWT.log("=== routeEvent: " + route);
 		if (presenters.containsKey(route)) {
-			deferred(()->{
-				activeChildPresenter.saveScrollPosition();
-				activeChildPresenter=presenters.get(route);
-				view.setContentPresenter(presenters.get(route));
-				deferred(()->activeChildPresenter.restoreScrollPosition());
+			deferred(() -> {
+				if (activeChildPresenter != presenters.get(route)) {
+					activeChildPresenter.saveScrollPosition();
+					activeChildPresenter = presenters.get(route);
+					view.setContentPresenter(presenters.get(route));
+					deferred(() -> activeChildPresenter.restoreScrollPosition());
+				}
 			});
 		} else {
-			//TODO: do new presenter and views setup
+			// TODO: do new presenter and views setup
 		}
 	}
-	
-	public AppPresenterImpl(Historian historian, AppControllerModel model, HasWidgets rootDisplay, AppLayoutView appLayoutView) {
+
+	public AppPresenterImpl(Historian historian, AppControllerModel model, HasWidgets rootDisplay,
+			AppLayoutView appLayoutView) {
 		this.historian = historian;
-		this.rootDisplay=rootDisplay;
-		this.view=appLayoutView;
-		this.model=model;
+		this.rootDisplay = rootDisplay;
+		this.view = appLayoutView;
+		this.model = model;
 		this.historian.addValueChangeHandler(this::onRouteChange);
 	}
-	
+
 	@Override
 	public void setView(AppLayoutView view) {
-		this.view=view;
+		this.view = view;
 	}
 
 	@Override
@@ -58,7 +62,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand {
 
 	@Override
 	public void execute() {
-		GWT.log(this.getClass().getSimpleName()+"#execute");
+		GWT.log(this.getClass().getSimpleName() + "#execute");
 		rootDisplay.clear();
 		rootDisplay.add(view.asWidget());
 		MainContentPresenter childPresenter = new MainContentPresenter(model, new ContentUi());
@@ -70,6 +74,6 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand {
 
 	@Override
 	public void setModel(AppControllerModel model) {
-		this.model=model;		
+		this.model = model;
 	}
 }

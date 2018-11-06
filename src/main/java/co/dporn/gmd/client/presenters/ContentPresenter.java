@@ -1,6 +1,5 @@
 package co.dporn.gmd.client.presenters;
 
-import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.IsWidget;
 
