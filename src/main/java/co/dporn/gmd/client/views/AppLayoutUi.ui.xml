@@ -29,6 +29,8 @@
 				iconType="HOME" href="/" />
 			<m:MaterialLink ui:field="linkSearch" text="Search"
 				iconType="SEARCH" href="/search" />
+				<m:MaterialLink ui:field="linkPostErotica" href="/upload/erotica" enabled="false"
+				text="Post Erotica" iconType="FORMAT_ALIGN_JUSTIFY" separator="true" />
 			<m:MaterialLink ui:field="linkUploadPhotos" href="/upload/photos" enabled="false"
 				text="Post Photogallery" iconType="ADD_A_PHOTO" separator="true" />
 			<m:MaterialLink ui:field="linkUploadVideo" href="/upload/video" text="Upload Video"
