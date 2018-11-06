@@ -59,7 +59,7 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 		}
 		listPosts.thenAccept((l) -> {
 			GWT.log("Channel Recent posts: " + l.getPosts().size());
-			if (l.getPosts().size()<2) {
+			if (l.getPosts().size()<2 && lastRecentId!=null) {
 				showLoading(false);
 				return;
 			}
