@@ -1,5 +1,7 @@
 package co.dporn.gmd.shared;
 
+import java.util.Map;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -13,6 +15,10 @@ public interface DpornCoApi {
 	@Path("ping")
 	@GET
 	PingResponse ping();
+	
+	@Path("embed/@{authorname}/{permlink}")
+	@GET
+	Map<String, String> embed(@PathParam("authorname") String author, @PathParam("permlink") String permlink);
 	
 	@Path("posts/@{username}/{startId}/{count}")
 	@GET

@@ -24,13 +24,7 @@
 	</rule>
 
 	<rule>
-		<note>Search/Filter results</note>
-		<from>^/search/tags/(.*)</from>
-		<to>/index-level.html</to>
-	</rule>
-
-	<rule>
-		<note>Search dialog</note>
+		<note>Search dialog - search params passed as hash fragment</note>
 		<from>^/search</from>
 		<to>/</to>
 	</rule>

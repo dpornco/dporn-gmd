@@ -26,6 +26,10 @@ public interface AppControllerModel {
 	default CompletableFuture<PostListResponse> featuredPosts() {
 		return featuredPosts(4);
 	}
+
+	CompletableFuture<PostListResponse> postsFor(String username);
+
+	CompletableFuture<PostListResponse> postsFor(String username, String startId, int count);
 	
 	
 

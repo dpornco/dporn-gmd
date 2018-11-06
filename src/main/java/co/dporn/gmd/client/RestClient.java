@@ -61,6 +61,20 @@ public class RestClient {
 		return callback.getFuture();
 	}
 	
+	public CompletableFuture<PostListResponse> postsFor(String username, int count) {
+		GWT.log("-> most recent posts for "+username);
+		MethodCallbackAsFuture<PostListResponse> callback = new MethodCallbackAsFuture<>();
+		call(callback).postsFor(username, count);
+		return callback.getFuture();
+	}
+	
+	public CompletableFuture<PostListResponse> postsFor(String username, String startId, int count) {
+		GWT.log("-> most recent posts starting at for "+username);
+		MethodCallbackAsFuture<PostListResponse> callback = new MethodCallbackAsFuture<>();
+		call(callback).postsFor(username, startId, count);
+		return callback.getFuture();
+	}
+	
 	public CompletableFuture<Map<String, String>> embed(String username, String permlink) {
 		GWT.log("-> embed html");
 		MethodCallbackAsFuture<Map<String, String>> callback = new MethodCallbackAsFuture<>();

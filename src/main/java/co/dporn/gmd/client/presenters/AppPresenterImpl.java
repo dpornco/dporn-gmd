@@ -7,9 +7,11 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.place.shared.PlaceHistoryHandler.Historian;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasWidgets;
 
 import co.dporn.gmd.client.app.AppControllerModel;
+import co.dporn.gmd.client.views.ChannelUi;
 import co.dporn.gmd.client.views.ContentUi;
 
 public class AppPresenterImpl implements AppPresenter, ScheduledCommand {
@@ -26,19 +28,71 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand {
 
 	public void onRouteChange(ValueChangeEvent<String> routeEvent) {
 		String route = routeEvent.getValue();
+		loadRoutePresenter(route);
+	}
+
+	private void loadRoutePresenter(String route) {
 		GWT.log("=== routeEvent: " + route);
 		if (presenters.containsKey(route)) {
 			deferred(() -> {
 				if (activeChildPresenter != presenters.get(route)) {
-					activeChildPresenter.saveScrollPosition();
+					if (activeChildPresenter != null) {
+						activeChildPresenter.saveScrollPosition();
+					}
 					activeChildPresenter = presenters.get(route);
 					view.setContentPresenter(presenters.get(route));
 					deferred(() -> activeChildPresenter.restoreScrollPosition());
 				}
 			});
 		} else {
-			// TODO: do new presenter and views setup
+			if (activeChildPresenter != null) {
+				activeChildPresenter.saveScrollPosition();
+			}
+			if (route.isEmpty()) {
+				GWT.log("Present: Landing Page");
+				deferred(() -> {
+					MainContentPresenter childPresenter = new MainContentPresenter(model, new ContentUi());
+					presenters.put("", childPresenter);
+					activeChildPresenter = childPresenter;
+					view.setContentPresenter(childPresenter);
+					resetScrollPosition();
+					deferred(childPresenter);
+				});
+			}
+			if (route.startsWith("@") && !route.contains("/")) {
+				GWT.log("Channel Listing: Verified Only");
+			}
+			if (route.startsWith("@") && !route.contains("/") && route.length()>1) {
+				GWT.log("Present: Channel");
+				deferred(() -> {
+					ChannelPresenter childPresenter = new ChannelPresenter(route.substring(1), model, new ChannelUi());
+					presenters.put(route, childPresenter);
+					activeChildPresenter = childPresenter;
+					view.setContentPresenter(childPresenter);
+					resetScrollPosition();
+					deferred(childPresenter);
+				});
+			}
+			if (route.startsWith("@") && route.contains("/")) {
+				GWT.log("Present: Post");
+			}
+			if (route.equals("search")) {
+				GWT.log("Present: Search");
+			}
+			if (route.equals("upload/video")) {
+				GWT.log("Upload: Video");
+			}
+			if (route.equals("upload/photos")) {
+				GWT.log("Upload: Photogallery");
+			}
+			if (route.equals("settings")) {
+				GWT.log("Settings");
+			}
 		}
+	}
+
+	private void resetScrollPosition() {
+		Window.scrollTo(0, 0);
 	}
 
 	public AppPresenterImpl(Historian historian, AppControllerModel model, HasWidgets rootDisplay,
@@ -65,11 +119,9 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand {
 		GWT.log(this.getClass().getSimpleName() + "#execute");
 		rootDisplay.clear();
 		rootDisplay.add(view.asWidget());
-		MainContentPresenter childPresenter = new MainContentPresenter(model, new ContentUi());
-		view.setContentPresenter(childPresenter);
-		deferred(childPresenter);
-		presenters.put("", childPresenter);
-		activeChildPresenter = childPresenter;
+		deferred(() -> {
+			loadRoutePresenter(historian.getToken());
+		});
 	}
 
 	@Override

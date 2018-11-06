@@ -23,10 +23,6 @@ public class Routes {
 		return "/@" + username + "/" + permlink;
 	}
 
-	public static String searchTags() {
-		return "/search/tags";
-	}
-
 	public static String searchTags(Collection<String> includeTags, Collection<String> excludeTags) {
 		StringBuilder sb = new StringBuilder();
 		if (includeTags != null) {
@@ -51,7 +47,7 @@ public class Routes {
 				}
 			}
 		}
-		return searchTags() + sb.toString();
+		return search() + "#" + sb.toString();
 	}
 
 	public static String search() {
