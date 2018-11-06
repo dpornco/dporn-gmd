@@ -1,5 +1,6 @@
 package co.dporn.gmd.client;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.fusesource.restygwt.client.Defaults;
@@ -57,6 +58,13 @@ public class RestClient {
 		GWT.log("-> posts starting at");
 		MethodCallbackAsFuture<PostListResponse> callback = new MethodCallbackAsFuture<>();
 		call(callback).posts(startId, count);
+		return callback.getFuture();
+	}
+	
+	public CompletableFuture<Map<String, String>> embed(String username, String permlink) {
+		GWT.log("-> embed html");
+		MethodCallbackAsFuture<Map<String, String>> callback = new MethodCallbackAsFuture<>();
+		call(callback).embed(username, permlink);
 		return callback.getFuture();
 	}
 
