@@ -20,7 +20,6 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
-import com.gargoylesoftware.htmlunit.javascript.host.fetch.Request;
 
 import co.dporn.gmd.shared.Post;
 
@@ -64,6 +63,15 @@ public class DpornCoEmbed {
 			return Response.notModified().build();
 		}
 		return Response.ok().build();
+	}
+	
+	@Produces(MediaType.APPLICATION_JSON)
+	@Path("json/@{authorname}/{permlink}")
+	@GET
+	public Map<String, String> getJson(@PathParam("authorname") String author, @PathParam("permlink") String permlink) {
+		Map<String, String> embed = new HashMap<>();
+		embed.put("embed", get(author, permlink));
+		return embed;
 	}
 
 	@Produces(MediaType.TEXT_HTML)
