@@ -22,6 +22,7 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 	private AppControllerModel model;
 	private String username;
 
+	//TODO: Load and display full account info in banner header like dtube/busy/steem does.
 	public ChannelPresenter(String username, AppControllerModel model, ContentView view) {
 		this.view = view;
 		this.model = model;

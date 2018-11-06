@@ -18,6 +18,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand {
 	private AppLayoutView view;
 	private HasWidgets rootDisplay;
 	private AppControllerModel model;
+	//TODO: This belongs in the appcontrollermodel
 	private Historian historian;
 
 	public AppPresenterImpl() {
@@ -26,6 +27,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand {
 	private final Map<String, ContentPresenter> presenters = new HashMap<>();
 	private ContentPresenter activeChildPresenter;
 
+	//TODO: This belongs in the appcontrollermodel
 	public void onRouteChange(ValueChangeEvent<String> routeEvent) {
 		String route = routeEvent.getValue();
 		loadRoutePresenter(route);
