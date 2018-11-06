@@ -1,5 +1,6 @@
 package co.dporn.gmd.servlet;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -80,5 +81,12 @@ public class DpornCoApiImpl implements DpornCoApi {
 	@Override
 	public PostListResponse postsFor(String username, int count) {
 		return postsFor(username, "", count);
+	}
+
+	@Override
+	public Map<String, String> embed(String author, String permlink) {
+		Map<String, String> embed = new HashMap<>();
+		embed.put("embed", DpornCoEmbed.getEmbedHtml(author, permlink));
+		return embed;
 	}
 }

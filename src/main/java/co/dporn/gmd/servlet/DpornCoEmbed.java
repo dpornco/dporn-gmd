@@ -64,7 +64,7 @@ public class DpornCoEmbed {
 		}
 		return Response.ok().build();
 	}
-	
+
 	@Produces(MediaType.APPLICATION_JSON)
 	@Path("json/@{authorname}/{permlink}")
 	@GET
@@ -80,49 +80,51 @@ public class DpornCoEmbed {
 	public String get(@PathParam("authorname") String author, @PathParam("permlink") String permlink) {
 		String key = author.trim() + "|" + permlink.trim();
 		response.setCharacterEncoding("UTF-8");
-		response.setContentType(MediaType.TEXT_HTML);
 		response.addDateHeader("Last-Modified", LAST_MODIFIED);
 		if (cache.containsKey(key)) {
 			return cache.get(key);
 		}
-		Post post = MongoDpornoCo.getPost(author, permlink);
-		isValid: {
-			if (post == null) {
-				break isValid;
-			}
-			if (!author.equals(post.getAuthor())) {
-				break isValid;
-			}
-			String coverImageIpfs = post.getCoverImageIpfs();
-			if (coverImageIpfs == null) {
-				break isValid;
-			}
-			coverImageIpfs = coverImageIpfs.trim();
-			if (coverImageIpfs.length() != 46) {
-				break isValid;
-			}
-			String videoIpfs = post.getVideoIpfs();
-			if (videoIpfs == null) {
-				break isValid;
-			}
-			videoIpfs = videoIpfs.trim();
-			if (videoIpfs.length() != 46) {
-				break isValid;
-			}
-			String embedHtml = template();
-			embedHtml = embedHtml.replace("__TITLE__", StringEscapeUtils.escapeXml10(post.getTitle()));
-			embedHtml = embedHtml.replace("__POSTERHASH__", StringEscapeUtils.escapeXml10(coverImageIpfs));
-			embedHtml = embedHtml.replace("__VIDEOHASH__", StringEscapeUtils.escapeXml10(videoIpfs));
-			if (cache.size() > 100) {
-				cache.clear();
-			}
-			cache.put(key, embedHtml);
-			return embedHtml;
+		String embedHtml = getEmbedHtml(author, permlink);
+		if (embedHtml == null) {
+			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+			return "NOT FOUND";
 		}
+		if (cache.size() > 1024) {
+			cache.clear();
+		}
+		cache.put(key, embedHtml);
+		return embedHtml;
+	}
 
-		response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-		return "NOT FOUND";
-
+	public static String getEmbedHtml(String author, String permlink) {
+		Post post = MongoDpornoCo.getPost(author, permlink);
+		if (post == null) {
+			return null;
+		}
+		if (!author.equals(post.getAuthor())) {
+			return null;
+		}
+		String coverImageIpfs = post.getCoverImageIpfs();
+		if (coverImageIpfs == null) {
+			return null;
+		}
+		coverImageIpfs = coverImageIpfs.trim();
+		if (coverImageIpfs.length() != 46) {
+			return null;
+		}
+		String videoIpfs = post.getVideoIpfs();
+		if (videoIpfs == null) {
+			return null;
+		}
+		videoIpfs = videoIpfs.trim();
+		if (videoIpfs.length() != 46) {
+			return null;
+		}
+		String embedHtml = template();
+		embedHtml = embedHtml.replace("__TITLE__", StringEscapeUtils.escapeXml10(post.getTitle()));
+		embedHtml = embedHtml.replace("__POSTERHASH__", StringEscapeUtils.escapeXml10(coverImageIpfs));
+		embedHtml = embedHtml.replace("__VIDEOHASH__", StringEscapeUtils.escapeXml10(videoIpfs));
+		return embedHtml;
 	}
 
 }
