@@ -47,6 +47,13 @@ public class RestClient {
 		return callback.getFuture();
 	}
 	
+	public CompletableFuture<ActiveBlogsResponse> blogInfo(String username) {
+		GWT.log("-> blogInfo: "+username);
+		MethodCallbackAsFuture<ActiveBlogsResponse> callback = new MethodCallbackAsFuture<>();
+		call(callback).blogInfo(username);
+		return callback.getFuture();
+	}
+	
 	public CompletableFuture<PostListResponse> posts(int count) {
 		GWT.log("-> most recent posts");
 		MethodCallbackAsFuture<PostListResponse> callback = new MethodCallbackAsFuture<>();
