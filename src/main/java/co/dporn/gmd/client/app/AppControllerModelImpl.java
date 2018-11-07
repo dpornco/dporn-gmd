@@ -16,12 +16,24 @@ import steem.SteemApi;
 import steem.model.Vote;
 
 public class AppControllerModelImpl implements AppControllerModel {
+	private static final int FEATURED_POST_POOL_SIZE = 16;
+	private static final int CHANNEL_POSTS_INITIAL_SIZE = 8;
 	
 	public AppControllerModelImpl() {
 		
 	}
 	
-	private static final int FEATURED_POST_POOL_SIZE = 16;
+	
+	@Override
+	public CompletableFuture<PostListResponse> postsFor(String username) {
+		return RestClient.get().postsFor(username, CHANNEL_POSTS_INITIAL_SIZE);
+	}
+	
+	@Override
+	public CompletableFuture<PostListResponse> postsFor(String username, String startId, int count) {
+		return RestClient.get().postsFor(username, startId, count);
+	}
+	
 	@Override
 	public CompletableFuture<PostListResponse> listPosts(int count) {
 		return RestClient.get().posts(count);
@@ -73,5 +85,11 @@ public class AppControllerModelImpl implements AppControllerModel {
 
 	private void deferred(ScheduledCommand cmd) {
 		Scheduler.get().scheduleDeferred(cmd);
+	}
+
+
+	@Override
+	public CompletableFuture<ActiveBlogsResponse> blogInfo(String username) {
+		return RestClient.get().blogInfo(username);
 	}
 }

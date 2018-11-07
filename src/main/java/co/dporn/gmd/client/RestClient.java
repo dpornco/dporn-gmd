@@ -1,5 +1,6 @@
 package co.dporn.gmd.client;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import org.fusesource.restygwt.client.Defaults;
@@ -46,6 +47,13 @@ public class RestClient {
 		return callback.getFuture();
 	}
 	
+	public CompletableFuture<ActiveBlogsResponse> blogInfo(String username) {
+		GWT.log("-> blogInfo: "+username);
+		MethodCallbackAsFuture<ActiveBlogsResponse> callback = new MethodCallbackAsFuture<>();
+		call(callback).blogInfo(username);
+		return callback.getFuture();
+	}
+	
 	public CompletableFuture<PostListResponse> posts(int count) {
 		GWT.log("-> most recent posts");
 		MethodCallbackAsFuture<PostListResponse> callback = new MethodCallbackAsFuture<>();
@@ -57,6 +65,27 @@ public class RestClient {
 		GWT.log("-> posts starting at");
 		MethodCallbackAsFuture<PostListResponse> callback = new MethodCallbackAsFuture<>();
 		call(callback).posts(startId, count);
+		return callback.getFuture();
+	}
+	
+	public CompletableFuture<PostListResponse> postsFor(String username, int count) {
+		GWT.log("-> most recent posts for "+username);
+		MethodCallbackAsFuture<PostListResponse> callback = new MethodCallbackAsFuture<>();
+		call(callback).postsFor(username, count);
+		return callback.getFuture();
+	}
+	
+	public CompletableFuture<PostListResponse> postsFor(String username, String startId, int count) {
+		GWT.log("-> most recent posts starting at for "+username);
+		MethodCallbackAsFuture<PostListResponse> callback = new MethodCallbackAsFuture<>();
+		call(callback).postsFor(username, startId, count);
+		return callback.getFuture();
+	}
+	
+	public CompletableFuture<Map<String, String>> embed(String username, String permlink) {
+		GWT.log("-> embed html");
+		MethodCallbackAsFuture<Map<String, String>> callback = new MethodCallbackAsFuture<>();
+		call(callback).embed(username, permlink);
 		return callback.getFuture();
 	}
 

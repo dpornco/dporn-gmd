@@ -1,7 +1,6 @@
 package co.dporn.gmd.client.views;
 
 import com.google.gwt.core.client.GWT;
-import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
@@ -17,18 +16,18 @@ import gwt.material.design.client.ui.MaterialPanel;
 import gwt.material.design.client.ui.MaterialSideNavPush;
 
 public class AppLayoutUi extends Composite implements AppLayoutView {
-	
+
 	@UiField
 	MaterialLink linkHome;
-	
+
 	@UiField
-    protected MaterialSideNavPush sidenav;
-	
+	protected MaterialSideNavPush sidenav;
+
 	@UiField
 	protected MaterialPanel panel;
-	
+
 	private ContentView container;
-	
+
 	private static AppLayoutUiUiBinder uiBinder = GWT.create(AppLayoutUiUiBinder.class);
 
 	interface AppLayoutUiUiBinder extends UiBinder<Widget, AppLayoutUi> {
@@ -36,7 +35,7 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 
 	public AppLayoutUi() {
 		initWidget(uiBinder.createAndBindUi(this));
-		linkHome.addClickHandler(e->{
+		linkHome.addClickHandler(e -> {
 			e.preventDefault();
 			new PushStateHistorian().newItem("/", true);
 		});
@@ -45,13 +44,13 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 	@Override
 	public void bindPresenter(AppPresenter presenter) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void unbindPresenter() {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -60,19 +59,13 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 	}
 
 	@Override
-	public void replaceContentPresenter(ContentPresenter childPresenter) {
-		GWT.log(this.getClass().getSimpleName()+"#replaceContentPresenter: "+childPresenter.getClass().getSimpleName());
+	public void setContentPresenter(ContentPresenter childPresenter) {
 		ContentView view = childPresenter.getContentView();
-		if (container!=null) {
+		if (container != null) {
 			panel.remove(container.asWidget());
-			GWT.log("remove");
-		} 
-		Scheduler.get().scheduleDeferred(()->{
-			int sidenavix = panel.getWidgetIndex(sidenav);
-			GWT.log("sidenavix: "+sidenavix);
-			panel.insert(view.asWidget(), sidenavix+1);
-			GWT.log("insert");
-			container=view;
-		});
+		}
+		int sidenavix = panel.getWidgetIndex(sidenav);
+		panel.insert(view.asWidget(), sidenavix + 1);
+		container = view;
 	}
 }

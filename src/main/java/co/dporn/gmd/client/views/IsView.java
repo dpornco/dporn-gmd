@@ -6,6 +6,5 @@ import co.dporn.gmd.client.presenters.IsPresenter;
 
 public interface IsView<P extends IsPresenter<?>> extends IsWidget {
 	void bindPresenter(P presenter);
-
 	void unbindPresenter();
 }

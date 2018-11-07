@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
 import com.mongodb.client.MongoClient;
@@ -76,7 +77,51 @@ public class MongoDpornoCo {
 				Document item = find.next();
 				Post post = new Post();
 				post.setAuthor(item.getString("username"));
-				// post.setCoverImage("https://cloudflare-ipfs.com/ipfs/"+item.getString("posterHash"));
+				post.setCoverImageIpfs(item.getString("posterHash"));
+				post.setCreated(item.getDate("posteddate"));
+				post.setId(item.getObjectId("_id").toHexString());
+				post.setPermlink(item.getString("permlink"));
+				post.setScore(-1);
+				post.setTitle(item.getString("title"));
+				post.setVideoIpfs(item.getString("originalHash"));
+				list.add(post);
+			}
+			find.close();
+		} finally {
+			client.close();
+		}
+		return list;
+	}
+	
+	public static synchronized List<Post> listPostsFor(String username, String startId, int count) {
+		if (count<1) {
+			count = 1;
+		}
+		if (count>50) {
+			count = 50;
+		}
+		List<Post> list = new ArrayList<>();
+		MongoClient client = MongoClients.create();
+		try {
+			MongoDatabase db = client.getDatabase("dpdb");
+			MongoCollection<Document> collection = db.getCollection("videos");
+			MongoCursor<Document> find;
+			Bson eqUsername = Filters.eq("username", username);
+			if (startId!=null && !startId.trim().isEmpty()) {
+				Bson lteId = Filters.lte("_id", new ObjectId(startId));
+				Bson and = Filters.and(eqUsername, lteId);
+				find = collection.find(and) //
+						.sort(Sorts.descending("_id"))//
+						.limit(count).iterator();
+			} else {
+				find = collection.find(eqUsername) //
+						.sort(Sorts.descending("_id"))//
+						.limit(count).iterator();
+			}
+			while (find.hasNext()) {
+				Document item = find.next();
+				Post post = new Post();
+				post.setAuthor(item.getString("username"));
 				post.setCoverImageIpfs(item.getString("posterHash"));
 				post.setCreated(item.getDate("posteddate"));
 				post.setId(item.getObjectId("_id").toHexString());

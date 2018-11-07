@@ -1,5 +1,7 @@
 package co.dporn.gmd.shared;
 
+import java.util.Map;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -14,6 +16,18 @@ public interface DpornCoApi {
 	@GET
 	PingResponse ping();
 	
+	@Path("embed/@{authorname}/{permlink}")
+	@GET
+	Map<String, String> embed(@PathParam("authorname") String author, @PathParam("permlink") String permlink);
+	
+	@Path("posts/@{username}/{startId}/{count}")
+	@GET
+	PostListResponse postsFor(@PathParam("username")String username, @PathParam("startId")String startId, @PathParam("count")int count);
+	
+	@Path("posts/@{username}/{count}")
+	@GET
+	PostListResponse postsFor(@PathParam("username")String username, @PathParam("count")int count);
+	
 	@Path("posts/{startId}/{count}")
 	@GET
 	PostListResponse posts(@PathParam("startId")String startId, @PathParam("count")int count);
@@ -25,4 +39,8 @@ public interface DpornCoApi {
 	@Path("blogs/recent")
 	@GET
 	ActiveBlogsResponse blogsRecent();
+	
+	@Path("blog/info/@{username}")
+	@GET
+	ActiveBlogsResponse blogInfo(@PathParam("username")String username);
 }

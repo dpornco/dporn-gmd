@@ -53,9 +53,9 @@ html, body {
 			"autoplay" : false,
 			"controls" : true,
 			"preload" : "none",
-			"loop" : true
+			"loop" : false
 		}, function onPlayerReady() {
-			console.log("Player Ready");
+			//console.log("Player Ready");
 		});
 		//simplistic fail over to next host on 404 errors		
 		player.on('error', function(event) {
