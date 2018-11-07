@@ -13,14 +13,12 @@ import com.google.gwt.user.client.ui.Widget;
 import co.dporn.gmd.client.presenters.ContentPresenter;
 import co.dporn.gmd.client.presenters.ContentPresenter.BlogHeader;
 import co.dporn.gmd.client.presenters.ContentPresenter.ChannelView;
-import gwt.material.design.client.constants.Color;
 import gwt.material.design.client.constants.TextAlign;
 import gwt.material.design.client.ui.MaterialContainer;
 import gwt.material.design.client.ui.MaterialHeader;
 import gwt.material.design.client.ui.MaterialLabel;
 import gwt.material.design.client.ui.MaterialProgress;
 import gwt.material.design.client.ui.MaterialRow;
-import gwt.material.design.client.ui.html.Header;
 
 public class ChannelUi extends Composite implements ChannelView {
 	
