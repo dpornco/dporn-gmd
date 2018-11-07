@@ -1,5 +1,7 @@
 package co.dporn.gmd.servlet;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -88,5 +90,14 @@ public class DpornCoApiImpl implements DpornCoApi {
 		Map<String, String> embed = new HashMap<>();
 		embed.put("embed", DpornCoEmbed.getEmbedHtml(author, permlink));
 		return embed;
+	}
+
+	//TODO: implement short term memory cache
+	@Override
+	public ActiveBlogsResponse blogInfo(String username) {
+		ActiveBlogsResponse response = new ActiveBlogsResponse();
+		response.setInfoMap(SteemJInstance.getBlogDetails(Arrays.asList(username)));
+		response.setAuthors(new ArrayList<>(response.getInfoMap().keySet()));
+		return response;
 	}
 }
