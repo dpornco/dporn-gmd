@@ -39,4 +39,8 @@ public interface DpornCoApi {
 	@Path("blogs/recent")
 	@GET
 	ActiveBlogsResponse blogsRecent();
+	
+	@Path("blog/info/@{username}")
+	@GET
+	ActiveBlogsResponse blogInfo(@PathParam("username")String username);
 }

@@ -14,6 +14,7 @@ import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.app.Routes;
 import co.dporn.gmd.client.views.VideoCardUi;
 import co.dporn.gmd.shared.AccountInfo;
+import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.PostListResponse;
 import gwt.material.design.addins.client.scrollfire.MaterialScrollfire;
 
@@ -130,6 +131,31 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 	public void execute() {
 		GWT.log(this.getClass().getSimpleName() + "#execute");
 		loadPostsFor();
+		model.blogInfo(username).thenAccept(this::setupHeader);
+	}
+	
+	void setupHeader(ActiveBlogsResponse infoMap) {
+		if (!(view instanceof ChannelView)) {
+			return;
+		}
+		if (infoMap.getAuthors().isEmpty()) {
+			return;
+		}
+		if (!infoMap.getInfoMap().containsKey(username)) {
+			return;
+		}
+		AccountInfo info = infoMap.getInfoMap().get(username);
+		BlogHeader blogHeader = ((ChannelView) view).getBlogHeader();
+		blogHeader.setAvatarUrl(Routes.avatarImage(username));
+		blogHeader.setDisplayName(info.getDisplayName());
+		String coverImage = info.getCoverImage();
+		if (coverImage.matches("https?://steemitimages.com/\\d+x\\d+/.*")) {
+			coverImage = coverImage.replaceFirst("^https?://steemitimages.com/\\\\d+x\\\\d+/", "");
+		}
+		coverImage = "https://steemitimages.com/2048x512/" + coverImage;
+		blogHeader.setImageUrl(coverImage);
+		blogHeader.setAbout(info.getAbout());
+		GWT.log("cover image: "+coverImage);
 	}
 
 	private int posX=0;

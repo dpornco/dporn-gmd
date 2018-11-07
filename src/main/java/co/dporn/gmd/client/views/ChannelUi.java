@@ -9,12 +9,13 @@ import com.google.gwt.user.client.ui.IsWidget;
 import com.google.gwt.user.client.ui.Widget;
 
 import co.dporn.gmd.client.presenters.ContentPresenter;
-import co.dporn.gmd.client.presenters.ContentPresenter.ContentView;
+import co.dporn.gmd.client.presenters.ContentPresenter.BlogHeader;
+import co.dporn.gmd.client.presenters.ContentPresenter.ChannelView;
 import gwt.material.design.client.ui.MaterialContainer;
 import gwt.material.design.client.ui.MaterialProgress;
 import gwt.material.design.client.ui.MaterialRow;
 
-public class ChannelUi extends Composite implements ContentView {
+public class ChannelUi extends Composite implements ChannelView {
 	
 	@UiField 
 	protected MaterialProgress progress;
@@ -24,6 +25,9 @@ public class ChannelUi extends Composite implements ContentView {
 
 	@UiField
 	protected MaterialContainer mainContent;
+	
+	@UiField
+	protected ChannelHeaderUi header;
 
 	@Override
 	public IsWidget getContainer() {
@@ -80,5 +84,10 @@ public class ChannelUi extends Composite implements ContentView {
 	@Override
 	public void showLoading(boolean loading) {
 		progress.setVisible(loading);
+	}
+
+	@Override
+	public BlogHeader getBlogHeader() {
+		return header;
 	}
 }
