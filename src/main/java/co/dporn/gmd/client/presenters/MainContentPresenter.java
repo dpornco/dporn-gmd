@@ -7,6 +7,7 @@ import java.util.concurrent.CompletableFuture;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.IsWidget;
@@ -131,8 +132,12 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 					timer[0] = new Timer() {
 						@Override
 						public void run() {
-							activateScrollfire(card);
-							showLoading(false);
+							if (Document.get().getBody().getScrollHeight()<=Window.getClientHeight()) {
+								loadRecentPosts();
+							} else {
+								activateScrollfire(card);
+								showLoading(false);
+							}
 						}
 					};
 					timer[0].schedule(500);
