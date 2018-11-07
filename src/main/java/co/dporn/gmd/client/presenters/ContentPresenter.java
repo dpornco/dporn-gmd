@@ -23,6 +23,7 @@ public interface ContentPresenter extends IsPresenter<ContentView> {
 
 	interface ChannelView extends ContentView {
 		BlogHeader getBlogHeader();
+		void showUserNotFound(String username);
 	}
 
 	interface BlogHeader extends BlogCardView {

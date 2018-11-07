@@ -138,14 +138,13 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 		if (!(view instanceof ChannelView)) {
 			return;
 		}
-		if (infoMap.getAuthors().isEmpty()) {
-			return;
-		}
+		ChannelView channelView = (ChannelView) view;
 		if (!infoMap.getInfoMap().containsKey(username)) {
+			channelView.showUserNotFound(username);
 			return;
 		}
 		AccountInfo info = infoMap.getInfoMap().get(username);
-		BlogHeader blogHeader = ((ChannelView) view).getBlogHeader();
+		BlogHeader blogHeader = channelView.getBlogHeader();
 		blogHeader.setAvatarUrl(Routes.avatarImage(username));
 		blogHeader.setDisplayName(info.getDisplayName());
 		String coverImage = info.getCoverImage();
