@@ -86,4 +86,10 @@ public class AppControllerModelImpl implements AppControllerModel {
 	private void deferred(ScheduledCommand cmd) {
 		Scheduler.get().scheduleDeferred(cmd);
 	}
+
+
+	@Override
+	public CompletableFuture<ActiveBlogsResponse> blogInfo(String username) {
+		return RestClient.get().blogInfo(username);
+	}
 }
