@@ -60,9 +60,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand {
 					resetScrollPosition();
 					deferred(childPresenter);
 				});
-			}
-			if (route.startsWith("@") && !route.contains("/")) {
-				GWT.log("Channel Listing: Verified Only");
+				return;
 			}
 			if (route.startsWith("@") && !route.contains("/") && route.length()>1) {
 				GWT.log("Present: Channel");
@@ -74,21 +72,31 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand {
 					resetScrollPosition();
 					deferred(childPresenter);
 				});
+				return;
+			}
+			if (route.equals("verified")) {
+				GWT.log("List All Verified Only Channels");
+				return;
 			}
 			if (route.startsWith("@") && route.contains("/")) {
 				GWT.log("Present: Post");
+				return;
 			}
 			if (route.equals("search")) {
 				GWT.log("Present: Search");
+				return;
 			}
 			if (route.equals("upload/video")) {
 				GWT.log("Upload: Video");
+				return;
 			}
 			if (route.equals("upload/photos")) {
 				GWT.log("Upload: Photogallery");
+				return;
 			}
 			if (route.equals("settings")) {
 				GWT.log("Settings");
+				return;
 			}
 		}
 	}
