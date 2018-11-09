@@ -26,6 +26,7 @@ public class SteemJInstance {
 	private static final AccountName ACCOUNT_DPORNCO = new AccountName("dpornco");
 	private static final AccountName ACCOUNT_DPORN = new AccountName("dporn");
 	private static final long _30_MINUTES = 1000l*60*30l;
+	private static final long _5_MINUTES = 1000l*60*5l;
 
 	protected SteemJInstance() {
 	}
@@ -125,6 +126,14 @@ public class SteemJInstance {
 			for (FollowApiObject followed : following) {
 				set.add(followed.getFollowing().getName());
 			}
+			try {
+				following = steemJ().getFollowing(new AccountName("dporn"), startAccount, FollowType.BLOG, (short) 10);
+			} catch (SteemCommunicationException | SteemResponseException e) {
+				following = new ArrayList<>();
+			}
+			for (FollowApiObject followed : following) {
+				set.add(followed.getFollowing().getName());
+			}
 			if (!following.isEmpty()) {
 				startAccount = following.get(following.size()-1).getFollowing();
 			}
@@ -133,5 +142,41 @@ public class SteemJInstance {
 		cachedNsfwVerifiedList.addAll(set);
 		cachedNsfwVerifiedSetExpires=System.currentTimeMillis()+_30_MINUTES;
 		return new ArrayList<>(cachedNsfwVerifiedList);
+	}
+
+	private static List<String> cachedNsfwBlackVerifiedList = new ArrayList<>();
+	private static long cachedNsfwBlackVerifiedListExpires = 0l;
+	public static synchronized List<String> getBlacklist() {
+		if (!cachedNsfwBlackVerifiedList.isEmpty() && cachedNsfwBlackVerifiedListExpires > System.currentTimeMillis()) {
+			return new ArrayList<>(cachedNsfwBlackVerifiedList);
+		}
+		Set<String> set = new TreeSet<>();
+		List<FollowApiObject> following;
+		AccountName startAccount = new AccountName("");
+		do {
+			try {
+				following = steemJ().getFollowing(new AccountName("verifiednsfw"), startAccount, FollowType.IGNORE, (short) 10);
+			} catch (SteemCommunicationException | SteemResponseException e) {
+				following = new ArrayList<>();
+			}
+			for (FollowApiObject followed : following) {
+				set.add(followed.getFollowing().getName());
+			}
+			try {
+				following = steemJ().getFollowing(new AccountName("dporn"), startAccount, FollowType.IGNORE, (short) 10);
+			} catch (SteemCommunicationException | SteemResponseException e) {
+				following = new ArrayList<>();
+			}
+			for (FollowApiObject followed : following) {
+				set.add(followed.getFollowing().getName());
+			}
+			if (!following.isEmpty()) {
+				startAccount = following.get(following.size()-1).getFollowing();
+			}
+		} while (following.size() > 1);
+		cachedNsfwBlackVerifiedList.clear();
+		cachedNsfwBlackVerifiedList.addAll(set);
+		cachedNsfwBlackVerifiedListExpires=System.currentTimeMillis()+_5_MINUTES;
+		return new ArrayList<>(cachedNsfwBlackVerifiedList);
 	}
 }
