@@ -26,7 +26,7 @@
 	.avatar-container {
 		margin: 0px;
 		display: inline-block;
-		margin-right: 36px;
+		margin-right: -64px;
 	}
 	
 	.avatar {
@@ -67,6 +67,7 @@
 		margin-left: auto;
 		margin-right: auto;
 		padding: 0px;
+		padding-left: -128px;
 		overflow: hidden;
 		display: inline-block;
 		text-align: center;
