@@ -67,7 +67,8 @@
 		margin-left: auto;
 		margin-right: auto;
 		padding: 0px;
-		padding-left: -128px;
+		padding-left: 68px;
+		padding-right: 68px;
 		overflow: hidden;
 		display: inline-block;
 		text-align: center;
@@ -76,19 +77,19 @@
 	<m:MaterialHeader addStyleNames="{style.header}"
 		ui:field="header">
 		<m:MaterialPanel
-			addStyleNames="{style.info-container}">
+			addStyleNames="{style.info-container} valign-wrapper">
 			<m:MaterialPanel 
 				addStyleNames="{style.avatar-container}">
 				<m:MaterialPanel ui:field="avatarImage"
 					addStyleNames="{style.avatar}"></m:MaterialPanel>
 			</m:MaterialPanel>
 			<m:MaterialPanel hideOn="HIDE_ON_SMALL_DOWN"
-				addStyleNames="{style.info}">
+				addStyleNames="{style.info} valign">
 				<m:MaterialPanel addStyleNames="{style.author-name}">
-					<m:MaterialLabel ui:field="displayName" text="@" addStyleNames="{style.inline}" />
+					<m:MaterialLabel ui:field="displayName" text="" addStyleNames="{style.inline}" />
 				</m:MaterialPanel>
 				<m:MaterialPanel addStyleNames="{style.blurb}">
-					<m:MaterialLabel ui:field="authorBlurb" text="..." addStyleNames="{style.inline}"/>
+					<m:MaterialLabel ui:field="authorBlurb" text="" addStyleNames="{style.inline}"/>
 				</m:MaterialPanel>
 			</m:MaterialPanel>
 		</m:MaterialPanel>

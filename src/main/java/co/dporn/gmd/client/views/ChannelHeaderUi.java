@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.Widget;
 import co.dporn.gmd.client.presenters.ContentPresenter;
 import co.dporn.gmd.client.presenters.ContentPresenter.BlogCardView;
 import co.dporn.gmd.client.presenters.ContentPresenter.BlogHeader;
+import gwt.material.design.client.constants.Color;
 import gwt.material.design.client.ui.MaterialHeader;
 import gwt.material.design.client.ui.MaterialLabel;
 import gwt.material.design.client.ui.MaterialPanel;
@@ -47,23 +48,32 @@ public class ChannelHeaderUi extends Composite implements BlogCardView, BlogHead
 	@Override
 	protected void onLoad() {
 		super.onLoad();
-		GWT.log("onLoad");
 	}
 
 	@Override
-	public void setImageUrl(String url) {
-		url = url.trim();
-		if (!url.toLowerCase().startsWith("url")) {
-			url = "url(\""+url+"\")";
+	public void setImageUrl(String coverImage) {
+		if (coverImage == null || coverImage.trim().isEmpty()) {
+			header.setBackgroundColor(Color.GREY_DARKEN_3);
+			return;
 		}
-		header.getElement().getStyle().setBackgroundImage(url);
+		coverImage = coverImage.trim();
+
+		if (coverImage.matches("https?://steemitimages.com/\\d+x\\d+/.*")) {
+			coverImage = coverImage.replaceFirst("^https?://steemitimages.com/\\d+x\\d+/", "");
+		}
+		coverImage = "https://steemitimages.com/2048x512/" + coverImage;
+
+		if (!coverImage.toLowerCase().startsWith("url")) {
+			coverImage = "url(\"" + coverImage + "\")";
+		}
+		header.getElement().getStyle().setBackgroundImage(coverImage);
 	}
 
 	@Override
 	public void setAvatarUrl(String url) {
 		url = url.trim();
 		if (!url.toLowerCase().startsWith("url")) {
-			url = "url(\""+url+"\")";
+			url = "url(\"" + url + "\")";
 		}
 		avatarImage.getElement().getStyle().setBackgroundImage(url);
 	}

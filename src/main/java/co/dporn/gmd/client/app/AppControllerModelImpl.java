@@ -13,6 +13,7 @@ import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.Post;
 import co.dporn.gmd.shared.PostListResponse;
 import steem.SteemApi;
+import steem.model.DiscussionComment;
 import steem.model.Vote;
 
 public class AppControllerModelImpl implements AppControllerModel {
@@ -23,6 +24,10 @@ public class AppControllerModelImpl implements AppControllerModel {
 		
 	}
 	
+	@Override
+	public CompletableFuture<DiscussionComment> getDiscussionComment(String username, String permlink) {
+		return SteemApi.getContent(username, permlink);
+	}
 	
 	@Override
 	public CompletableFuture<PostListResponse> postsFor(String username) {

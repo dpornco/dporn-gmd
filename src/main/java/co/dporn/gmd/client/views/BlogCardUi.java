@@ -56,7 +56,6 @@ public class BlogCardUi extends Composite implements BlogCardView {
 	@Override
 	protected void onLoad() {
 		super.onLoad();
-		GWT.log("onLoad");
 		MaterialAnimation animation = new MaterialAnimation();
 		animation.setTransition(Transition.ZOOMIN);
 		animation.setDelay(0);

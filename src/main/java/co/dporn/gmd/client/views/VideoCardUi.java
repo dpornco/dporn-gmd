@@ -43,7 +43,6 @@ public class VideoCardUi extends Composite implements VideoCardView {
 	@Override
 	protected void onLoad() {
 		super.onLoad();
-		GWT.log("onLoad");
 		MaterialAnimation animation = new MaterialAnimation();
 		animation.setTransition(Transition.ZOOMIN);
 		animation.setDelay(0);
