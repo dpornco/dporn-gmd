@@ -1,7 +1,8 @@
 <!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
 	xmlns:m='urn:import:gwt.material.design.client.ui'
-	xmlns:ma="urn:import:gwt.material.design.addins.client">
+	xmlns:ma="urn:import:gwt.material.design.addins.client"
+	xmlns:d="urn:import:co.dporn.gmd.client.views">
 	<ui:style>
 	.header {
 		min-height: 200px;
@@ -39,12 +40,13 @@
 	.author-name {
 		margin: 0px;
 		padding: 0px;
-		text-shadow: 0px 0px 4px black;
 		font-size: 2.75em;
-		color: white;
-		text-shadow: black;
 		overflow: hidden;
 		display: block;
+		text-shadow: 0px 0px 4px black;
+		text-shadow: black;
+		color: white;
+		
 	}
 	
 	.blurb {
@@ -55,10 +57,18 @@
 		font-size: 1.75em;
 		overflow: hidden;
 		display: block;
+		text-shadow: 0px 0px 4px black;
+		text-shadow: black;
+		color: white;
+		
 	}
 	
 	.inline {
 		display: inline
+	}
+	
+	.inline-block {
+		display: inline-block;
 	}
 	
 	.info {
@@ -73,23 +83,41 @@
 		display: inline-block;
 		text-align: center;
 	}
+	
+	.btn {
+		margin: 0px;
+		padding-left: 12px;
+		padding-right: 12px;
+	}
+	
 	</ui:style>
 	<m:MaterialHeader addStyleNames="{style.header}"
 		ui:field="header">
 		<m:MaterialPanel
 			addStyleNames="{style.info-container} valign-wrapper">
-			<m:MaterialPanel 
+			<m:MaterialPanel
 				addStyleNames="{style.avatar-container}">
 				<m:MaterialPanel ui:field="avatarImage"
 					addStyleNames="{style.avatar}"></m:MaterialPanel>
 			</m:MaterialPanel>
-			<m:MaterialPanel hideOn="HIDE_ON_SMALL_DOWN"
-				addStyleNames="{style.info} valign">
-				<m:MaterialPanel addStyleNames="{style.author-name}">
-					<m:MaterialLabel ui:field="displayName" text="" addStyleNames="{style.inline}" />
+			<m:MaterialPanel addStyleNames="{style.info} valign">
+				<m:MaterialPanel addStyleNames="{style.author-name}"
+					hideOn="HIDE_ON_SMALL_DOWN">
+					<m:MaterialLabel ui:field="displayName" text=""
+						addStyleNames="{style.inline}" />
 				</m:MaterialPanel>
-				<m:MaterialPanel addStyleNames="{style.blurb}">
-					<m:MaterialLabel ui:field="authorBlurb" text="" addStyleNames="{style.inline}"/>
+				<m:MaterialPanel addStyleNames="{style.blurb}"
+					hideOn="HIDE_ON_SMALL_DOWN">
+					<m:MaterialLabel ui:field="authorBlurb" text=""
+						addStyleNames="{style.inline}" />
+				</m:MaterialPanel>
+				<m:MaterialPanel style="margin: 12px;">
+					<d:DpornLink ui:field="channelLink" visible="false" addStyleNames="{style.btn}"
+						type="OUTLINED" text="CHANNEL" iconType="CAST_CONNECTED"
+						iconPosition="LEFT" />
+					<d:DpornLink ui:field="followLink" visible="false" addStyleNames="{style.btn}"
+						type="OUTLINED" text="FOLLOW" iconType="PEOPLE" enabled="false"
+						iconPosition="LEFT" />
 				</m:MaterialPanel>
 			</m:MaterialPanel>
 		</m:MaterialPanel>

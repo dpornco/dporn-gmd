@@ -150,6 +150,7 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 		String coverImage = info.getCoverImage();
 		blogHeader.setImageUrl(coverImage);
 		blogHeader.setAbout(info.getAbout());
+		blogHeader.setFollowing(false);
 	}
 
 	private int posX=0;

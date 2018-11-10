@@ -27,6 +27,9 @@ public interface ContentPresenter extends IsPresenter<ContentView> {
 	}
 
 	interface BlogHeader extends BlogCardView {
+		void setFollowing(boolean following);
+		void setChannelRoute(String route);
+		void setDisplayName(String displayName);
 		void setAbout(String about);
 	}
 

@@ -23,6 +23,10 @@ public class ChannelHeaderUi extends Composite implements BlogCardView, BlogHead
 	protected MaterialLabel displayName;
 	@UiField
 	protected MaterialLabel authorBlurb;
+	@UiField
+	protected DpornLink followLink;
+	@UiField
+	protected DpornLink channelLink;
 
 	private static _UiBinder uiBinder = GWT.create(_UiBinder.class);
 
@@ -99,5 +103,21 @@ public class ChannelHeaderUi extends Composite implements BlogCardView, BlogHead
 	@Override
 	public void setAbout(String about) {
 		authorBlurb.setText(about);
+	}
+
+	@Override
+	public void setFollowing(boolean following) {
+		followLink.setText(following?"UNFOLLOW":"FOLLOW");
+		followLink.setVisible(true);
+	}
+
+	@Override
+	public void setChannelRoute(String route) {
+		if (route==null || route.trim().isEmpty()) {
+			channelLink.setVisible(false);
+			return;
+		}
+		channelLink.setHref(route);
+		channelLink.setVisible(true);
 	}
 }

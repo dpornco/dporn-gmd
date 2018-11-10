@@ -78,6 +78,7 @@ public class DisplayBlogPostPresenterImpl implements DisplayBlogPostPresenter {
 			DisplayBlogPostView channelView = (DisplayBlogPostView) view;
 			BlogHeader blogHeader = channelView.getBlogHeader();
 			blogHeader.setAbout(comment.getTitle());
+			blogHeader.setChannelRoute(Routes.channel(username));
 		}).thenRun(() -> {
 			view.showLoading(false);
 			if (!(view instanceof DisplayBlogPostView)) {
