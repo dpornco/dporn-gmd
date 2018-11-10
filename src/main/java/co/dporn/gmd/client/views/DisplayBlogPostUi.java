@@ -20,6 +20,8 @@ import gwt.material.design.client.ui.MaterialContainer;
 import gwt.material.design.client.ui.MaterialHeader;
 import gwt.material.design.client.ui.MaterialLabel;
 import gwt.material.design.client.ui.MaterialProgress;
+import gwt.material.design.client.ui.MaterialRow;
+import gwt.material.design.client.ui.MaterialVideo;
 
 public class DisplayBlogPostUi extends Composite implements DisplayBlogPostView {
 	
@@ -34,6 +36,12 @@ public class DisplayBlogPostUi extends Composite implements DisplayBlogPostView 
 	
 	@UiField
 	protected ChannelHeaderUi header;
+	
+	@UiField
+	protected MaterialRow post;
+	
+	@UiField
+	protected MaterialRow comments;
 
 	@Override
 	public IsWidget getContainer() {
@@ -84,8 +92,8 @@ public class DisplayBlogPostUi extends Composite implements DisplayBlogPostView 
 
 	@Override
 	public void setEmbedUrl(String embedUrl) {
-		// TODO Auto-generated method stub
-		
+		post.clear();
+		post.add(new MaterialVideo(embedUrl));
 	}
 
 	@Override
@@ -139,5 +147,10 @@ public class DisplayBlogPostUi extends Composite implements DisplayBlogPostView 
 	public void bindPresenter(ContentPresenter presenter) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public HasWidgets getPostView() {
+		return post;
 	}
 }

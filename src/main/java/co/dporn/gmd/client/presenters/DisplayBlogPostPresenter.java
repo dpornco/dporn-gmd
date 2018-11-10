@@ -1,6 +1,7 @@
 package co.dporn.gmd.client.presenters;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.IsWidget;
 
 import co.dporn.gmd.client.views.IsView;
@@ -16,6 +17,7 @@ public interface DisplayBlogPostPresenter extends ContentPresenter, ScheduledCom
 		void setPostDetails(PostDetails details);
 		void showUserNotFound(String username);
 		BlogHeader getBlogHeader();
+		HasWidgets getPostView();
 	}
 	interface CommentRepliesView extends IsView<DisplayBlogPostPresenter> {}
 	interface PostDetails {}

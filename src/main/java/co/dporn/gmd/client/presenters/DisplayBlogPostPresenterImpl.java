@@ -1,11 +1,10 @@
 package co.dporn.gmd.client.presenters;
 
-import com.google.gwt.core.shared.GWT;
-
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.app.Routes;
 import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
+import gwt.material.design.client.ui.MaterialVideo;
 
 public class DisplayBlogPostPresenterImpl implements DisplayBlogPostPresenter {
 
@@ -53,10 +52,9 @@ public class DisplayBlogPostPresenterImpl implements DisplayBlogPostPresenter {
 
 	@Override
 	public void execute() {
-		GWT.log(this.getClass().getSimpleName()+"#execute");
-		model.blogInfo(username).thenAccept(this::setupHeader).thenRun(()->loadAndDisplayPost());
+		model.blogInfo(username).thenAccept(this::setupHeader).thenRun(() -> loadAndDisplayPost());
 	}
-	
+
 	void setupHeader(ActiveBlogsResponse infoMap) {
 		if (!(view instanceof DisplayBlogPostView)) {
 			return;
@@ -72,13 +70,21 @@ public class DisplayBlogPostPresenterImpl implements DisplayBlogPostPresenter {
 		blogHeader.setDisplayName(info.getDisplayName());
 		String coverImage = info.getCoverImage();
 		blogHeader.setImageUrl(coverImage);
-		blogHeader.setAbout(info.getAbout());
-		GWT.log("cover image: "+coverImage);
 	}
 
 	protected void loadAndDisplayPost() {
-		model.getDiscussionComment(username, permlink).thenAccept((comment)->{
-			view.setTitle(comment.getTitle());
+		model.getDiscussionComment(username, permlink).thenAccept((comment) -> {
+//			view.setTitle(comment.getTitle());
+			DisplayBlogPostView channelView = (DisplayBlogPostView) view;
+			BlogHeader blogHeader = channelView.getBlogHeader();
+			blogHeader.setAbout(comment.getTitle());
+		}).thenRun(() -> {
+			view.showLoading(false);
+			if (!(view instanceof DisplayBlogPostView)) {
+				return;
+			}
+			DisplayBlogPostView channelView = (DisplayBlogPostView) view;
+			channelView.getPostView().add(new MaterialVideo(Routes.embedVideo(username, permlink)));
 		});
 	}
 

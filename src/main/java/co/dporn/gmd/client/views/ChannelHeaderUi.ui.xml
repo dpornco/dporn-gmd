@@ -4,7 +4,7 @@
 	xmlns:ma="urn:import:gwt.material.design.addins.client">
 	<ui:style>
 	.header {
-		height: 200px;
+		min-height: 200px;
 		margin: 0px;
 		padding: 0px;
 		margin-top: -42px;

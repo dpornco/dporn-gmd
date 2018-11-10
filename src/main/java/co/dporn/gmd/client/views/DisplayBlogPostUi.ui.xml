@@ -14,20 +14,25 @@
 		font-size: 2em;
 		font-weight: bold;
 		margin-left: 12px;
+		margin-right: 12px;
+		text-align: center;
 	}
 	
 	.row {
-		min-height: 335px;
+		margin-top: 12px;
+		margin-left: 12px;
+		margin-right: 12px;
 	}
 	</ui:style>
 	<!-- Container -->
 	<m:MaterialContainer ui:field="mainContent"
 		addStyleNames="{style.container}">
 		<dporn:ChannelHeaderUi ui:field="header" />
-		<!-- Cards -->
-		<m:MaterialLabel ui:field="title" text="Channel Posts"
+		<m:MaterialLabel ui:field="title" text=""
 			addStyleNames="{style.label}" />
-		<m:MaterialRow ui:field="recentPosts"
+		<m:MaterialRow ui:field="post"
+			addStyleNames="{style.row}" />
+			<m:MaterialRow ui:field="comments"
 			addStyleNames="{style.row}" />
 		<m:MaterialProgress style="margin-bottom: 32px;" ui:field="progress"></m:MaterialProgress>
 	</m:MaterialContainer>
