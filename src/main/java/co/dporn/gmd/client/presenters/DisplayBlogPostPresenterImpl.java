@@ -84,7 +84,9 @@ public class DisplayBlogPostPresenterImpl implements DisplayBlogPostPresenter {
 				return;
 			}
 			DisplayBlogPostView channelView = (DisplayBlogPostView) view;
-			channelView.getPostView().add(new MaterialVideo(Routes.embedVideo(username, permlink)));
+			MaterialVideo video = new MaterialVideo(Routes.embedVideo(username, permlink));
+			video.setFullscreen(true);
+			channelView.getPostView().add(video);
 		});
 	}
 
