@@ -10,6 +10,8 @@ import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.app.AppControllerModelImpl;
 import co.dporn.gmd.client.presenters.AppPresenterImpl;
 import co.dporn.gmd.client.views.AppLayoutUi;
+import steem.JSON;
+import steem.connect.SteemConnectV2;
 
 public class DpornCoEp implements EntryPoint {
 	@Override
@@ -21,5 +23,6 @@ public class DpornCoEp implements EntryPoint {
 		AppLayoutUi appLayoutView = new AppLayoutUi();
 		AppPresenterImpl mainPresenter = new AppPresenterImpl(historian, model, rootDisplay, appLayoutView);
 		Scheduler.get().scheduleDeferred(mainPresenter);
+		GWT.log(JSON.stringify(SteemConnectV2.initialize("", "", "access_token", "vote", "comment")));
 	}
 }
