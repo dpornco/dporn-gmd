@@ -3,6 +3,8 @@ package co.dporn.gmd.client.presenters;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
@@ -13,6 +15,7 @@ import com.google.gwt.user.client.ui.HasWidgets;
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.views.ChannelUi;
 import co.dporn.gmd.client.views.ContentUi;
+import co.dporn.gmd.client.views.DisplayBlogPostUi;
 
 public class AppPresenterImpl implements AppPresenter, ScheduledCommand {
 	private AppLayoutView view;
@@ -51,7 +54,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand {
 				activeChildPresenter.saveScrollPosition();
 			}
 			if (route.isEmpty()) {
-				GWT.log("Present: Landing Page");
+				GWT.log("Route: Landing Page");
 				deferred(() -> {
 					MainContentPresenter childPresenter = new MainContentPresenter(model, new ContentUi());
 					presenters.put("", childPresenter);
@@ -60,12 +63,10 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand {
 					resetScrollPosition();
 					deferred(childPresenter);
 				});
-			}
-			if (route.startsWith("@") && !route.contains("/")) {
-				GWT.log("Channel Listing: Verified Only");
+				return;
 			}
 			if (route.startsWith("@") && !route.contains("/") && route.length()>1) {
-				GWT.log("Present: Channel");
+				GWT.log("Route: Channel");
 				deferred(() -> {
 					ChannelPresenter childPresenter = new ChannelPresenter(route.substring(1), model, new ChannelUi());
 					presenters.put(route, childPresenter);
@@ -74,21 +75,49 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand {
 					resetScrollPosition();
 					deferred(childPresenter);
 				});
+				return;
+			}
+			if (route.equals("verified")) {
+				GWT.log("List All Verified Only Channels");
+				return;
 			}
 			if (route.startsWith("@") && route.contains("/")) {
-				GWT.log("Present: Post");
+				GWT.log("Route: Display Post");
+				//DisplayBlogPostPresenter
+				deferred(() -> {
+					String username = StringUtils.substringBefore(route, "/").substring(1);
+					String permlink = StringUtils.substringAfter(route, "/");
+					GWT.log(" - username: "+username);
+					GWT.log(" - permlink: "+permlink);
+					DisplayBlogPostPresenter childPresenter = new DisplayBlogPostPresenterImpl(username, permlink, model, new DisplayBlogPostUi());
+					GWT.log("presenters.put(route, childPresenter);");
+					presenters.put(route, childPresenter);
+					GWT.log("activeChildPresenter = childPresenter;");
+					activeChildPresenter = childPresenter;
+					GWT.log("view.setContentPresenter(childPresenter);");
+					view.setContentPresenter(childPresenter);
+					GWT.log("resetScrollPosition();");
+					resetScrollPosition();
+					GWT.log("deferred(childPresenter);");
+					deferred(childPresenter);
+				});
+				return;
 			}
 			if (route.equals("search")) {
-				GWT.log("Present: Search");
+				GWT.log("Route: Search");
+				return;
 			}
 			if (route.equals("upload/video")) {
 				GWT.log("Upload: Video");
+				return;
 			}
 			if (route.equals("upload/photos")) {
 				GWT.log("Upload: Photogallery");
+				return;
 			}
 			if (route.equals("settings")) {
 				GWT.log("Settings");
+				return;
 			}
 		}
 	}

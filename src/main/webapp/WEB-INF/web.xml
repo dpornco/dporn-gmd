@@ -12,7 +12,7 @@
         </init-param>
         <init-param>
             <param-name>logLevel</param-name>
-            <param-value>DEBUG</param-value>
+            <param-value>INFO</param-value>
         </init-param>
 	</filter>
 	<filter-mapping>

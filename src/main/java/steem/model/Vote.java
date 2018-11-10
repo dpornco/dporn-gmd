@@ -4,7 +4,10 @@ import java.math.BigInteger;
 import java.util.Date;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy.SnakeCaseStrategy;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
+@JsonNaming(SnakeCaseStrategy.class)
 public class Vote {
 	private String voter;
 	private BigInteger weight;

@@ -148,13 +148,11 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 		blogHeader.setAvatarUrl(Routes.avatarImage(username));
 		blogHeader.setDisplayName(info.getDisplayName());
 		String coverImage = info.getCoverImage();
-		if (coverImage.matches("https?://steemitimages.com/\\d+x\\d+/.*")) {
-			coverImage = coverImage.replaceFirst("^https?://steemitimages.com/\\\\d+x\\\\d+/", "");
-		}
-		coverImage = "https://steemitimages.com/2048x512/" + coverImage;
 		blogHeader.setImageUrl(coverImage);
 		blogHeader.setAbout(info.getAbout());
-		GWT.log("cover image: "+coverImage);
+		blogHeader.setFollowing(false);
+		blogHeader.setBusyLink(username);
+		blogHeader.setSteemitLink(username);
 	}
 
 	private int posX=0;

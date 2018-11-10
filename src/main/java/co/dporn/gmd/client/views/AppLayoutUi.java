@@ -61,6 +61,9 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 	@Override
 	public void setContentPresenter(ContentPresenter childPresenter) {
 		ContentView view = childPresenter.getContentView();
+		if (view==null) {
+			throw new IllegalStateException("View must implement a non-null getContentView()");
+		}
 		if (container != null) {
 			panel.remove(container.asWidget());
 		}

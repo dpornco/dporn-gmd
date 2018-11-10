@@ -4,6 +4,7 @@ import java.util.concurrent.CompletableFuture;
 
 import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.PostListResponse;
+import steem.model.DiscussionComment;
 
 /**
  * MVP: Model: Models encapsulate the data MODEL and LOGIC. Does <b>NOT</b> know
@@ -31,6 +32,8 @@ public interface AppControllerModel {
 	CompletableFuture<PostListResponse> postsFor(String username);
 
 	CompletableFuture<PostListResponse> postsFor(String username, String startId, int count);
+
+	CompletableFuture<DiscussionComment> getDiscussionComment(String username, String permlink);
 	
 	
 

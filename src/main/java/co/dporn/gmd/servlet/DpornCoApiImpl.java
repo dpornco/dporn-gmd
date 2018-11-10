@@ -40,6 +40,17 @@ public class DpornCoApiImpl implements DpornCoApi {
 		}
 		List<Post> posts = MongoDpornoCo.listPosts(startId, count);
 		Set<String> accountNameList = new HashSet<>();
+		Set<String> blacklist = new HashSet<>(SteemJInstance.getBlacklist());
+		posts.forEach(p->{
+			if (blacklist.contains(p.getAuthor())) {
+				p.setCoverImage(null);
+				p.setCoverImageIpfs(null);
+				p.setPermlink(null);
+				p.setScore(-1000);
+				p.setTitle(null);
+				p.setVideoIpfs(null);
+			}
+		});
 		posts.forEach(p -> accountNameList.add(p.getAuthor()));
 		Map<String, AccountInfo> infoMap = SteemJInstance.getBlogDetails(accountNameList);
 		PostListResponse response = new PostListResponse();
@@ -64,6 +75,14 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 	@Override
 	public PostListResponse postsFor(String username, String startId, int count) {
+		PostListResponse response = new PostListResponse();
+		Set<String> blacklist = new HashSet<>(SteemJInstance.getBlacklist());
+		if (blacklist.contains(username)) {
+			response.setInfoMap(new HashMap<>());
+			response.setPosts(new ArrayList<>());
+			return response;
+		}
+		System.out.println("=== postFor: "+username);
 		if (count < 1) {
 			count = 1;
 		}
@@ -74,7 +93,6 @@ public class DpornCoApiImpl implements DpornCoApi {
 		Set<String> accountNameList = new HashSet<>();
 		posts.forEach(p -> accountNameList.add(p.getAuthor()));
 		Map<String, AccountInfo> infoMap = SteemJInstance.getBlogDetails(accountNameList);
-		PostListResponse response = new PostListResponse();
 		response.setPosts(posts);
 		response.setInfoMap(infoMap);
 		return response;
@@ -95,7 +113,14 @@ public class DpornCoApiImpl implements DpornCoApi {
 	//TODO: implement short term memory cache
 	@Override
 	public ActiveBlogsResponse blogInfo(String username) {
+		System.out.println("=== blogInfo: "+username);
 		ActiveBlogsResponse response = new ActiveBlogsResponse();
+		Set<String> blacklist = new HashSet<>(SteemJInstance.getBlacklist());
+		if (blacklist.contains(username)) {
+			response.setAuthors(new ArrayList<>());
+			response.setInfoMap(new HashMap<>());
+			return response;
+		}
 		response.setInfoMap(SteemJInstance.getBlogDetails(Arrays.asList(username)));
 		response.setAuthors(new ArrayList<>(response.getInfoMap().keySet()));
 		return response;
