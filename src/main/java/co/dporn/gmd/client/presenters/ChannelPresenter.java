@@ -151,6 +151,8 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 		blogHeader.setImageUrl(coverImage);
 		blogHeader.setAbout(info.getAbout());
 		blogHeader.setFollowing(false);
+		blogHeader.setBusyLink(username);
+		blogHeader.setSteemitLink(username);
 	}
 
 	private int posX=0;

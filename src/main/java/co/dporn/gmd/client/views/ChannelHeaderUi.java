@@ -6,12 +6,14 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
 
+import co.dporn.gmd.client.app.Routes;
 import co.dporn.gmd.client.presenters.ContentPresenter;
 import co.dporn.gmd.client.presenters.ContentPresenter.BlogCardView;
 import co.dporn.gmd.client.presenters.ContentPresenter.BlogHeader;
 import gwt.material.design.client.constants.Color;
 import gwt.material.design.client.ui.MaterialHeader;
 import gwt.material.design.client.ui.MaterialLabel;
+import gwt.material.design.client.ui.MaterialLink;
 import gwt.material.design.client.ui.MaterialPanel;
 
 public class ChannelHeaderUi extends Composite implements BlogCardView, BlogHeader {
@@ -27,6 +29,10 @@ public class ChannelHeaderUi extends Composite implements BlogCardView, BlogHead
 	protected DpornLink followLink;
 	@UiField
 	protected DpornLink channelLink;
+	@UiField
+	protected MaterialLink busyLink;
+	@UiField
+	protected MaterialLink steemitLink;
 
 	private static _UiBinder uiBinder = GWT.create(_UiBinder.class);
 
@@ -107,17 +113,39 @@ public class ChannelHeaderUi extends Composite implements BlogCardView, BlogHead
 
 	@Override
 	public void setFollowing(boolean following) {
-		followLink.setText(following?"UNFOLLOW":"FOLLOW");
+		followLink.setText(following ? "UNFOLLOW" : "FOLLOW");
 		followLink.setVisible(true);
 	}
 
 	@Override
 	public void setChannelRoute(String route) {
-		if (route==null || route.trim().isEmpty()) {
+		if (route == null || route.trim().isEmpty()) {
 			channelLink.setVisible(false);
 			return;
 		}
 		channelLink.setHref(route);
 		channelLink.setVisible(true);
+	}
+
+	@Override
+	public void setBusyLink(String username) {
+		if (username == null || username.trim().isEmpty()) {
+			busyLink.setVisible(false);
+			return;
+		}
+		busyLink.setHref(Routes.busyorg(username));
+		busyLink.setTarget("_blank");
+		busyLink.setVisible(true);
+	}
+
+	@Override
+	public void setSteemitLink(String username) {
+		if (username == null || username.trim().isEmpty()) {
+			steemitLink.setVisible(false);
+			return;
+		}
+		steemitLink.setHref(Routes.steemit(username));
+		steemitLink.setTarget("_blank");
+		steemitLink.setVisible(true);
 	}
 }

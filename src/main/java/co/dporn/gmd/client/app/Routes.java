@@ -69,4 +69,18 @@ public class Routes {
 	public static String settings() {
 		return "/settings";
 	}
+
+	public static String busyorg(String username) {
+		if (username==null || username.trim().isEmpty()) {
+			return "https://busy.org/@dpornco";
+		}
+		return "https://busy.org/@"+username.trim();
+	}
+	
+	public static String steemit(String username) {
+		if (username==null || username.trim().isEmpty()) {
+			return "https://steemit.com/@dpornco";
+		}
+		return "https://steemit.com/@"+username.trim();
+	}
 }
