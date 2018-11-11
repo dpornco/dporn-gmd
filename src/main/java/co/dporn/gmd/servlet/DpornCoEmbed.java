@@ -126,10 +126,10 @@ public class DpornCoEmbed {
 		embedHtml = embedHtml.replace("__POSTERHASH__", StringEscapeUtils.escapeXml10(posterImageIpfs));
 		embedHtml = embedHtml.replace("__VIDEOHASH__", StringEscapeUtils.escapeXml10(videoIpfs));
 		// hack to deal with non IPFS poster images
-//		if (isHttp || isHttps) {
-//			embedHtml = embedHtml.replace("https://steemitimages.com/400x400/https://ipfs.io/ipfs/" + posterImageIpfs,
-//					"https://steemitimages.com/400x400/" + posterImageIpfs);
-//		}
+		if (isHttp || isHttps) {
+			embedHtml = embedHtml.replace("https://steemitimages.com/400x400/https://ipfs.io/ipfs/" + posterImageIpfs,
+					"https://steemitimages.com/400x400/" + posterImageIpfs);
+		}
 		synchronized (cache) {
 			if (cache.size() > 1024) {
 				cache.clear();
