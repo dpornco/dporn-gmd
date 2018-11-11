@@ -102,13 +102,16 @@ public class DpornCoEmbed {
 		if (!author.equals(post.getAuthor())) {
 			return null;
 		}
-		String coverImageIpfs = post.getCoverImageIpfs();
-		if (coverImageIpfs == null) {
+		String posterImageIpfs = post.getCoverImageIpfs();
+		if (posterImageIpfs == null) {
 			return null;
 		}
-		coverImageIpfs = coverImageIpfs.trim();
-		if (coverImageIpfs.length() != 46) {
-			return null;
+		posterImageIpfs = posterImageIpfs.trim();
+		String lcPosterImageIpfs = posterImageIpfs.toLowerCase();
+		boolean isHttp = lcPosterImageIpfs.startsWith("http://");
+		boolean isHttps = lcPosterImageIpfs.startsWith("https://");
+		if (posterImageIpfs.length() != 46 && !isHttp && !isHttps) {
+			posterImageIpfs = "QmTTtAi3ZwLdGpEzy2LHpFKQHFqLUrHy61miko9LSbVp72";
 		}
 		String videoIpfs = post.getVideoIpfs();
 		if (videoIpfs == null) {
@@ -120,8 +123,13 @@ public class DpornCoEmbed {
 		}
 		String embedHtml = template();
 		embedHtml = embedHtml.replace("__TITLE__", StringEscapeUtils.escapeXml10(post.getTitle()));
-		embedHtml = embedHtml.replace("__POSTERHASH__", StringEscapeUtils.escapeXml10(coverImageIpfs));
+		embedHtml = embedHtml.replace("__POSTERHASH__", StringEscapeUtils.escapeXml10(posterImageIpfs));
 		embedHtml = embedHtml.replace("__VIDEOHASH__", StringEscapeUtils.escapeXml10(videoIpfs));
+		// hack to deal with non IPFS poster images
+//		if (isHttp || isHttps) {
+//			embedHtml = embedHtml.replace("https://steemitimages.com/400x400/https://ipfs.io/ipfs/" + posterImageIpfs,
+//					"https://steemitimages.com/400x400/" + posterImageIpfs);
+//		}
 		synchronized (cache) {
 			if (cache.size() > 1024) {
 				cache.clear();
