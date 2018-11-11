@@ -13,15 +13,23 @@ import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.Post;
 import co.dporn.gmd.shared.PostListResponse;
 import steem.SteemApi;
+import steem.connect.SteemConnectInit;
+import steem.connect.SteemConnectV2;
+import steem.connect.SteemConnectV2Api;
 import steem.model.DiscussionComment;
 import steem.model.Vote;
 
 public class AppControllerModelImpl implements AppControllerModel {
 	private static final int FEATURED_POST_POOL_SIZE = 16;
 	private static final int CHANNEL_POSTS_INITIAL_SIZE = 8;
+	private SteemConnectV2Api sc2api;
 	
 	public AppControllerModelImpl() {
-		
+		SteemConnectInit initializeParam = new SteemConnectInit();
+		initializeParam.setApp("DPorn");
+		initializeParam.setCallbackUrl("http://localhost:8080/auth/");
+		initializeParam.setScopes("vote", "comment");
+		sc2api = SteemConnectV2.initialize(initializeParam);
 	}
 	
 	@Override
@@ -96,5 +104,11 @@ public class AppControllerModelImpl implements AppControllerModel {
 	@Override
 	public CompletableFuture<ActiveBlogsResponse> blogInfo(String username) {
 		return RestClient.get().blogInfo(username);
+	}
+
+	@Override
+	public CompletableFuture<Boolean> autoLogin() {
+		
+		return null;
 	}
 }

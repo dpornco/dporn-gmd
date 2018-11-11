@@ -35,6 +35,6 @@ public interface AppControllerModel {
 
 	CompletableFuture<DiscussionComment> getDiscussionComment(String username, String permlink);
 	
-	
+	CompletableFuture<Boolean> autoLogin();
 
 }
