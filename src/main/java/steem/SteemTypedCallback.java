@@ -20,8 +20,8 @@ public interface SteemTypedCallback<T, U extends ObjectMapper<T>> {
 		onResult(jsonError, jsonResult);
 	}
 
-	default SteemJsCallback call() {
-		return new SteemJsCallback() {
+	default JsCallback call() {
+		return new JsCallback() {
 			@Override
 			public void onResult(JavaScriptObject error, JavaScriptObject result) {
 				SteemTypedCallback.this.onResult(error, result);
