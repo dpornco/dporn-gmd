@@ -13,11 +13,18 @@
 					url="https://dporn.co/imgs/dpornsitelogo.png" />
 				<m:MaterialNavBrand paddingLeft="4"
 					text="DPORNCO" />
-				<m:MaterialNavSection float="RIGHT">
-					<m:MaterialLink iconType="NOTIFICATIONS" />
-					<m:MaterialImage circle="true" width="40px"
-						height="40px" marginTop="12" marginRight="12"
-						url="https://steemitimages.com/512x512/https://steemitimages.com/DQmWfuZCW4vcA3Rara4h96mqWN9KMn3LEKJBBKzvDnTXojC/muksihs%20in%20jail.jpg" />
+				<m:MaterialNavSection
+					style="padding-right: 8px;" float="RIGHT">
+					<m:MaterialLabel hideOn="HIDE_ON_MED_DOWN"
+						ui:field="displayName" text=""
+						style="margin-right: 16px; font-size: 150%; font-weight: bold;" />
+					<m:MaterialImage ui:field="avatar" circle="true"
+						width="40px" height="40px" marginTop="12" marginRight="12"
+						url="https://steemitimages.com/u/null/avatar/medium"
+						backgroundColor="BLACK" />
+					<m:MaterialButton ui:field="account" text="Login"
+						type="OUTLINED"
+						style="padding-left: 12px; padding-right: 12px; margin-right: 12px;" />
 				</m:MaterialNavSection>
 			</m:MaterialNavBar>
 		</m:MaterialHeader>
@@ -29,15 +36,20 @@
 				iconType="HOME" href="/" />
 			<m:MaterialLink ui:field="linkSearch" text="Search"
 				iconType="SEARCH" href="/search" />
-				<m:MaterialLink ui:field="linkPostErotica" href="/upload/erotica" enabled="false"
-				text="Post Erotica" iconType="FORMAT_ALIGN_JUSTIFY" separator="true" />
-			<m:MaterialLink ui:field="linkUploadPhotos" href="/upload/photos" enabled="false"
-				text="Post Photogallery" iconType="ADD_A_PHOTO" separator="true" />
-			<m:MaterialLink ui:field="linkUploadVideo" href="/upload/video" text="Upload Video"
-				iconType="FILE_UPLOAD" separator="true" />
-			<m:MaterialLink ui:field="linkVerified" href="/verified" text="Verified NSFW" iconType="PEOPLE"
+			<m:MaterialLink ui:field="linkPostErotica"
+				href="/upload/erotica" enabled="false" text="Post Erotica"
+				iconType="FORMAT_ALIGN_JUSTIFY" separator="true" />
+			<m:MaterialLink ui:field="linkUploadPhotos"
+				href="/upload/photos" enabled="false" text="Post Photogallery"
+				iconType="ADD_A_PHOTO" separator="true" />
+			<m:MaterialLink ui:field="linkUploadVideo"
+				href="/upload/video" text="Upload Video" iconType="FILE_UPLOAD"
 				separator="true" />
-			<m:MaterialLink ui:field="linkSettings" href="/settings" text="Settings" iconType="COLLECTIONS" />
+			<m:MaterialLink ui:field="linkVerified"
+				href="/verified" text="Verified NSFW" iconType="PEOPLE"
+				separator="true" />
+			<m:MaterialLink ui:field="linkSettings"
+				href="/settings" text="Settings" iconType="COLLECTIONS" />
 			<!-- <m:MaterialLink text="Send Feedback" -->
 			<!-- iconType="ANNOUNCEMENT" href="https://discord.gg/28NwJ8u" target="_blank"/> -->
 			<m:MaterialLink text="Get Verified"

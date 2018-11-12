@@ -16,7 +16,7 @@ import steem.model.Vote;
 public class SteemApi {
 
 	@JsMethod(name = "getContent")
-	private static native void _getContent(String author, String permlink, SteemJsCallback jscb);
+	private static native void _getContent(String author, String permlink, JsCallback jscb);
 	public static interface DiscussionCommentMapper extends ObjectMapper<DiscussionComment>{}
 	@JsOverlay
 	public static CompletableFuture<DiscussionComment> getContent(String username, String permlink) {
@@ -43,7 +43,7 @@ public class SteemApi {
 
 	@JsMethod(name = "getActiveVotes")
 	private static native void _getActiveVotes(String username, String permlink,
-			SteemJsCallback jscb);
+			JsCallback jscb);
 	public static interface VoteMapper extends ObjectMapper<Vote>{}
 	public static interface VoteListMapper extends ObjectMapper<List<Vote>>{};
 	@JsOverlay

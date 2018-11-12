@@ -16,10 +16,10 @@ public class DpornCoEp implements EntryPoint {
 	public void onModuleLoad() {
 		PushStateHistorian.setRelativePath("/");
 		PushStateHistorian historian = GWT.create(PushStateHistorian.class);
-		AppControllerModel model = new AppControllerModelImpl();
+		AppControllerModel model = new AppControllerModelImpl(historian);
 		RootPanel rootDisplay = RootPanel.get();
 		AppLayoutUi appLayoutView = new AppLayoutUi();
-		AppPresenterImpl mainPresenter = new AppPresenterImpl(historian, model, rootDisplay, appLayoutView);
+		AppPresenterImpl mainPresenter = new AppPresenterImpl(model, rootDisplay, appLayoutView);
 		Scheduler.get().scheduleDeferred(mainPresenter);
 	}
 }

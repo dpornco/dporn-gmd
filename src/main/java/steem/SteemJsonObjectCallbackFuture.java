@@ -6,6 +6,6 @@ import jsinterop.annotations.JsFunction;
 
 @FunctionalInterface
 @JsFunction
-public interface SteemJsCallback {
+public interface SteemJsonObjectCallbackFuture {
 	void onResult(JavaScriptObject error, JavaScriptObject result);
 }

@@ -9,8 +9,8 @@ public interface SteemJsonCallback {
 		jsonResult(error == null ? null : JsonUtils.stringify(error), //
 				result == null ? null : JsonUtils.stringify(result));
 	}
-	default SteemJsCallback call() {
-		return new SteemJsCallback() {
+	default JsCallback call() {
+		return new JsCallback() {
 			@Override
 			public void onResult(JavaScriptObject error, JavaScriptObject result) {
 				SteemJsonCallback.this.onResult(error, result);

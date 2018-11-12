@@ -7,6 +7,9 @@ public class Routes {
 	protected Routes() {
 	}
 
+	public static String avatarImageNotLoggedIn() {
+		return avatarImage("null");
+	}
 	public static String avatarImage(String username) {
 		return "https://steemitimages.com/u/" + username + "/avatar/medium";
 	}

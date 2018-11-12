@@ -2,6 +2,7 @@ package co.dporn.gmd.client.app;
 
 import java.util.concurrent.CompletableFuture;
 
+import co.dporn.gmd.client.presenters.RoutePresenter;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.PostListResponse;
 import steem.model.DiscussionComment;
@@ -35,6 +36,17 @@ public interface AppControllerModel {
 
 	CompletableFuture<DiscussionComment> getDiscussionComment(String username, String permlink);
 	
-	
+	CompletableFuture<Void> autoLogin();
 
+	boolean isLoggedIn();
+
+	void login();
+
+	void fireRouteState();
+
+	void setRoutePresenter(RoutePresenter presenter);
+
+	void showAccountSettings();
+
+	void logout();
 }

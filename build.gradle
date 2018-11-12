@@ -93,7 +93,7 @@ gwt {
 		failOnError = false;
 		bindAddress = "0.0.0.0";
 	}
-	maxHeapSize = "8192M";
+	maxHeapSize = "2048M";
 }
 
 configurations {

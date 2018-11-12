@@ -6,6 +6,12 @@
 <urlrewrite>
 
 	<rule>
+		<note>Steem Connect Auth Callback</note>
+		<from>^/auth/.*</from>
+		<to>/</to>
+	</rule>
+
+	<rule>
 		<note>Application assets</note>
 		<from>.+(/dpornco_application/.+)</from>
 		<to type="redirect">$1</to>
