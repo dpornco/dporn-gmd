@@ -7,37 +7,47 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.core.shared.GWT;
-import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.place.shared.PlaceHistoryHandler.Historian;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasWidgets;
 
 import co.dporn.gmd.client.app.AppControllerModel;
+import co.dporn.gmd.client.app.Routes;
 import co.dporn.gmd.client.views.ChannelUi;
 import co.dporn.gmd.client.views.ContentUi;
 import co.dporn.gmd.client.views.DisplayBlogPostUi;
 
-public class AppPresenterImpl implements AppPresenter, ScheduledCommand {
+public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePresenter {
 	private AppLayoutView view;
 	private HasWidgets rootDisplay;
+	public void setRootDisplay(HasWidgets rootDisplay) {
+		this.rootDisplay = rootDisplay;
+	}
+
 	private AppControllerModel model;
-	//TODO: This belongs in the appcontrollermodel
-	private Historian historian;
 
 	public AppPresenterImpl() {
+	}
+	
+	@Override
+	public void account() {
+		if (model.isLoggedIn()) {
+			model.logout();
+		} else {
+			model.login();
+		}
 	}
 
 	private final Map<String, ContentPresenter> presenters = new HashMap<>();
 	private ContentPresenter activeChildPresenter;
 
-	//TODO: This belongs in the appcontrollermodel
-	public void onRouteChange(ValueChangeEvent<String> routeEvent) {
-		String route = routeEvent.getValue();
-		loadRoutePresenter(route);
-	}
-
-	private void loadRoutePresenter(String route) {
+	@Override
+	public void loadRoutePresenter(String route) {
 		GWT.log("=== routeEvent: " + route);
+		//auth is a special non-display route
+		if (route.startsWith("auth/")) {
+			return;
+		}
+		
 		if (presenters.containsKey(route)) {
 			deferred(() -> {
 				if (activeChildPresenter != presenters.get(route)) {
@@ -126,18 +136,17 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand {
 		Window.scrollTo(0, 0);
 	}
 
-	public AppPresenterImpl(Historian historian, AppControllerModel model, HasWidgets rootDisplay,
+	public AppPresenterImpl(AppControllerModel model, HasWidgets rootDisplay,
 			AppLayoutView appLayoutView) {
-		this.historian = historian;
-		this.rootDisplay = rootDisplay;
-		this.view = appLayoutView;
-		this.model = model;
-		this.historian.addValueChangeHandler(this::onRouteChange);
+		setRootDisplay(rootDisplay);
+		setModel(model);
+		setView(appLayoutView);
 	}
-
+	
 	@Override
 	public void setView(AppLayoutView view) {
 		this.view = view;
+		this.view.bindPresenter(this);
 	}
 
 	@Override
@@ -151,12 +160,29 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand {
 		rootDisplay.clear();
 		rootDisplay.add(view.asWidget());
 		deferred(() -> {
-			loadRoutePresenter(historian.getToken());
+			model.fireRouteState();
 		});
 	}
 
 	@Override
 	public void setModel(AppControllerModel model) {
 		this.model = model;
+		this.model.setRoutePresenter(this);
+	}
+
+	@Override
+	public void setUserInfo(ActiveUserInfo info) {
+		if (info==null) {
+			GWT.log("setUserInfo: not logged in");
+			view.setAvatar(Routes.avatarImageNotLoggedIn());
+			view.setDisplayname("Not Logged In");
+			view.setUsername(null);
+			return;
+		}
+		GWT.log("setUserInfo: "+info.getUsername()+" => "+info.getDisplayname());
+		view.setAvatar(Routes.avatarImage(info.getUsername()));
+		view.setDisplayname(info.getDisplayname());
+		//TODO: FUTURE: view.setUsername("@"+info.getUsername());
+		view.setUsername("Logout");
 	}
 }

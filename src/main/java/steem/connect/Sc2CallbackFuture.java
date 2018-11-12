@@ -2,6 +2,7 @@ package steem.connect;
 
 import java.util.concurrent.CompletableFuture;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.json.client.JSONObject;
@@ -23,8 +24,13 @@ public class Sc2CallbackFuture {
 		callback = new Sc2BiCallback() {
 			@Override
 			public void onResult(JavaScriptObject error, JavaScriptObject result) {
+				GWT.log("Sc2BiCallback#onResult");
 				if (error != null) {
 					future.completeExceptionally(new RuntimeException(JsonUtils.stringify(error)));
+					return;
+				}
+				if (result==null) {
+					future.completeExceptionally(new RuntimeException("NULL RESPONSE OBJECT"));
 					return;
 				}
 				try {
