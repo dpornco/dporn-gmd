@@ -15,7 +15,7 @@ import co.dporn.gmd.client.views.IsView;
 public interface AppPresenter extends IsPresenter<AppLayoutView>, ScheduledCommand {
 
 	public interface AppLayoutView extends IsView<AppPresenter> {
-		void setContentPresenter(ContentPresenter childPresenter);
+		void setChildPresenter(IsPresenter<?> childPresenter);
 		void setUsername(String username);
 		void setDisplayname(String displayname);
 		void setAvatar(String avatarUrl);

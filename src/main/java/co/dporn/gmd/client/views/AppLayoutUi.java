@@ -12,6 +12,7 @@ import co.dporn.gmd.client.presenters.AppPresenter;
 import co.dporn.gmd.client.presenters.AppPresenter.AppLayoutView;
 import co.dporn.gmd.client.presenters.ContentPresenter;
 import co.dporn.gmd.client.presenters.ContentPresenter.ContentView;
+import co.dporn.gmd.client.presenters.IsPresenter;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialImage;
 import gwt.material.design.client.ui.MaterialLabel;
@@ -89,20 +90,6 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 	}
 
 	@Override
-	public void setContentPresenter(ContentPresenter childPresenter) {
-		ContentView view = childPresenter.getContentView();
-		if (view==null) {
-			throw new IllegalStateException("View must implement a non-null getContentView()");
-		}
-		if (container != null) {
-			panel.remove(container.asWidget());
-		}
-		int sidenavix = panel.getWidgetIndex(sidenav);
-		panel.insert(view.asWidget(), sidenavix + 1);
-		container = view;
-	}
-
-	@Override
 	public void setUsername(String username) {
 		if (username==null||username.trim().isEmpty()) {
 			this.account.setText("Login");
@@ -127,5 +114,23 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 		linkUploadPhotos.setEnabled(enabled);
 		linkUploadVideo.setEnabled(enabled);
 		linkSettings.setEnabled(enabled);		
+	}
+
+	@Override
+	public void setChildPresenter(IsPresenter<?> childPresenter) {
+		if (!(childPresenter instanceof ContentPresenter)) {
+			throw new IllegalStateException("Presenter must implement interface ContentPresenter");
+		}
+		ContentView view = ((ContentPresenter)childPresenter).getContentView();
+		if (view==null) {
+			throw new IllegalStateException("View must implement a non-null getContentView()");
+		}
+		if (container != null) {
+			panel.remove(container.asWidget());
+		}
+		int sidenavix = panel.getWidgetIndex(sidenav);
+		panel.insert(view.asWidget(), sidenavix + 1);
+		container = view;
+		
 	}
 }

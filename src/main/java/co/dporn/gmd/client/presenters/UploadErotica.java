@@ -1,7 +1,5 @@
 package co.dporn.gmd.client.presenters;
 
-import java.util.List;
-
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 
 import co.dporn.gmd.client.presenters.UploadErotica.UploadEroticaView;
@@ -17,6 +15,5 @@ public interface UploadErotica extends IsPresenter<UploadEroticaView>, Scheduled
 	void submit();
 	void cancel();
 	void reset();
-	void previousTagSet();
-	void useTagSet(List<String> tags);
+	void showPreviousTags();
 }

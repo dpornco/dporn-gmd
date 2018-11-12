@@ -24,11 +24,12 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 	private AppControllerModel model;
 	private String username;
 
-	//TODO: Load and display full account info in banner header like dtube/busy/steem does.
+	// TODO: Load and display full account info in banner header like
+	// dtube/busy/steem does.
 	public ChannelPresenter(String username, AppControllerModel model, ContentView view) {
 		this.view = view;
 		this.model = model;
-		this.username=username;
+		this.username = username;
 	}
 
 	@Override
@@ -62,7 +63,7 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 		}
 		listPosts.thenAccept((l) -> {
 			GWT.log("Channel Recent posts: " + l.getPosts().size());
-			if (l.getPosts().size()<2 && lastRecentId!=null) {
+			if (l.getPosts().size() < 2 && lastRecentId != null) {
 				showLoading(false);
 				return;
 			}
@@ -99,7 +100,7 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 					timer[0] = new Timer() {
 						@Override
 						public void run() {
-							if (Document.get().getBody().getScrollHeight()<=Window.getClientHeight()) {
+							if (Document.get().getBody().getScrollHeight() <= Window.getClientHeight()) {
 								loadPostsFor();
 							} else {
 								activateScrollfire(card);
@@ -117,7 +118,7 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 		getContentView().showLoading(loading);
 	}
 
-		@Override
+	@Override
 	public ContentView getContentView() {
 		return view;
 	}
@@ -126,14 +127,14 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 	public void setModel(AppControllerModel model) {
 		this.model = model;
 	}
-	
+
 	@Override
 	public void execute() {
 		GWT.log(this.getClass().getSimpleName() + "#execute");
 		loadPostsFor();
 		model.blogInfo(username).thenAccept(this::setupHeader);
 	}
-	
+
 	void setupHeader(ActiveBlogsResponse infoMap) {
 		if (!(view instanceof ChannelView)) {
 			return;
@@ -155,15 +156,17 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 		blogHeader.setSteemitLink(username);
 	}
 
-	private int posX=0;
-	private int posY=0;
+	private int posX = 0;
+	private int posY = 0;
+
 	@Override
 	public void saveScrollPosition() {
-		posX=Window.getScrollLeft();
-		posY=Window.getScrollTop();
+		posX = Window.getScrollLeft();
+		posY = Window.getScrollTop();
 	}
 
 	@Override
 	public void restoreScrollPosition() {
 		Window.scrollTo(posX, posY);
-	}}
+	}
+}

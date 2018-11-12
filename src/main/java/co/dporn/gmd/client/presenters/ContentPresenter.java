@@ -56,10 +56,5 @@ public interface ContentPresenter extends IsPresenter<ContentView> {
 	public static interface PhotoGalleryCardView extends BlogCardView {
 		void setGallerySourceUrl(String url);
 	}
-
 	ContentView getContentView();
-
-	void saveScrollPosition();
-
-	void restoreScrollPosition();
 }

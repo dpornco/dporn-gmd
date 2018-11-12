@@ -12,9 +12,11 @@ import com.google.gwt.user.client.ui.HasWidgets;
 
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.app.Routes;
+import co.dporn.gmd.client.presenters.UploadErotica.UploadEroticaView;
 import co.dporn.gmd.client.views.ChannelUi;
 import co.dporn.gmd.client.views.ContentUi;
 import co.dporn.gmd.client.views.DisplayBlogPostUi;
+import co.dporn.gmd.client.views.UploadEroticaUi;
 
 public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePresenter {
 	private AppLayoutView view;
@@ -37,8 +39,8 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 		}
 	}
 
-	private final Map<String, ContentPresenter> presenters = new HashMap<>();
-	private ContentPresenter activeChildPresenter;
+	private final Map<String, IsPresenter<?>> presenters = new HashMap<>();
+	private IsPresenter<?> activeChildPresenter;
 
 	@Override
 	public void loadRoutePresenter(String route) {
@@ -55,7 +57,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 						activeChildPresenter.saveScrollPosition();
 					}
 					activeChildPresenter = presenters.get(route);
-					view.setContentPresenter(presenters.get(route));
+					view.setChildPresenter(presenters.get(route));
 					deferred(() -> activeChildPresenter.restoreScrollPosition());
 				}
 			});
@@ -69,7 +71,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 					MainContentPresenter childPresenter = new MainContentPresenter(model, new ContentUi());
 					presenters.put("", childPresenter);
 					activeChildPresenter = childPresenter;
-					view.setContentPresenter(childPresenter);
+					view.setChildPresenter(childPresenter);
 					resetScrollPosition();
 					deferred(childPresenter);
 				});
@@ -81,7 +83,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 					ChannelPresenter childPresenter = new ChannelPresenter(route.substring(1), model, new ChannelUi());
 					presenters.put(route, childPresenter);
 					activeChildPresenter = childPresenter;
-					view.setContentPresenter(childPresenter);
+					view.setChildPresenter(childPresenter);
 					resetScrollPosition();
 					deferred(childPresenter);
 				});
@@ -105,7 +107,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 					GWT.log("activeChildPresenter = childPresenter;");
 					activeChildPresenter = childPresenter;
 					GWT.log("view.setContentPresenter(childPresenter);");
-					view.setContentPresenter(childPresenter);
+					view.setChildPresenter(childPresenter);
 					GWT.log("resetScrollPosition();");
 					resetScrollPosition();
 					GWT.log("deferred(childPresenter);");
@@ -123,6 +125,23 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 			}
 			if (route.equals("upload/photos")) {
 				GWT.log("Upload: Photogallery");
+				return;
+			}
+			if (route.equals("upload/erotica")) {
+				GWT.log("Upload: Erotica");
+				deferred(() -> {
+					UploadEroticaView childView=new UploadEroticaUi();
+					UploadEroticaImpl childPresenter = new UploadEroticaImpl(model, childView);
+					presenters.put(route, childPresenter);
+					GWT.log("activeChildPresenter = childPresenter;");
+					activeChildPresenter = childPresenter;
+					GWT.log("view.setContentPresenter(childPresenter);");
+					view.setChildPresenter(childPresenter);
+					GWT.log("resetScrollPosition();");
+					resetScrollPosition();
+					GWT.log("deferred(childPresenter);");
+					deferred(childPresenter);
+				});
 				return;
 			}
 			if (route.equals("settings")) {
@@ -186,5 +205,19 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 		//TODO: FUTURE: view.setUsername("@"+info.getUsername());
 		view.setUsername("Logout");
 		view.enableContentCreatorRoles(true);
+	}
+
+	private int posX = 0;
+	private int posY = 0;
+
+	@Override
+	public void saveScrollPosition() {
+		posX = Window.getScrollLeft();
+		posY = Window.getScrollTop();
+	}
+
+	@Override
+	public void restoreScrollPosition() {
+		Window.scrollTo(posX, posY);
 	}
 }

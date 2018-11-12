@@ -9,8 +9,9 @@ import co.dporn.gmd.client.views.IsView;
 public interface IsPresenter<V extends IsView<?>> {
 
 	void setModel(AppControllerModel model);
-	
 	void setView(V view);
+	void saveScrollPosition();
+	void restoreScrollPosition();
 
 	default void deferred(ScheduledCommand cmd) {
 		Scheduler.get().scheduleDeferred(cmd);
