@@ -1,5 +1,6 @@
 package co.dporn.gmd.client.app;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import co.dporn.gmd.client.presenters.RoutePresenter;
@@ -49,4 +50,6 @@ public interface AppControllerModel {
 	void showAccountSettings();
 
 	void logout();
+
+	CompletableFuture<List<String>> tagsOracle(String query, int limit);
 }

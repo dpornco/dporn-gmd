@@ -14,6 +14,18 @@ import steem.model.Vote;
 
 @JsType(namespace = "steem", name = "api", isNative = true)
 public class SteemApi {
+	
+	
+	@JsMethod(name="getTrendingTags")
+	private static native void _getTrendingTags(String afterTags, int limit, JsCallback jscb);
+	
+	/**
+	 * steem api only responds with an empty array
+	 * @param author
+	 * @param jscb
+	 */
+	@JsMethod(name="getTagsUsedByAuthor")
+	private static native void _getTagsUsedByAuthor(String author, JsCallback jscb);
 
 	@JsMethod(name = "getContent")
 	private static native void _getContent(String author, String permlink, JsCallback jscb);

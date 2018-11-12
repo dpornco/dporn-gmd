@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.lang3.StringUtils;
@@ -138,7 +139,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 					displayName = profile.getName();
 				}
 			}
-			loggedIn=true;
+			loggedIn = true;
 			routePresenter.setUserInfo(new ActiveUserInfo(me.getUser(), displayName == null ? "" : displayName.trim()));
 		});
 	}
@@ -260,5 +261,26 @@ public class AppControllerModelImpl implements AppControllerModel {
 			sc2api.removeAccessToken();
 			routePresenter.setUserInfo(null);
 		});
+	}
+
+	@Override
+	public CompletableFuture<List<String>> tagsOracle(final String prefix, int limit) {
+		GWT.log("suggest: "+prefix+" ["+limit+"]");
+		final List<String> tags = new ArrayList<>();
+		CompletableFuture<List<String>> future = new CompletableFuture<>();
+		RestClient.get().suggest(prefix==null?"":prefix.trim()).thenAccept(r -> {
+			for (String tag: r.getTags()) {
+				tags.add(tag);
+				if (tags.size()>=limit) {
+					break;
+				}
+			}
+			tags.add(prefix);
+			future.complete(new ArrayList<>(new TreeSet<>(tags)));
+		}).exceptionally((e) -> {
+			future.completeExceptionally(e);
+			return null;
+		});
+		return future;
 	}
 }

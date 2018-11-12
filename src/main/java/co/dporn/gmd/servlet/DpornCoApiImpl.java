@@ -19,6 +19,7 @@ import co.dporn.gmd.shared.DpornCoApi;
 import co.dporn.gmd.shared.PingResponse;
 import co.dporn.gmd.shared.Post;
 import co.dporn.gmd.shared.PostListResponse;
+import co.dporn.gmd.shared.SuggestTagsResponse;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -124,5 +125,21 @@ public class DpornCoApiImpl implements DpornCoApi {
 		response.setInfoMap(SteemJInstance.getBlogDetails(Arrays.asList(username)));
 		response.setAuthors(new ArrayList<>(response.getInfoMap().keySet()));
 		return response;
+	}
+
+	@Override
+	public SuggestTagsResponse suggest(String tag) {
+		if (tag==null) {
+			tag = "";
+		}
+		tag = tag.trim().toLowerCase();
+		SuggestTagsResponse response = new SuggestTagsResponse();
+		response.setTags(MongoDpornoCo.getMatchingTags(tag));
+		return response;
+	}
+
+	@Override
+	public SuggestTagsResponse suggest() {
+		return suggest("");
 	}
 }

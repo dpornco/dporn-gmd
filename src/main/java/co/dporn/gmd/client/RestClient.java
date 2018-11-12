@@ -15,6 +15,7 @@ import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.DpornCoApi;
 import co.dporn.gmd.shared.PingResponse;
 import co.dporn.gmd.shared.PostListResponse;
+import co.dporn.gmd.shared.SuggestTagsResponse;
 
 public class RestClient {
 	
@@ -33,6 +34,13 @@ public class RestClient {
 	}
 
 	private final DpornCoRestApi rest;
+	
+	public CompletableFuture<SuggestTagsResponse> suggest(String prefix) {
+		GWT.log("-> suggest: "+prefix);
+		MethodCallbackAsFuture<SuggestTagsResponse> callback = new MethodCallbackAsFuture<>();
+		call(callback).suggest(prefix);
+		return callback.getFuture();
+	}
 	
 	public CompletableFuture<PingResponse> ping() {
 		MethodCallbackAsFuture<PingResponse> callback = new MethodCallbackAsFuture<>();

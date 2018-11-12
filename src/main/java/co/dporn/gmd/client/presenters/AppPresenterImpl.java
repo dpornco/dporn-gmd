@@ -1,7 +1,12 @@
 package co.dporn.gmd.client.presenters;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -9,13 +14,16 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.SuggestOracle;
 
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.app.Routes;
+import co.dporn.gmd.client.app.TagSuggestion;
 import co.dporn.gmd.client.presenters.UploadErotica.UploadEroticaView;
 import co.dporn.gmd.client.views.ChannelUi;
 import co.dporn.gmd.client.views.ContentUi;
 import co.dporn.gmd.client.views.DisplayBlogPostUi;
+import co.dporn.gmd.client.views.IsView;
 import co.dporn.gmd.client.views.UploadEroticaUi;
 
 public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePresenter {
@@ -39,8 +47,22 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 		}
 	}
 
-	private final Map<String, IsPresenter<?>> presenters = new HashMap<>();
-	private IsPresenter<?> activeChildPresenter;
+	private final Map<String, IsChildPresenter<? extends IsView<?>>> presenters = new HashMap<>();
+	private IsChildPresenter<? extends IsView<?>> activeChildPresenter;
+	private SuggestOracle tagOracle=new SuggestOracle() {
+		@Override
+		public void requestSuggestions(Request request, Callback callback) {
+			CompletableFuture<List<String>> ftags = model.tagsOracle(request.getQuery(), request.getLimit());
+			ftags.thenAccept(tags->{
+				List<TagSuggestion> suggestions=new ArrayList<>();
+				for (String tag: tags) {
+					suggestions.add(new TagSuggestion(tag));
+				}
+				Response response=new Response(suggestions);
+				callback.onSuggestionsReady(request, response);
+			});
+		}
+	};
 
 	@Override
 	public void loadRoutePresenter(String route) {
@@ -130,7 +152,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 			if (route.equals("upload/erotica")) {
 				GWT.log("Upload: Erotica");
 				deferred(() -> {
-					UploadEroticaView childView=new UploadEroticaUi();
+					UploadEroticaView childView=new UploadEroticaUi(tagOracle,new TreeSet<>(Arrays.asList("dpornco", "nsfw")));
 					UploadEroticaImpl childPresenter = new UploadEroticaImpl(model, childView);
 					presenters.put(route, childPresenter);
 					GWT.log("activeChildPresenter = childPresenter;");

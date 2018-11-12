@@ -10,9 +10,7 @@ import com.wallissoftware.pushstate.client.PushStateHistorian;
 
 import co.dporn.gmd.client.presenters.AppPresenter;
 import co.dporn.gmd.client.presenters.AppPresenter.AppLayoutView;
-import co.dporn.gmd.client.presenters.ContentPresenter;
-import co.dporn.gmd.client.presenters.ContentPresenter.ContentView;
-import co.dporn.gmd.client.presenters.IsPresenter;
+import co.dporn.gmd.client.presenters.AppPresenter.IsChildPresenter;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialImage;
 import gwt.material.design.client.ui.MaterialLabel;
@@ -47,7 +45,7 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 	@UiField
 	protected MaterialLink linkSettings;
 
-	private ContentView container;
+	private IsView<?> container;
 
 	private HandlerRegistration handler;
 
@@ -117,11 +115,8 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 	}
 
 	@Override
-	public void setChildPresenter(IsPresenter<?> childPresenter) {
-		if (!(childPresenter instanceof ContentPresenter)) {
-			throw new IllegalStateException("Presenter must implement interface ContentPresenter");
-		}
-		ContentView view = ((ContentPresenter)childPresenter).getContentView();
+	public void setChildPresenter(IsChildPresenter<? extends IsView<?>> childPresenter) {
+		IsView<?> view = childPresenter.getContentView();
 		if (view==null) {
 			throw new IllegalStateException("View must implement a non-null getContentView()");
 		}

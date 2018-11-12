@@ -12,6 +12,15 @@ import javax.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public interface DpornCoApi {
+		
+	@Path("suggest/{tag}")
+	@GET
+	SuggestTagsResponse suggest(@PathParam("tag")String tag);
+	
+	@Path("suggest")
+	@GET
+	SuggestTagsResponse suggest();
+	
 	@Path("ping")
 	@GET
 	PingResponse ping();

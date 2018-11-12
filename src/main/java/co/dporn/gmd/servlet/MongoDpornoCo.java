@@ -1,10 +1,15 @@
 package co.dporn.gmd.servlet;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -24,6 +29,38 @@ public class MongoDpornoCo {
 	static {
 		Logger mongoLogger = Logger.getLogger("org.mongodb");
 		mongoLogger.setLevel(Level.WARNING);
+	}
+	
+	private static final int MAX_TAG_SUGGEST=10;
+	private static final Set<String> CACHED_TAGS = new TreeSet<>();
+	private static long cachedTagsExpire=0;
+	public static synchronized List<String> getMatchingTags(String prefix) {
+
+		if (CACHED_TAGS.isEmpty() || cachedTagsExpire<System.currentTimeMillis()) {
+			initCachedTags();
+		}
+		
+		prefix = prefix.trim().toLowerCase();
+		if (prefix.isEmpty()) {
+			return new ArrayList<>(CACHED_TAGS).subList(0, MAX_TAG_SUGGEST);
+		}
+		
+		Set<String> tags = new TreeSet<>();
+		for (String tag: CACHED_TAGS) {
+			if (tag.startsWith(prefix)) {
+				tags.add(tag);
+				if (tags.size()>=MAX_TAG_SUGGEST) {
+					break;
+				}
+			}
+		}
+		return new ArrayList<>(tags);		
+	}
+
+	private static void initCachedTags() {
+		listPosts("", 500).forEach(p->{
+			CACHED_TAGS.addAll(p.getTags());
+		});
 	}
 
 	public static synchronized Post getPost(String authorname, String permlink) {
@@ -45,10 +82,42 @@ public class MongoDpornoCo {
 			post.setScore(-1);
 			post.setTitle(item.getString("title"));
 			post.setVideoIpfs(item.getString("originalHash"));
+			post.setTags(extractTags(item.getString("tags")));
 			return post;
 		} finally {
 			client.close();
 		}
+	}
+
+	@SuppressWarnings("serial")
+	protected static class ListOfStrings extends ArrayList<String> {};
+	private static List<String> extractTags(String string) {
+		if (string == null ||string.trim().isEmpty()) {
+			return new ArrayList<>();
+		}
+		string = string.trim();
+		Set<String> tags = new TreeSet<String>();
+		//tags are either a) a json array of strings, b) a comma list of words
+		if (!string.startsWith("[")) {
+			//munge comma array of words into a json array list;
+			string = StringEscapeUtils.escapeJson(string);
+			string = string.replace(",", "\",\"");
+			string = "[\"" + string + "\"]";
+		}
+		List<String> tmptags;
+		try {
+			tmptags = Mapper.get().readValue(string, ListOfStrings.class);
+		} catch (IOException e) {
+			tmptags= new ArrayList<>();
+		}
+		for (String tmp: tmptags) {
+			tmp = tmp.trim().toLowerCase().replace(" ", "-");
+			if (tmp.isEmpty() || StringUtils.countMatches(tmp, "-")>1) {
+				continue;
+			}
+			tags.add(tmp);
+		}
+		return new ArrayList<>(tags);
 	}
 
 	public static synchronized List<Post> listPosts(String startId, int count) {
@@ -84,6 +153,7 @@ public class MongoDpornoCo {
 				post.setScore(-1);
 				post.setTitle(item.getString("title"));
 				post.setVideoIpfs(item.getString("originalHash"));
+				post.setTags(extractTags(item.getString("tags")));
 				list.add(post);
 			}
 			find.close();
@@ -129,6 +199,7 @@ public class MongoDpornoCo {
 				post.setScore(-1);
 				post.setTitle(item.getString("title"));
 				post.setVideoIpfs(item.getString("originalHash"));
+				post.setTags(extractTags(item.getString("tags")));
 				list.add(post);
 			}
 			find.close();

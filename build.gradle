@@ -117,6 +117,7 @@ dependencies {
 	
 	// for html5 push-state and servlet url rewrite back to index page
 	gwt 'de.knightsoft-net:gwt-pushstate:2.0.0.14'
+    compile 'org.apache.commons:commons-lang3:3.8.1'
 	gwt 'de.knightsoft-net:gwt-commons-lang3:3.8.1-0'
 	gwt group: 'com.google.gwt', name: 'gwt-elemental', version: '2.8.2'
 	compile 'org.tuckey:urlrewritefilter:4.0.3'	    

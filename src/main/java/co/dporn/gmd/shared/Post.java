@@ -1,6 +1,7 @@
 package co.dporn.gmd.shared;
 
 import java.util.Date;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -25,6 +26,7 @@ public class Post {
 	private String coverImageIpfs;
 	private String videoIpfs;
 	private String id;
+	private List<String> tags;
 	private double score;
 	public String getAuthor() {
 		return author;
@@ -73,5 +75,11 @@ public class Post {
 	}
 	public void setVideoIpfs(String videoIpfs) {
 		this.videoIpfs = videoIpfs;
+	}
+	public List<String> getTags() {
+		return tags;
+	}
+	public void setTags(List<String> tags) {
+		this.tags = tags;
 	}
 }

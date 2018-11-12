@@ -40,8 +40,18 @@
 		<to>/</to>
 	</rule>
 	<rule>
-		<note>Post Video</note>
+		<note>Upload Video</note>
 		<from>^/upload/video</from>
+		<to>/</to>
+	</rule>
+	<rule>
+		<note>Upload Photogallyer</note>
+		<from>^/upload/photos</from>
+		<to>/</to>
+	</rule>
+	<rule>
+		<note>Upload Erotica</note>
+		<from>^/upload/erotica</from>
 		<to>/</to>
 	</rule>
 	<rule>

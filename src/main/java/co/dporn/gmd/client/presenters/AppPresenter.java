@@ -13,9 +13,12 @@ import co.dporn.gmd.client.views.IsView;
  * Model interfaces. Implements "app" logic.
  */
 public interface AppPresenter extends IsPresenter<AppLayoutView>, ScheduledCommand {
-
-	public interface AppLayoutView extends IsView<AppPresenter> {
-		void setChildPresenter(IsPresenter<?> childPresenter);
+	interface IsChildPresenter<V extends IsView<?>> extends IsPresenter<V> {
+		IsView<?> getContentView();
+	}
+	
+	interface AppLayoutView extends IsView<AppPresenter> {
+		void setChildPresenter(IsChildPresenter<? extends IsView<?>> childPresenter);
 		void setUsername(String username);
 		void setDisplayname(String displayname);
 		void setAvatar(String avatarUrl);
