@@ -177,6 +177,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 			view.setAvatar(Routes.avatarImageNotLoggedIn());
 			view.setDisplayname("Not Logged In");
 			view.setUsername(null);
+			view.enableContentCreatorRoles(false);
 			return;
 		}
 		GWT.log("setUserInfo: "+info.getUsername()+" => "+info.getDisplayname());
@@ -184,5 +185,6 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 		view.setDisplayname(info.getDisplayname());
 		//TODO: FUTURE: view.setUsername("@"+info.getUsername());
 		view.setUsername("Logout");
+		view.enableContentCreatorRoles(true);
 	}
 }

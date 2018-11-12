@@ -19,7 +19,9 @@ public interface AppPresenter extends IsPresenter<AppLayoutView>, ScheduledComma
 		void setUsername(String username);
 		void setDisplayname(String displayname);
 		void setAvatar(String avatarUrl);
+		void enableContentCreatorRoles(boolean enabled);
 	}
+	
 	void setDisplay(HasWidgets rootView);
 	void account();
 }

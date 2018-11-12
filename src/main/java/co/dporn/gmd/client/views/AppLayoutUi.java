@@ -36,6 +36,15 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 	protected MaterialLabel displayName;
 	@UiField
 	protected MaterialImage avatar;
+	
+	@UiField
+	protected MaterialLink linkPostErotica;
+	@UiField
+	protected MaterialLink linkUploadPhotos;
+	@UiField
+	protected MaterialLink linkUploadVideo;
+	@UiField
+	protected MaterialLink linkSettings;
 
 	private ContentView container;
 
@@ -110,5 +119,13 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 	@Override
 	public void setAvatar(String avatarUrl) {
 		this.avatar.setUrl(avatarUrl);
+	}
+
+	@Override
+	public void enableContentCreatorRoles(boolean enabled) {
+		linkPostErotica.setEnabled(enabled);
+		linkUploadPhotos.setEnabled(enabled);
+		linkUploadVideo.setEnabled(enabled);
+		linkSettings.setEnabled(enabled);		
 	}
 }
