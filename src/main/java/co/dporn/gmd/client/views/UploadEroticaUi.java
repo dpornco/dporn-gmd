@@ -6,6 +6,11 @@ import java.util.Set;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Element;
+import com.google.gwt.dom.client.Style;
+import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
@@ -16,11 +21,15 @@ import com.google.gwt.user.client.ui.Widget;
 import co.dporn.gmd.client.presenters.UploadErotica;
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete.DefaultMaterialChipProvider;
+import gwt.material.design.addins.client.richeditor.MaterialRichEditor;
 import gwt.material.design.client.constants.ChipType;
 import gwt.material.design.client.constants.IconType;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialChip;
 import gwt.material.design.client.ui.MaterialContainer;
+import gwt.material.design.jquery.client.api.Functions.Func2;
+import gwt.material.design.jquery.client.api.JQuery;
+import gwt.material.design.jquery.client.api.JQueryElement;
 
 public class UploadEroticaUi extends Composite implements UploadErotica.UploadEroticaView {
 
@@ -32,6 +41,9 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 	
 	@UiField
 	protected MaterialButton btnTagSets;
+	
+	@UiField
+	protected MaterialRichEditor editor;
 
 	private UploadErotica presenter;
 
@@ -63,6 +75,27 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 			ac.setAutoSuggestLimit(4);
 			ac.setItemValues(new ArrayList<>(this.mandatorySuggestions), true);
 		});
+		ValueChangeHandler<String> handler=new ValueChangeHandler<String>() {
+			@Override
+			public void onValueChange(ValueChangeEvent<String> event) {
+				editor.getEditor().find(".note-editable").css("height", "100%").css("min-height", "512px");
+				editor.getEditor().find(".note-editable").find("img").each((o,e)->{
+					String styles = e.getAttribute("style");
+					if (styles.contains("float: left") || styles.contains("float: right")) {
+						JQuery.$(e).css("max-width", "50%");
+						JQuery.$(e).css("height", "");
+					} else {
+						JQuery.$(e).css("max-width", "100%");
+						JQuery.$(e).css("height", "");
+					}
+					styles = e.getAttribute("style");
+					
+					//TODO: add ipfs => steemitimages sized img src url magic 
+					
+				});
+			}
+		};
+		editor.addValueChangeHandler(handler);
 	}
 	
 	private class ChipProvider extends DefaultMaterialChipProvider {

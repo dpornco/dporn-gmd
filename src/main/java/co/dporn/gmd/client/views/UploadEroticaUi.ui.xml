@@ -28,7 +28,7 @@
 				text="VIEW RECENT TAG SETS" />
 		</m:MaterialRow>
 		<m:MaterialRow margin="8">
-			<ma:richeditor.MaterialRichEditor
+			<ma:richeditor.MaterialRichEditor ui:field="editor"
 				placeholder="Type your erotic fiction here!" />
 		</m:MaterialRow>
 		<m:MaterialRow margin="8" textAlign="RIGHT">
