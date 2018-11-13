@@ -1,8 +1,6 @@
 package co.dporn.gmd.client.views;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -12,15 +10,15 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.SuggestOracle;
-import com.google.gwt.user.client.ui.Widget;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
+import com.google.gwt.user.client.ui.Widget;
 
 import co.dporn.gmd.client.presenters.UploadErotica;
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete.DefaultMaterialChipProvider;
 import gwt.material.design.client.constants.ChipType;
-import gwt.material.design.client.constants.IconPosition;
 import gwt.material.design.client.constants.IconType;
+import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialChip;
 import gwt.material.design.client.ui.MaterialContainer;
 
@@ -31,6 +29,9 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 
 	@UiField
 	protected MaterialAutoComplete ac;
+	
+	@UiField
+	protected MaterialButton btnTagSets;
 
 	private UploadErotica presenter;
 
@@ -51,6 +52,7 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 
 	@Override
 	protected void onLoad() {
+		//MaterialRow
 		super.onLoad();
 		ac.setSuggestions(suggestOracle);
 		Scheduler.get().scheduleDeferred(() -> {
@@ -81,9 +83,18 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 			GWT.log("isChipRemovable: true");
 			return super.isChipRemovable(suggestion);
 		}
-
+		
 		@Override
 		public MaterialChip getChip(Suggestion suggestion) {
+			if (suggestion.getDisplayString()==null||suggestion.getDisplayString().trim().isEmpty()) {
+				return new MaterialChip() {
+					@Override
+					protected void onLoad() {
+						super.onLoad();
+						this.removeFromParent();
+					}
+				};
+			}
 			GWT.log("NEW CHIP: "+suggestion.getDisplayString());
 			final MaterialChip chip = new MaterialChip();
 

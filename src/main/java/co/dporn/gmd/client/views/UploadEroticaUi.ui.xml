@@ -5,7 +5,7 @@
 	<ui:style>
 	.container {
 		padding-left: 250px;
-		padding-right: 140px;
+		padding-right: 8px;
 		padding-top: 100px;
 	}
 	
@@ -14,20 +14,28 @@
 		font-weight: bold;
 		margin-left: 12px;
 	}
-	
-	.row {
-		min-height: 335px;
-	}
 	</ui:style>
 	<!-- Container -->
 	<m:MaterialContainer ui:field="mainContent"
 		addStyleNames="{style.container}">
-
-		<m:MaterialTextBox label="TITLE" />
-		<m:MaterialRow>
+		<m:MaterialRow margin="8">
+			<m:MaterialTextBox label="TITLE" />
+		</m:MaterialRow>
+		<m:MaterialRow margin="8">
 			<ma:autocomplete.MaterialAutoComplete
 				ui:field="ac" type="CHIP" placeholder="TAGS" />
+			<m:MaterialButton float="RIGHT" ui:field="btnTagSets" type="OUTLINED" margin="8"
+				text="VIEW RECENT TAG SETS" />
 		</m:MaterialRow>
-
+		<m:MaterialRow margin="8">
+			<ma:richeditor.MaterialRichEditor
+				placeholder="Type your erotic fiction here!" />
+		</m:MaterialRow>
+		<m:MaterialRow margin="8" textAlign="RIGHT">
+			<m:MaterialButton ui:field="btnReset" margin="8"
+				text="RESET" />
+			<m:MaterialButton ui:field="btnSubmit" margin="8"
+				text="SUBMIT" />
+		</m:MaterialRow>
 	</m:MaterialContainer>
 </ui:UiBinder> 
