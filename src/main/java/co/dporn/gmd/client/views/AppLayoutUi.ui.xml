@@ -61,11 +61,12 @@
 		<!-- <m:MaterialContainer ui:field="container" paddingLeft="250" -->
 		<!-- paddingRight="140" paddingTop="100"/> -->
 		<!-- FAB -->
-		<m:MaterialFAB>
-			<m:MaterialAnchorButton target="_blank"
-				href="https://github.com/muksihs/dporn-gmd" waves="DEFAULT"
-				type="FLOATING" tooltip="Get Code" tooltipPosition="LEFT"
-				iconType="CODE" size="LARGE" />
-		</m:MaterialFAB>
+<!-- 		<m:MaterialFAB> -->
+<!-- 			<m:MaterialAnchorButton target="_blank" -->
+<!-- 				href="https://github.com/muksihs/dporn-gmd" waves="DEFAULT" -->
+<!-- 				type="FLOATING" tooltip="Get Code" tooltipPosition="LEFT" -->
+<!-- 				iconType="CODE" size="LARGE" /> -->
+<!-- 		</m:MaterialFAB> -->
+		<m:MaterialFooter width="100%" style="min-height: 32px;"></m:MaterialFooter>
 	</m:MaterialPanel>
 </ui:UiBinder>
