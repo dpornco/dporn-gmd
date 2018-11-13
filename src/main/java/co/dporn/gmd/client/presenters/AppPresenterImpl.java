@@ -16,6 +16,7 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.SuggestOracle;
 
+import co.dporn.gmd.client.DpornConsts;
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.app.Routes;
 import co.dporn.gmd.client.app.TagSuggestion;
@@ -152,7 +153,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 			if (route.equals("upload/erotica")) {
 				GWT.log("Upload: Erotica");
 				deferred(() -> {
-					UploadEroticaView childView=new UploadEroticaUi(tagOracle,new TreeSet<>(Arrays.asList("dpornco", "nsfw")));
+					UploadEroticaView childView=new UploadEroticaUi(tagOracle,new TreeSet<>(DpornConsts.MANDATORY_EROTICA_TAGS));
 					UploadEroticaImpl childPresenter = new UploadEroticaImpl(model, childView);
 					presenters.put(route, childPresenter);
 					GWT.log("activeChildPresenter = childPresenter;");
