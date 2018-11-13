@@ -32,8 +32,10 @@
 				placeholder="Type your erotic fiction here!" />
 		</m:MaterialRow>
 		<m:MaterialRow margin="8" textAlign="RIGHT">
-			<m:MaterialButton ui:field="btnReset" margin="8"
-				text="RESET" />
+			<m:MaterialButton float="LEFT" ui:field="btnReset" margin="8"
+				text="CLEAR" />
+		<m:MaterialButton ui:field="btnPreview" margin="8"
+				text="PREVIEW" />
 			<m:MaterialButton ui:field="btnSubmit" margin="8"
 				text="SUBMIT" />
 		</m:MaterialRow>

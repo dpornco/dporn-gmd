@@ -38,10 +38,10 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 
 	@UiField
 	protected MaterialAutoComplete ac;
-	
+
 	@UiField
 	protected MaterialButton btnTagSets;
-	
+
 	@UiField
 	protected MaterialRichEditor editor;
 
@@ -64,7 +64,7 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 
 	@Override
 	protected void onLoad() {
-		//MaterialRow
+		// MaterialRow
 		super.onLoad();
 		ac.setSuggestions(suggestOracle);
 		Scheduler.get().scheduleDeferred(() -> {
@@ -75,11 +75,11 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 			ac.setAutoSuggestLimit(4);
 			ac.setItemValues(new ArrayList<>(this.mandatorySuggestions), true);
 		});
-		ValueChangeHandler<String> handler=new ValueChangeHandler<String>() {
+		ValueChangeHandler<String> handler = new ValueChangeHandler<String>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
 				editor.getEditor().find(".note-editable").css("height", "100%").css("min-height", "512px");
-				editor.getEditor().find(".note-editable").find("img").each((o,e)->{
+				editor.getEditor().find(".note-editable").find("img").each((o, e) -> {
 					String styles = e.getAttribute("style");
 					if (styles.contains("float: left") || styles.contains("float: right")) {
 						JQuery.$(e).css("max-width", "50%");
@@ -89,20 +89,26 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 						JQuery.$(e).css("height", "");
 					}
 					styles = e.getAttribute("style");
-					
-					//TODO: add ipfs => steemitimages sized img src url magic 
-					
+
+					// TODO: add ipfs => steemitimages sized img src url magic
+
+					// TODO: add save/restore to/from local storage magic in case of hitting
+					// "backspace"
+
+					// TODO: try and magic the images sizes scaled to editor container vs the 640px
+					// fixed width blog view at steemit.com/busy.org
 				});
 			}
 		};
 		editor.addValueChangeHandler(handler);
+		// editor.getEditor().css("max-width", "640px");
 	}
-	
+
 	private class ChipProvider extends DefaultMaterialChipProvider {
 		@Override
 		public boolean isChipRemovable(Suggestion suggestion) {
-			GWT.log("isChipRemovable: "+suggestion.getDisplayString()+"|"+suggestion.getReplacementString());
-			if (mandatorySuggestions==null) {
+			GWT.log("isChipRemovable: " + suggestion.getDisplayString() + "|" + suggestion.getReplacementString());
+			if (mandatorySuggestions == null) {
 				return true;
 			}
 			if (mandatorySuggestions.contains(suggestion.getDisplayString())) {
@@ -116,10 +122,10 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 			GWT.log("isChipRemovable: true");
 			return super.isChipRemovable(suggestion);
 		}
-		
+
 		@Override
 		public MaterialChip getChip(Suggestion suggestion) {
-			if (suggestion.getDisplayString()==null||suggestion.getDisplayString().trim().isEmpty()) {
+			if (suggestion.getDisplayString() == null || suggestion.getDisplayString().trim().isEmpty()) {
 				return new MaterialChip() {
 					@Override
 					protected void onLoad() {
@@ -128,29 +134,29 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 					}
 				};
 			}
-			GWT.log("NEW CHIP: "+suggestion.getDisplayString());
+			GWT.log("NEW CHIP: " + suggestion.getDisplayString());
 			final MaterialChip chip = new MaterialChip();
 
-            String imageChip = suggestion.getDisplayString();
-            String textChip = imageChip;
+			String imageChip = suggestion.getDisplayString();
+			String textChip = imageChip;
 
-            String s = "<img src=\"";
-            if (imageChip.contains(s)) {
-                int ix = imageChip.indexOf(s) + s.length();
-                imageChip = imageChip.substring(ix, imageChip.indexOf("\"", ix + 1));
-                chip.setUrl(imageChip);
-                textChip = textChip.replaceAll("[<](/)?img[^>]*[>]", "");
-            }
-            chip.setText(textChip);
-            if (isChipRemovable(suggestion)) {
-            	chip.setIconType(IconType.CLOSE);
-            }
-            chip.setType(ChipType.OUTLINED);
-            chip.setMarginRight(8);
-            chip.setMarginLeft(-8);
-            return chip;
+			String s = "<img src=\"";
+			if (imageChip.contains(s)) {
+				int ix = imageChip.indexOf(s) + s.length();
+				imageChip = imageChip.substring(ix, imageChip.indexOf("\"", ix + 1));
+				chip.setUrl(imageChip);
+				textChip = textChip.replaceAll("[<](/)?img[^>]*[>]", "");
+			}
+			chip.setText(textChip);
+			if (isChipRemovable(suggestion)) {
+				chip.setIconType(IconType.CLOSE);
+			}
+			chip.setType(ChipType.OUTLINED);
+			chip.setMarginRight(8);
+			chip.setMarginLeft(-8);
+			return chip;
 		}
-		
+
 	}
 
 	@Override
