@@ -27,6 +27,8 @@ import co.dporn.gmd.shared.Post;
 @Consumes(MediaType.TEXT_HTML)
 @Path("/")
 public class DpornCoEmbed {
+	private static final long _30_DAYS_ms = 1000l*60l*60l*24l*30l;
+	private static final int _30_DAYS_sec = 60*60*24*30;
 	private static String _template;
 
 	private static String template() {
@@ -56,6 +58,8 @@ public class DpornCoEmbed {
 		response.setCharacterEncoding("UTF-8");
 		response.setContentType(MediaType.TEXT_HTML);
 		response.addDateHeader("Last-Modified", LAST_MODIFIED);
+		response.addHeader("Cache-Control", "max-age="+_30_DAYS_sec+", must-revalidate");
+		response.addDateHeader("Expires", System.currentTimeMillis()+_30_DAYS_ms);
 		long ifModifiedSince = request.getDateHeader("If-Modified-Since");
 		if (ifModifiedSince >= LAST_MODIFIED) {
 			response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
@@ -80,6 +84,8 @@ public class DpornCoEmbed {
 	public String get(@PathParam("authorname") String author, @PathParam("permlink") String permlink) {
 		response.setCharacterEncoding("UTF-8");
 		response.addDateHeader("Last-Modified", LAST_MODIFIED);
+		response.addHeader("Cache-Control", "max-age="+_30_DAYS_sec+", must-revalidate");
+		response.addDateHeader("Expires", System.currentTimeMillis()+_30_DAYS_ms);
 		String embedHtml = getEmbedHtml(author, permlink);
 		if (embedHtml == null) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
