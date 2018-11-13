@@ -270,12 +270,17 @@ public class AppControllerModelImpl implements AppControllerModel {
 		CompletableFuture<List<String>> future = new CompletableFuture<>();
 		RestClient.get().suggest(prefix==null?"":prefix.trim()).thenAccept(r -> {
 			for (String tag: r.getTags()) {
+				if (tag.trim().isEmpty()) {
+					continue;
+				}
 				tags.add(tag);
 				if (tags.size()>=limit) {
 					break;
 				}
 			}
-			tags.add(prefix);
+			if (!prefix.trim().isEmpty()) {
+				tags.add(prefix);
+			}
 			future.complete(new ArrayList<>(new TreeSet<>(tags)));
 		}).exceptionally((e) -> {
 			future.completeExceptionally(e);
