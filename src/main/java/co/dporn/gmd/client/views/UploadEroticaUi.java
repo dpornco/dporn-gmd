@@ -6,9 +6,6 @@ import java.util.Set;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.dom.client.Style;
-import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.uibinder.client.UiBinder;
@@ -18,16 +15,19 @@ import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import com.google.gwt.user.client.ui.Widget;
 
+import co.dporn.gmd.client.img.ImgUtils;
 import co.dporn.gmd.client.presenters.UploadErotica;
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete.DefaultMaterialChipProvider;
 import gwt.material.design.addins.client.richeditor.MaterialRichEditor;
+import gwt.material.design.addins.client.richeditor.base.constants.ToolbarButton;
 import gwt.material.design.client.constants.ChipType;
 import gwt.material.design.client.constants.IconType;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialChip;
 import gwt.material.design.client.ui.MaterialContainer;
-import gwt.material.design.jquery.client.api.Functions.Func2;
+import gwt.material.design.jquery.client.api.Event;
+import gwt.material.design.jquery.client.api.Functions;
 import gwt.material.design.jquery.client.api.JQuery;
 import gwt.material.design.jquery.client.api.JQueryElement;
 
@@ -60,11 +60,59 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 		initWidget(uiBinder.createAndBindUi(this));
 		this.suggestOracle = suggestOracle;
 		this.mandatorySuggestions = mandatorySuggestions;
+		
+		ToolbarButton[] noOptions = new ToolbarButton[0];
+		editor.setStyleOptions(ToolbarButton.STYLE, ToolbarButton.BOLD, ToolbarButton.ITALIC,
+				ToolbarButton.STRIKETHROUGH, ToolbarButton.CLEAR, ToolbarButton.SUPERSCRIPT, ToolbarButton.SUBSCRIPT);
+		editor.setFontOptions(noOptions);
+		editor.setColorOptions(noOptions);
+		editor.setCkMediaOptions(ToolbarButton.CK_IMAGE_UPLOAD);
+		editor.setParaOptions(ToolbarButton.UL, ToolbarButton.OL, ToolbarButton.LEFT, ToolbarButton.CENTER,
+				ToolbarButton.RIGHT, ToolbarButton.JUSTIFY);
+		editor.setUndoOptions(ToolbarButton.REDO, ToolbarButton.UNDO);
+		editor.setMiscOptions(ToolbarButton.LINK, ToolbarButton.PICTURE, ToolbarButton.TABLE, ToolbarButton.HR, ToolbarButton.FULLSCREEN);
+		editor.setHeightOptions(noOptions);
+		editor.setAllowBlank(false);
+		editor.setAutoValidate(true);
+		editor.setDisableDragAndDrop(false);
+		editor.setValue("<p><br></p>", true, true);
+		
+		editor.getEditor().on("materialnote", new Functions.EventFunc3<String, JQueryElement, JQueryElement>() {
+			@Override
+			public Object call(Event e, String param1, JQueryElement param2, JQueryElement param3) {
+				GWT.log("event: "+e.type);
+				GWT.log("param1: "+param1);
+				GWT.log("param2: "+param2);
+				GWT.log("param3: "+param3);
+				return e;
+			}
+		});
+		//String MATERIALNOTE_BLUR = "materialnote.blur";
+//		JsRichEditor.$(editor.getEditor());
+//		editor.getEditor().on("materialnote.onImageUpload", new Functions.EventFunc3<String, JQueryElement, JQueryElement>() {
+//			@Override
+//			public Object call(Event e, String param1, JQueryElement param2, JQueryElement param3) {
+//				GWT.log("event: "+e.type);
+//				GWT.log("param1: "+param1);
+//				GWT.log("param2: "+param2);
+//				GWT.log("param3: "+param3);
+//				return e;
+//			}
+//		});
+//		editor.getEditor().on("materialnote.onimageupload", new Functions.EventFunc3<String, JQueryElement, JQueryElement>() {
+//			@Override
+//			public Object call(Event e, String param1, JQueryElement param2, JQueryElement param3) {
+//				GWT.log("event: "+e.type);
+//				GWT.log("param1: "+param1);
+//				GWT.log("param2: "+param2);
+//				GWT.log("param3: "+param3);
+//				return e;
+//			}
+//		});
 	}
 
 	@Override
 	protected void onLoad() {
-		// MaterialRow
 		super.onLoad();
 		ac.setSuggestions(suggestOracle);
 		Scheduler.get().scheduleDeferred(() -> {
@@ -78,8 +126,17 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 		ValueChangeHandler<String> handler = new ValueChangeHandler<String>() {
 			@Override
 			public void onValueChange(ValueChangeEvent<String> event) {
+				// always make sure there is "blank" below and above main content
+				GWT.log(" - EDITOR CHANGE");
+
+				// keep all content visible
 				editor.getEditor().find(".note-editable").css("height", "100%").css("min-height", "512px");
+
+				// image fixups
 				editor.getEditor().find(".note-editable").find("img").each((o, e) -> {
+					if (!e.getAttribute("ImgUtilsResizedInplace").equals("true")) {
+						ImgUtils.resizeInplace(e).thenAccept((img)->img.setAttribute("ImgUtilsResizedInplace", "true"));
+					}
 					String styles = e.getAttribute("style");
 					if (styles.contains("float: left") || styles.contains("float: right")) {
 						JQuery.$(e).css("max-width", "50%");
@@ -97,29 +154,26 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 
 					// TODO: try and magic the images sizes scaled to editor container vs the 640px
 					// fixed width blog view at steemit.com/busy.org
+
 				});
+
 			}
 		};
 		editor.addValueChangeHandler(handler);
-		// editor.getEditor().css("max-width", "640px");
 	}
 
 	private class ChipProvider extends DefaultMaterialChipProvider {
 		@Override
 		public boolean isChipRemovable(Suggestion suggestion) {
-			GWT.log("isChipRemovable: " + suggestion.getDisplayString() + "|" + suggestion.getReplacementString());
 			if (mandatorySuggestions == null) {
 				return true;
 			}
 			if (mandatorySuggestions.contains(suggestion.getDisplayString())) {
-				GWT.log("isChipRemovable: false");
 				return false;
 			}
 			if (mandatorySuggestions.contains(suggestion.getReplacementString())) {
-				GWT.log("isChipRemovable: false");
 				return false;
 			}
-			GWT.log("isChipRemovable: true");
 			return super.isChipRemovable(suggestion);
 		}
 
@@ -134,7 +188,6 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 					}
 				};
 			}
-			GWT.log("NEW CHIP: " + suggestion.getDisplayString());
 			final MaterialChip chip = new MaterialChip();
 
 			String imageChip = suggestion.getDisplayString();

@@ -112,6 +112,11 @@ dependencies {
     compile 'com.github.tommyettinger:RegExodus:v0.1.10'
     compile 'org.mongodb:mongodb-driver-sync:3.8.2'
     
+    //for IPFS adding
+    compile 'com.github.ipfs:java-ipfs-api:v1.2.2'
+    //for client side image manipulation
+    gwt 'com.google.elemental2:elemental2-dom:1.0.0-RC1'
+    
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-jdk14
 	compile group: 'org.slf4j', name: 'slf4j-jdk14', version: '1.7.25'
 	

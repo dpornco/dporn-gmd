@@ -27,6 +27,9 @@
 	<!-- https://github.com/OneGeek/GWT-CompletableFuture -->
 	<inherits name='com.ekotrope.gwt.CompletableFuture' />
 
+	<!-- client side image manipulation -->
+	<inherits name="elemental2.dom.Dom" />
+
 	<!-- compression for the cache -->
 	<inherits name='blazing.chain' />
 
@@ -72,7 +75,7 @@
 
 	<!-- steemjs -->
 	<inherits name="steem.Steem" />
-	
+
 	<!-- routing -->
 	<inherits name="org.apache.commons.GWTCommonsLang3" />
 	<inherits name="elemental.Elemental" />
