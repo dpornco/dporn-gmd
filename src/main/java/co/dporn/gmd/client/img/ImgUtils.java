@@ -14,8 +14,8 @@ import elemental2.dom.HTMLImageElement;
 import jsinterop.base.Js;
 
 public class ImgUtils {
-	private static final int MAX_IMAGE_HEIGHT_DEFAULT = 1080;
-	private static final int MAX_IMAGE_WIDTH_DEFAULT = 1920;
+	private static final int DEFAULT_MAX_IMAGE_HEIGHT = 1080;
+	private static final int DEFAULT_MAX_IMAGE_WIDTH = 1920;
 	private static final double QUALITY = 0.98;
 
 	public static CompletableFuture<HTMLImageElement> resizeInplace(HTMLImageElement image, double maxWidth,
@@ -66,15 +66,14 @@ public class ImgUtils {
 			int newWidth = (int) (w * scale);
 			int newHeight = (int) (h * scale);
 			GWT.log("ImgUtils.resizeInplace: " + newWidth + " x " + newHeight);
-			HTMLCanvasElement canvas = (HTMLCanvasElement) DomGlobal.document.createElement("canvas");
+			HTMLCanvasElement canvas = Js.cast(DomGlobal.document.createElement("canvas"));
 			canvas.width = ((int) (w * scale));
 			canvas.height = ((int) (h * scale));
-			CanvasRenderingContext2D ctx = (CanvasRenderingContext2D) (Object) canvas.getContext("2d");
+			CanvasRenderingContext2D ctx = Js.cast(canvas.getContext("2d"));
 			ctx.drawImage(image, 0, 0, newWidth, newHeight);
 			String mime = image.src.contains(";base64,iVBOR") ? "image/png" : "image/jpeg";
 			mime = image.src.contains(";base64,R0lGODl") ? "image/gif" : mime;
 			image.onload = (p0) -> future.complete(image);
-			GWT.log("ImgUtils.resizeInplace image.src");
 			image.src = canvas.toDataURL(mime, QUALITY);
 		} else {
 			future.complete(image);
@@ -95,11 +94,11 @@ public class ImgUtils {
 	}
 
 	public static CompletableFuture<HTMLImageElement> resizeInplace(Element image) {
-		return resizeInplace(image, MAX_IMAGE_WIDTH_DEFAULT, MAX_IMAGE_HEIGHT_DEFAULT);
+		return resizeInplace(image, DEFAULT_MAX_IMAGE_WIDTH, DEFAULT_MAX_IMAGE_HEIGHT);
 	}
 
 	public static CompletableFuture<HTMLImageElement> resizeInplace(HTMLImageElement image) {
-		return resizeInplace(image, MAX_IMAGE_WIDTH_DEFAULT, MAX_IMAGE_HEIGHT_DEFAULT);
+		return resizeInplace(image, DEFAULT_MAX_IMAGE_WIDTH, DEFAULT_MAX_IMAGE_HEIGHT);
 	}
 
 	/*
