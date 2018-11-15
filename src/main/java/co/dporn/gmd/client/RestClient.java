@@ -55,7 +55,7 @@ public class RestClient {
 		xhr.onloadend = (e) -> future.complete(xhr.responseText);
 		xhr.onerror = (e) -> future.completeExceptionally(new RuntimeException("IPFS XHR FAILED"));
 		xhr.open("PUT", xhrUrl, true);
-//		xhr.setRequestHeader("Authorization", authorization);
+		xhr.setRequestHeader("Authorization", authorization);
 		xhr.send(blob);
 		return future;
 	}

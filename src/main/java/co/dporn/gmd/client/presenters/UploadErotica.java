@@ -1,5 +1,6 @@
 package co.dporn.gmd.client.presenters;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -26,5 +27,5 @@ public interface UploadErotica extends IsChildPresenter<UploadEroticaView>, Sche
 	 * @param blob
 	 * @return
 	 */
-	CompletableFuture<String> postBlobToIpfs(String filename, Blob blob);
+	CompletableFuture<List<String>> postBlobToIpfs(String filename, Blob blob);
 }

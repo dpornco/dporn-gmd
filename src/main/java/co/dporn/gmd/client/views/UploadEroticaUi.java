@@ -21,7 +21,6 @@ import co.dporn.gmd.client.presenters.UploadErotica;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLImageElement;
 import elemental2.dom.ProgressEvent;
-import elemental2.dom.XMLHttpRequestUpload.OnprogressFn;
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete.DefaultMaterialChipProvider;
 import gwt.material.design.addins.client.richeditor.MaterialRichEditor;
@@ -104,15 +103,17 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 		editor.addValueChangeHandler(this::valueChangeHandler);
 	}
 
-	private static long _counter=System.currentTimeMillis();
+	private static long _counter = System.currentTimeMillis();
+
 	private static synchronized long nextCounter() {
-		return (_counter=Math.max(_counter+1, System.currentTimeMillis()));
+		return (_counter = Math.max(_counter + 1, System.currentTimeMillis()));
 	}
+
 	private void postImageToIpfs(HTMLImageElement image) {
-		GWT.log("image.src="+StringUtils.left(image.src, 32));
+		GWT.log("image.src=" + StringUtils.left(image.src, 32));
 		String guessExtension = imgUtils.guessExtension(image.src);
 		String filename = image.getAttribute("data-filename");
-		if (filename==null) {
+		if (filename == null) {
 			filename = "";
 		}
 		filename = filename.trim();
@@ -120,19 +121,22 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 		filename = filename.toLowerCase();
 		filename = filename.replaceAll("[^a-z0-9\\.-_]", "");
 		filename = filename.replaceAll("-+", "-");
-		if (filename.isEmpty() || filename.length()<=guessExtension.length()+1) {
-			filename=nextCounter()+"."+guessExtension;
+		if (filename.isEmpty() || filename.length() <= guessExtension.length() + 1) {
+			filename = nextCounter() + "." + guessExtension;
 		}
-		if (!filename.endsWith("."+guessExtension)) {
-			filename+="."+guessExtension;
+		if (!filename.endsWith("." + guessExtension)) {
+			filename += "." + guessExtension;
 		}
 		final String ipfsFilename = filename;
-		new ImgUtils().toBlob(image).thenAccept((blob)->{
-			GWT.log("IPFS FILENAME: "+ipfsFilename);
-			presenter.postBlobToIpfs(ipfsFilename, blob).thenAccept((url)->image.src=url);
+		new ImgUtils().toBlob(image).thenAccept((blob) -> {
+			presenter.postBlobToIpfs(ipfsFilename, blob).thenAccept((url) -> {
+				image.srcset=StringUtils.join(url, " ");
+				image.src = url.get(0);
+				image.onerror = (e) -> image.src = url.get(1);
+			});
 		});
 	}
-	
+
 	private void valueChangeHandler(ValueChangeEvent<String> event) {
 		// always make sure there is "blank" below and above main content
 		GWT.log(" - EDITOR CHANGE");
@@ -145,7 +149,7 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 			if (!e.getAttribute("ImgUtilsResizedInplace").equals("true")) {
 				imgUtils.resizeInplace(e)//
 						.thenAccept((img) -> img.setAttribute("ImgUtilsResizedInplace", "true")) //
-						.thenRun(()->postImageToIpfs(Js.cast(e)));
+						.thenRun(() -> postImageToIpfs(Js.cast(e)));
 			}
 			String styles = e.getAttribute("style");
 			if (styles.contains("float: left") || styles.contains("float: right")) {
@@ -293,11 +297,11 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 		// TODO Auto-generated method stub
 
 	}
-	
+
 	@Override
 	public void onprogressfn(ProgressEvent p0) {
 		if (p0.lengthComputable) {
-			DomGlobal.console.log(((int)(p0.loaded*100d/p0.total))+" %");
+			DomGlobal.console.log(((int) (p0.loaded * 100d / p0.total)) + " %");
 		} else {
 			DomGlobal.console.log("??? %");
 		}

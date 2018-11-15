@@ -1,6 +1,7 @@
 package co.dporn.gmd.client.app;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -298,8 +299,8 @@ public class AppControllerModelImpl implements AppControllerModel {
 		IpfsHashResponseMapper mapper = GWT.create(IpfsHashResponseMapper.class);
 	}
 	@Override
-	public CompletableFuture<String> postBlobToIpfs(String filename, Blob blob, OnprogressFn onprogress) {
-		CompletableFuture<String> future = new CompletableFuture<>();
+	public CompletableFuture<List<String>> postBlobToIpfs(String filename, Blob blob, OnprogressFn onprogress) {
+		CompletableFuture<List<String>> future = new CompletableFuture<>();
 		String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
 		if (authorization.trim().isEmpty()) {
 			future.completeExceptionally(new RuntimeException("NOT AUTHORIZED"));
@@ -309,7 +310,9 @@ public class AppControllerModelImpl implements AppControllerModel {
 		RestClient.get().postBlobToIpfs(authorization, filename, blob, onprogress).thenAccept((response)->{
 			try {
 				IpfsHashResponse hash = IpfsHashResponseMapper.mapper.read(response);
-				future.complete("https://steemitimages.com/0x0/https://ipfs.io/ipfs/"+hash.getIpfsHash()+"/"+hash.getFilename());
+				String src0 = "https://ipfs.io/ipfs/"+hash.getIpfsHash()+"/"+hash.getFilename();
+				String src1 = "https://steemitimages.com/0x0/"+src0;
+				future.complete(Arrays.asList(src1, src0));
 			} catch (JsonDeserializationException e) {
 				future.completeExceptionally(e);
 			}

@@ -3,6 +3,10 @@ package co.dporn.gmd.servlet;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +26,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
@@ -180,8 +185,10 @@ public class DpornCoApiImpl implements DpornCoApi {
 		return filename;
 	}
 
+	//https://steemconnect.com/api/me?access_token=here_the_token
 	@Override
 	public IpfsHashResponse ipfsPut(InputStream is, String authorization, String filename) {
+//		checkAuthorization(authorization);
 		filename=safeFilename(filename);
 		File tmpDir = null;
 		File tmpFile = null;
@@ -201,6 +208,35 @@ public class DpornCoApiImpl implements DpornCoApi {
 			return null;
 		} finally {
 			FileUtils.deleteQuietly(tmpDir);
+		}
+	}
+
+	//TODO make sure is uri encoded and not null
+	//https://steemconnect.com/api/me?access_token=here_the_token
+	private void checkAuthorization(String authorization) {
+		URL check;
+		try {
+			String spec = "https://steemconnect.com/api/me?access_token="+authorization;
+			System.out.println(spec);
+			check = new URL(spec);
+		} catch (MalformedURLException e) {
+			return;
+		}
+		try {
+			HttpURLConnection conn = (HttpURLConnection)check.openConnection();
+			conn.setDoInput(true);
+			try {
+				conn.connect();
+				System.out.println(IOUtils.toString(conn.getInputStream(), StandardCharsets.UTF_8));
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.out.println(IOUtils.toString(conn.getErrorStream(), StandardCharsets.UTF_8));
+			}
+			conn.disconnect();
+			return;
+		} catch (IOException e) {
+			e.printStackTrace();
+			return;
 		}
 	}
 

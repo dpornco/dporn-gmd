@@ -55,5 +55,5 @@ public interface AppControllerModel {
 
 	CompletableFuture<List<String>> tagsOracle(String query, int limit);
 
-	CompletableFuture<String> postBlobToIpfs(String filename, Blob blob, OnprogressFn onprogress);
+	CompletableFuture<List<String>> postBlobToIpfs(String filename, Blob blob, OnprogressFn onprogress);
 }
