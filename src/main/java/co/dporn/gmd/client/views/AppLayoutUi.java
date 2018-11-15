@@ -17,6 +17,7 @@ import gwt.material.design.client.ui.MaterialLabel;
 import gwt.material.design.client.ui.MaterialLink;
 import gwt.material.design.client.ui.MaterialPanel;
 import gwt.material.design.client.ui.MaterialSideNavPush;
+import gwt.material.design.client.ui.MaterialToast;
 
 public class AppLayoutUi extends Composite implements AppLayoutView {
 
@@ -127,5 +128,10 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 		panel.insert(view.asWidget(), sidenavix + 1);
 		container = view;
 		
+	}
+
+	@Override
+	public void toast(String message) {
+		MaterialToast.fireToast(message);
 	}
 }

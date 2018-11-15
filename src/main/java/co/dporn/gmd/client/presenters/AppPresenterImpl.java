@@ -242,4 +242,9 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 	public void restoreScrollPosition() {
 		Window.scrollTo(posX, posY);
 	}
+
+	@Override
+	public void toast(String message) {
+		view.toast(message);
+	}
 }

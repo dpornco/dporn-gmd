@@ -1,5 +1,9 @@
 package co.dporn.gmd.servlet;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -8,23 +12,40 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+
+import org.apache.commons.io.FileUtils;
 
 import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.DpornCoApi;
+import co.dporn.gmd.shared.IpfsHashResponse;
 import co.dporn.gmd.shared.PingResponse;
 import co.dporn.gmd.shared.Post;
 import co.dporn.gmd.shared.PostListResponse;
 import co.dporn.gmd.shared.SuggestTagsResponse;
+import io.ipfs.api.IPFS;
+import io.ipfs.api.MerkleNode;
+import io.ipfs.api.NamedStreamable;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Path("1.0")
 public class DpornCoApiImpl implements DpornCoApi {
+	
+	@Context
+	protected HttpServletRequest request;
+	@Context
+	protected HttpServletResponse response;
+	@Context
+	protected HttpHeaders headers;
 
 	@Override
 	public PingResponse ping() {
@@ -141,5 +162,56 @@ public class DpornCoApiImpl implements DpornCoApi {
 	@Override
 	public SuggestTagsResponse suggest() {
 		return suggest("");
+	}
+	
+	private static long _counter=System.currentTimeMillis();
+	private static synchronized long nextCounter() {
+		return (_counter=Math.max(_counter+1, System.currentTimeMillis()));
+	}
+	protected String safeFilename(String filename) {
+		filename = filename.trim();
+		filename = filename.replace(" ", "-");
+		filename = filename.toLowerCase();
+		filename = filename.replaceAll("[^a-z0-9\\.-_]", "");
+		filename = filename.replaceAll("-+", "-");
+		if (filename.trim().isEmpty()) {
+			filename=String.valueOf(nextCounter());
+		}
+		return filename;
+	}
+
+	@Override
+	public IpfsHashResponse ipfsPut(InputStream is, String authorization, String filename) {
+		filename=safeFilename(filename);
+		File tmpDir = null;
+		File tmpFile = null;
+		IPFS ipfs = new IPFS("/ip4/127.0.0.1/tcp/5001");
+		try {
+			tmpDir = Files.createTempDirectory("ipfs-put-").toFile();
+			tmpFile = new File(tmpDir, filename);
+			FileUtils.copyInputStreamToFile(is, tmpFile);
+			List<MerkleNode> m = ipfs.add(new NamedStreamable.FileWrapper(tmpFile), true);
+			IpfsHashResponse response = new IpfsHashResponse();
+			response.setFilename(filename);
+			if (!m.isEmpty()) {
+				response.setIpfsHash(m.get(m.size()-1).hash.toBase58());
+			}
+			return response;
+		} catch (IOException e) {
+			return null;
+		} finally {
+			FileUtils.deleteQuietly(tmpDir);
+		}
+	}
+
+	private void setResponseAsUnauthorized() {
+		response.setStatus(HttpServletResponse.SC_PAYMENT_REQUIRED);
+		response.setContentType(MediaType.TEXT_PLAIN);
+		try {
+			response.getWriter().println("NOT AUTHORIZED");
+			response.getWriter().flush();
+			response.getWriter().close();
+		} catch (IOException e) {
+		}
 	}
 }

@@ -10,6 +10,8 @@ import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.github.nmorel.gwtjackson.client.ObjectMapper;
+import com.github.nmorel.gwtjackson.client.exception.JsonDeserializationException;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
@@ -24,8 +26,11 @@ import co.dporn.gmd.client.RestClient;
 import co.dporn.gmd.client.presenters.RoutePresenter;
 import co.dporn.gmd.client.presenters.RoutePresenter.ActiveUserInfo;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
+import co.dporn.gmd.shared.IpfsHashResponse;
 import co.dporn.gmd.shared.Post;
 import co.dporn.gmd.shared.PostListResponse;
+import elemental2.dom.Blob;
+import elemental2.dom.XMLHttpRequestUpload.OnprogressFn;
 import steem.SteemApi;
 import steem.connect.SteemConnectInit;
 import steem.connect.SteemConnectV2;
@@ -284,6 +289,32 @@ public class AppControllerModelImpl implements AppControllerModel {
 			future.complete(new ArrayList<>(new TreeSet<>(tags)));
 		}).exceptionally((e) -> {
 			future.completeExceptionally(e);
+			return null;
+		});
+		return future;
+	}
+
+	protected interface IpfsHashResponseMapper extends ObjectMapper<IpfsHashResponse> {
+		IpfsHashResponseMapper mapper = GWT.create(IpfsHashResponseMapper.class);
+	}
+	@Override
+	public CompletableFuture<String> postBlobToIpfs(String filename, Blob blob, OnprogressFn onprogress) {
+		CompletableFuture<String> future = new CompletableFuture<>();
+		String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
+		if (authorization.trim().isEmpty()) {
+			future.completeExceptionally(new RuntimeException("NOT AUTHORIZED"));
+			routePresenter.toast("UPLOAD NOT AUTHORIZED");
+			return future;
+		}
+		RestClient.get().postBlobToIpfs(authorization, filename, blob, onprogress).thenAccept((response)->{
+			try {
+				IpfsHashResponse hash = IpfsHashResponseMapper.mapper.read(response);
+				future.complete("https://steemitimages.com/0x0/https://ipfs.io/ipfs/"+hash.getIpfsHash()+"/"+hash.getFilename());
+			} catch (JsonDeserializationException e) {
+				future.completeExceptionally(e);
+			}
+		}).exceptionally((ex)->{
+			future.completeExceptionally(ex);
 			return null;
 		});
 		return future;

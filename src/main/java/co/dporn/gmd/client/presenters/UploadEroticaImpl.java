@@ -1,9 +1,12 @@
 package co.dporn.gmd.client.presenters;
 
+import java.util.concurrent.CompletableFuture;
+
 import com.google.gwt.user.client.Window;
 
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.views.IsView;
+import elemental2.dom.Blob;
 
 public class UploadEroticaImpl implements UploadErotica {
 
@@ -88,5 +91,10 @@ public class UploadEroticaImpl implements UploadErotica {
 	@Override
 	public IsView<?> getContentView() {
 		return view;
+	}
+
+	@Override
+	public CompletableFuture<String> postBlobToIpfs(String filename, Blob blob) {
+		return model.postBlobToIpfs(filename, blob, (e)->view.onprogressfn(e));
 	}
 }

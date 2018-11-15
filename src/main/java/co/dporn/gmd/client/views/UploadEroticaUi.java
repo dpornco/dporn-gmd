@@ -4,10 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
-import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
@@ -17,6 +18,10 @@ import com.google.gwt.user.client.ui.Widget;
 
 import co.dporn.gmd.client.img.ImgUtils;
 import co.dporn.gmd.client.presenters.UploadErotica;
+import elemental2.dom.DomGlobal;
+import elemental2.dom.HTMLImageElement;
+import elemental2.dom.ProgressEvent;
+import elemental2.dom.XMLHttpRequestUpload.OnprogressFn;
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete.DefaultMaterialChipProvider;
 import gwt.material.design.addins.client.richeditor.MaterialRichEditor;
@@ -26,10 +31,9 @@ import gwt.material.design.client.constants.IconType;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialChip;
 import gwt.material.design.client.ui.MaterialContainer;
-import gwt.material.design.jquery.client.api.Event;
-import gwt.material.design.jquery.client.api.Functions;
+import gwt.material.design.client.ui.MaterialToast;
 import gwt.material.design.jquery.client.api.JQuery;
-import gwt.material.design.jquery.client.api.JQueryElement;
+import jsinterop.base.Js;
 
 public class UploadEroticaUi extends Composite implements UploadErotica.UploadEroticaView {
 
@@ -56,11 +60,15 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 	interface ThisUiBinder extends UiBinder<Widget, UploadEroticaUi> {
 	}
 
+	private final ImgUtils imgUtils = new ImgUtils();
+
 	public UploadEroticaUi(SuggestOracle suggestOracle, Set<String> mandatorySuggestions) {
 		initWidget(uiBinder.createAndBindUi(this));
 		this.suggestOracle = suggestOracle;
 		this.mandatorySuggestions = mandatorySuggestions;
-		
+
+		imgUtils.setEventMessageHandler((msg) -> MaterialToast.fireToast(msg));
+
 		ToolbarButton[] noOptions = new ToolbarButton[0];
 		editor.setStyleOptions(ToolbarButton.STYLE, ToolbarButton.BOLD, ToolbarButton.ITALIC,
 				ToolbarButton.STRIKETHROUGH, ToolbarButton.CLEAR, ToolbarButton.SUPERSCRIPT, ToolbarButton.SUBSCRIPT);
@@ -70,45 +78,15 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 		editor.setParaOptions(ToolbarButton.UL, ToolbarButton.OL, ToolbarButton.LEFT, ToolbarButton.CENTER,
 				ToolbarButton.RIGHT, ToolbarButton.JUSTIFY);
 		editor.setUndoOptions(ToolbarButton.REDO, ToolbarButton.UNDO);
-		editor.setMiscOptions(ToolbarButton.LINK, ToolbarButton.PICTURE, ToolbarButton.TABLE, ToolbarButton.HR, ToolbarButton.FULLSCREEN);
+		editor.setMiscOptions(ToolbarButton.LINK, ToolbarButton.PICTURE, ToolbarButton.TABLE, ToolbarButton.HR,
+				ToolbarButton.FULLSCREEN);
 		editor.setHeightOptions(noOptions);
 		editor.setAllowBlank(false);
 		editor.setAutoValidate(true);
 		editor.setDisableDragAndDrop(false);
 		editor.setValue("<p><br></p>", true, true);
-		
-		editor.getEditor().on("materialnote", new Functions.EventFunc3<String, JQueryElement, JQueryElement>() {
-			@Override
-			public Object call(Event e, String param1, JQueryElement param2, JQueryElement param3) {
-				GWT.log("event: "+e.type);
-				GWT.log("param1: "+param1);
-				GWT.log("param2: "+param2);
-				GWT.log("param3: "+param3);
-				return e;
-			}
-		});
-		//String MATERIALNOTE_BLUR = "materialnote.blur";
-//		JsRichEditor.$(editor.getEditor());
-//		editor.getEditor().on("materialnote.onImageUpload", new Functions.EventFunc3<String, JQueryElement, JQueryElement>() {
-//			@Override
-//			public Object call(Event e, String param1, JQueryElement param2, JQueryElement param3) {
-//				GWT.log("event: "+e.type);
-//				GWT.log("param1: "+param1);
-//				GWT.log("param2: "+param2);
-//				GWT.log("param3: "+param3);
-//				return e;
-//			}
-//		});
-//		editor.getEditor().on("materialnote.onimageupload", new Functions.EventFunc3<String, JQueryElement, JQueryElement>() {
-//			@Override
-//			public Object call(Event e, String param1, JQueryElement param2, JQueryElement param3) {
-//				GWT.log("event: "+e.type);
-//				GWT.log("param1: "+param1);
-//				GWT.log("param2: "+param2);
-//				GWT.log("param3: "+param3);
-//				return e;
-//			}
-//		});
+		editor.getEditor().find("[data-event='imageClass']").remove();
+		editor.getEditor().find("[data-event='imageShape']").remove();
 	}
 
 	@Override
@@ -123,44 +101,72 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 			ac.setAutoSuggestLimit(4);
 			ac.setItemValues(new ArrayList<>(this.mandatorySuggestions), true);
 		});
-		ValueChangeHandler<String> handler = new ValueChangeHandler<String>() {
-			@Override
-			public void onValueChange(ValueChangeEvent<String> event) {
-				// always make sure there is "blank" below and above main content
-				GWT.log(" - EDITOR CHANGE");
-
-				// keep all content visible
-				editor.getEditor().find(".note-editable").css("height", "100%").css("min-height", "512px");
-
-				// image fixups
-				editor.getEditor().find(".note-editable").find("img").each((o, e) -> {
-					if (!e.getAttribute("ImgUtilsResizedInplace").equals("true")) {
-						ImgUtils.resizeInplace(e).thenAccept((img)->img.setAttribute("ImgUtilsResizedInplace", "true"));
-					}
-					String styles = e.getAttribute("style");
-					if (styles.contains("float: left") || styles.contains("float: right")) {
-						JQuery.$(e).css("max-width", "50%");
-						JQuery.$(e).css("height", "");
-					} else {
-						JQuery.$(e).css("max-width", "100%");
-						JQuery.$(e).css("height", "");
-					}
-					styles = e.getAttribute("style");
-
-					// TODO: add ipfs => steemitimages sized img src url magic
-
-					// TODO: add save/restore to/from local storage magic in case of hitting
-					// "backspace"
-
-					// TODO: try and magic the images sizes scaled to editor container vs the 640px
-					// fixed width blog view at steemit.com/busy.org
-
-				});
-
-			}
-		};
-		editor.addValueChangeHandler(handler);
+		editor.addValueChangeHandler(this::valueChangeHandler);
 	}
+
+	private static long _counter=System.currentTimeMillis();
+	private static synchronized long nextCounter() {
+		return (_counter=Math.max(_counter+1, System.currentTimeMillis()));
+	}
+	private void postImageToIpfs(HTMLImageElement image) {
+		GWT.log("image.src="+StringUtils.left(image.src, 32));
+		String guessExtension = imgUtils.guessExtension(image.src);
+		String filename = image.getAttribute("data-filename");
+		if (filename==null) {
+			filename = "";
+		}
+		filename = filename.trim();
+		filename = filename.replace(" ", "-");
+		filename = filename.toLowerCase();
+		filename = filename.replaceAll("[^a-z0-9\\.-_]", "");
+		filename = filename.replaceAll("-+", "-");
+		if (filename.isEmpty() || filename.length()<=guessExtension.length()+1) {
+			filename=nextCounter()+"."+guessExtension;
+		}
+		if (!filename.endsWith("."+guessExtension)) {
+			filename+="."+guessExtension;
+		}
+		final String ipfsFilename = filename;
+		new ImgUtils().toBlob(image).thenAccept((blob)->{
+			GWT.log("IPFS FILENAME: "+ipfsFilename);
+			presenter.postBlobToIpfs(ipfsFilename, blob).thenAccept((url)->image.src=url);
+		});
+	}
+	
+	private void valueChangeHandler(ValueChangeEvent<String> event) {
+		// always make sure there is "blank" below and above main content
+		GWT.log(" - EDITOR CHANGE");
+
+		// keep all content visible
+		editor.getEditor().find(".note-editable").css("height", "100%").css("min-height", "256px");
+
+		// image fixups
+		editor.getEditor().find(".note-editable").find("img[src^='data:']").each((o, e) -> {
+			if (!e.getAttribute("ImgUtilsResizedInplace").equals("true")) {
+				imgUtils.resizeInplace(e)//
+						.thenAccept((img) -> img.setAttribute("ImgUtilsResizedInplace", "true")) //
+						.thenRun(()->postImageToIpfs(Js.cast(e)));
+			}
+			String styles = e.getAttribute("style");
+			if (styles.contains("float: left") || styles.contains("float: right")) {
+				JQuery.$(e).css("max-width", "50%");
+				JQuery.$(e).css("height", "");
+			} else {
+				JQuery.$(e).css("max-width", "100%");
+				JQuery.$(e).css("height", "");
+			}
+			// styles = e.getAttribute("style");
+
+			// TODO: add ipfs => steemitimages sized img src url magic
+
+			// TODO: add save/restore to/from local storage magic in case of hitting
+			// "backspace"
+
+			// TODO: try and magic the images sizes scaled to editor container vs the 640px
+			// fixed width blog view at steemit.com/busy.org
+
+		});
+	};
 
 	private class ChipProvider extends DefaultMaterialChipProvider {
 		@Override
@@ -286,6 +292,15 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 	public void showStockCoverImages(List<String> imageUrls) {
 		// TODO Auto-generated method stub
 
+	}
+	
+	@Override
+	public void onprogressfn(ProgressEvent p0) {
+		if (p0.lengthComputable) {
+			DomGlobal.console.log(((int)(p0.loaded*100d/p0.total))+" %");
+		} else {
+			DomGlobal.console.log("??? %");
+		}
 	}
 
 }

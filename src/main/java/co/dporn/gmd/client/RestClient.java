@@ -10,12 +10,16 @@ import org.fusesource.restygwt.client.MethodCallback;
 import org.fusesource.restygwt.client.REST;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.http.client.URL;
 
 import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.DpornCoApi;
 import co.dporn.gmd.shared.PingResponse;
 import co.dporn.gmd.shared.PostListResponse;
 import co.dporn.gmd.shared.SuggestTagsResponse;
+import elemental2.dom.Blob;
+import elemental2.dom.XMLHttpRequest;
+import elemental2.dom.XMLHttpRequestUpload.OnprogressFn;
 
 public class RestClient {
 	
@@ -24,8 +28,15 @@ public class RestClient {
 		return _instance==null?_instance=new RestClient():_instance;
 	}
 
+	private String serviceRoot;
+
 	public RestClient() {
-		String serviceRoot = "/dpornco_application/api/1.0";
+		this("/dpornco_application/api/1.0");
+	}
+	
+	//"/dpornco_application/api/1.0";
+	public RestClient(String serviceRoot) {
+		this.serviceRoot = serviceRoot;
 		Defaults.setServiceRoot(serviceRoot);
 		rest = GWT.create(DpornCoRestApi.class);
 	}
@@ -34,6 +45,20 @@ public class RestClient {
 	}
 
 	private final DpornCoRestApi rest;
+	
+	public CompletableFuture<String> postBlobToIpfs(String authorization, String filename, Blob blob, OnprogressFn onprogress) {
+		CompletableFuture<String> future = new CompletableFuture<>();
+		filename = URL.encode(filename);
+		String xhrUrl = serviceRoot+"/ipfs/put/"+filename;
+		XMLHttpRequest xhr = new XMLHttpRequest();
+		xhr.upload.onprogress = onprogress;
+		xhr.onloadend = (e) -> future.complete(xhr.responseText);
+		xhr.onerror = (e) -> future.completeExceptionally(new RuntimeException("IPFS XHR FAILED"));
+		xhr.open("PUT", xhrUrl, true);
+//		xhr.setRequestHeader("Authorization", authorization);
+		xhr.send(blob);
+		return future;
+	}
 	
 	public CompletableFuture<SuggestTagsResponse> suggest(String prefix) {
 		GWT.log("-> suggest: "+prefix);
