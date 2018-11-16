@@ -3,10 +3,6 @@ package co.dporn.gmd.servlet;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,7 +22,6 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 
 import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
@@ -44,7 +39,7 @@ import io.ipfs.api.NamedStreamable;
 @Consumes(MediaType.APPLICATION_JSON)
 @Path("1.0")
 public class DpornCoApiImpl implements DpornCoApi {
-	
+
 	@Context
 	protected HttpServletRequest request;
 	@Context
@@ -67,8 +62,8 @@ public class DpornCoApiImpl implements DpornCoApi {
 		}
 		List<Post> posts = MongoDpornoCo.listPosts(startId, count);
 		Set<String> accountNameList = new HashSet<>();
-		Set<String> blacklist = new HashSet<>(SteemJInstance.getBlacklist());
-		posts.forEach(p->{
+		Set<String> blacklist = new HashSet<>(SteemJInstance.get().getBlacklist());
+		posts.forEach(p -> {
 			if (blacklist.contains(p.getAuthor())) {
 				p.setCoverImage(null);
 				p.setCoverImageIpfs(null);
@@ -79,7 +74,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			}
 		});
 		posts.forEach(p -> accountNameList.add(p.getAuthor()));
-		Map<String, AccountInfo> infoMap = SteemJInstance.getBlogDetails(accountNameList);
+		Map<String, AccountInfo> infoMap = SteemJInstance.get().getBlogDetails(accountNameList);
 		PostListResponse response = new PostListResponse();
 		response.setPosts(posts);
 		response.setInfoMap(infoMap);
@@ -93,23 +88,23 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 	@Override
 	public ActiveBlogsResponse blogsRecent() {
-		List<String> active = SteemJInstance.getActiveNsfwVerifiedList();
+		List<String> active = SteemJInstance.get().getActiveNsfwVerifiedList();
 		List<String> sublist = active.subList(0, Math.min(active.size(), 16));
 		ActiveBlogsResponse activeBlogsResponse = new ActiveBlogsResponse(sublist);
-		activeBlogsResponse.setInfoMap(SteemJInstance.getBlogDetails(sublist));
+		activeBlogsResponse.setInfoMap(SteemJInstance.get().getBlogDetails(sublist));
 		return activeBlogsResponse;
 	}
 
 	@Override
 	public PostListResponse postsFor(String username, String startId, int count) {
 		PostListResponse response = new PostListResponse();
-		Set<String> blacklist = new HashSet<>(SteemJInstance.getBlacklist());
+		Set<String> blacklist = new HashSet<>(SteemJInstance.get().getBlacklist());
 		if (blacklist.contains(username)) {
 			response.setInfoMap(new HashMap<>());
 			response.setPosts(new ArrayList<>());
 			return response;
 		}
-		System.out.println("=== postFor: "+username);
+		System.out.println("=== postFor: " + username);
 		if (count < 1) {
 			count = 1;
 		}
@@ -119,7 +114,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		List<Post> posts = MongoDpornoCo.listPostsFor(username, startId, count);
 		Set<String> accountNameList = new HashSet<>();
 		posts.forEach(p -> accountNameList.add(p.getAuthor()));
-		Map<String, AccountInfo> infoMap = SteemJInstance.getBlogDetails(accountNameList);
+		Map<String, AccountInfo> infoMap = SteemJInstance.get().getBlogDetails(accountNameList);
 		response.setPosts(posts);
 		response.setInfoMap(infoMap);
 		return response;
@@ -137,25 +132,25 @@ public class DpornCoApiImpl implements DpornCoApi {
 		return embed;
 	}
 
-	//TODO: implement short term memory cache
 	@Override
 	public ActiveBlogsResponse blogInfo(String username) {
-		System.out.println("=== blogInfo: "+username);
+		System.out.println("=== blogInfo: " + username);
+
 		ActiveBlogsResponse response = new ActiveBlogsResponse();
-		Set<String> blacklist = new HashSet<>(SteemJInstance.getBlacklist());
+		Set<String> blacklist = new HashSet<>(SteemJInstance.get().getBlacklist());
 		if (blacklist.contains(username)) {
 			response.setAuthors(new ArrayList<>());
 			response.setInfoMap(new HashMap<>());
 			return response;
 		}
-		response.setInfoMap(SteemJInstance.getBlogDetails(Arrays.asList(username)));
+		response.setInfoMap(SteemJInstance.get().getBlogDetails(Arrays.asList(username)));
 		response.setAuthors(new ArrayList<>(response.getInfoMap().keySet()));
 		return response;
 	}
 
 	@Override
 	public SuggestTagsResponse suggest(String tag) {
-		if (tag==null) {
+		if (tag == null) {
 			tag = "";
 		}
 		tag = tag.trim().toLowerCase();
@@ -168,11 +163,13 @@ public class DpornCoApiImpl implements DpornCoApi {
 	public SuggestTagsResponse suggest() {
 		return suggest("");
 	}
-	
-	private static long _counter=System.currentTimeMillis();
+
+	private static long _counter = System.currentTimeMillis();
+
 	private static synchronized long nextCounter() {
-		return (_counter=Math.max(_counter+1, System.currentTimeMillis()));
+		return (_counter = Math.max(_counter + 1, System.currentTimeMillis()));
 	}
+
 	protected String safeFilename(String filename) {
 		filename = filename.trim();
 		filename = filename.replace(" ", "-");
@@ -180,16 +177,18 @@ public class DpornCoApiImpl implements DpornCoApi {
 		filename = filename.replaceAll("[^a-z0-9\\.-_]", "");
 		filename = filename.replaceAll("-+", "-");
 		if (filename.trim().isEmpty()) {
-			filename=String.valueOf(nextCounter());
+			filename = String.valueOf(nextCounter());
 		}
 		return filename;
 	}
 
-	//https://steemconnect.com/api/me?access_token=here_the_token
 	@Override
-	public IpfsHashResponse ipfsPut(InputStream is, String authorization, String filename) {
-//		checkAuthorization(authorization);
-		filename=safeFilename(filename);
+	public IpfsHashResponse ipfsPut(InputStream is, String username, String authorization, String filename) {
+		if (!isAuthorized(username, authorization)) {
+			setResponseAsUnauthorized();
+			return null;
+		}
+		filename = safeFilename(filename);
 		File tmpDir = null;
 		File tmpFile = null;
 		IPFS ipfs = new IPFS("/ip4/127.0.0.1/tcp/5001");
@@ -201,7 +200,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			IpfsHashResponse response = new IpfsHashResponse();
 			response.setFilename(filename);
 			if (!m.isEmpty()) {
-				response.setIpfsHash(m.get(m.size()-1).hash.toBase58());
+				response.setIpfsHash(m.get(m.size() - 1).hash.toBase58());
 			}
 			return response;
 		} catch (IOException e) {
@@ -211,33 +210,15 @@ public class DpornCoApiImpl implements DpornCoApi {
 		}
 	}
 
-	//TODO make sure is uri encoded and not null
-	//https://steemconnect.com/api/me?access_token=here_the_token
-	private void checkAuthorization(String authorization) {
-		URL check;
-		try {
-			String spec = "https://steemconnect.com/api/me?access_token="+authorization;
-			System.out.println(spec);
-			check = new URL(spec);
-		} catch (MalformedURLException e) {
-			return;
+	private boolean isAuthorized(String username, String authorization) {
+		if (username == null) {
+			System.err.println("isAuthorized: username is null");
+			return false;
 		}
-		try {
-			HttpURLConnection conn = (HttpURLConnection)check.openConnection();
-			conn.setDoInput(true);
-			try {
-				conn.connect();
-				System.out.println(IOUtils.toString(conn.getInputStream(), StandardCharsets.UTF_8));
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.out.println(IOUtils.toString(conn.getErrorStream(), StandardCharsets.UTF_8));
-			}
-			conn.disconnect();
-			return;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return;
-		}
+		String meUsername = ServerSteemConnect.username(authorization);
+		System.err.println("isAuthorized: meUsername = "+meUsername);
+		boolean authorized = username.equalsIgnoreCase(meUsername);
+		return authorized;
 	}
 
 	private void setResponseAsUnauthorized() {

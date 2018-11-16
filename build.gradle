@@ -112,6 +112,11 @@ dependencies {
     compile 'com.github.tommyettinger:RegExodus:v0.1.10'
     compile 'org.mongodb:mongodb-driver-sync:3.8.2'
     
+    //simplistic server side LRU caching (read LRUMap caveats when mucking with it)
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-collections4
+	compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.2'
+    
+    
     //for IPFS adding
     compile 'com.github.ipfs:java-ipfs-api:v1.2.2'
     
