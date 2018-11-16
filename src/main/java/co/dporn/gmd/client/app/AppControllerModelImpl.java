@@ -23,7 +23,7 @@ import com.google.gwt.storage.client.StorageMap;
 import com.google.gwt.user.client.Window.Location;
 import com.wallissoftware.pushstate.client.PushStateHistorian;
 
-import co.dporn.gmd.client.RestClient;
+import co.dporn.gmd.client.ClientRestClient;
 import co.dporn.gmd.client.presenters.RoutePresenter;
 import co.dporn.gmd.client.presenters.RoutePresenter.ActiveUserInfo;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
@@ -43,6 +43,7 @@ import steem.model.Vote;
 
 public class AppControllerModelImpl implements AppControllerModel {
 	private static final String STEEMCONNECT_KEY = "steemconnectv2";
+	private static final String STEEM_USERNAME_KEY = "steem-username";
 	private static final int FEATURED_POST_POOL_SIZE = 16;
 	private static final int CHANNEL_POSTS_INITIAL_SIZE = 8;
 	private SteemConnectV2 sc2api;
@@ -146,6 +147,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 				}
 			}
 			loggedIn = true;
+			appModelCache.put(STEEM_USERNAME_KEY, me.getUser());
 			routePresenter.setUserInfo(new ActiveUserInfo(me.getUser(), displayName == null ? "" : displayName.trim()));
 		});
 	}
@@ -157,27 +159,27 @@ public class AppControllerModelImpl implements AppControllerModel {
 
 	@Override
 	public CompletableFuture<PostListResponse> postsFor(String username) {
-		return RestClient.get().postsFor(username, CHANNEL_POSTS_INITIAL_SIZE);
+		return ClientRestClient.get().postsFor(username, CHANNEL_POSTS_INITIAL_SIZE);
 	}
 
 	@Override
 	public CompletableFuture<PostListResponse> postsFor(String username, String startId, int count) {
-		return RestClient.get().postsFor(username, startId, count);
+		return ClientRestClient.get().postsFor(username, startId, count);
 	}
 
 	@Override
 	public CompletableFuture<PostListResponse> listPosts(int count) {
-		return RestClient.get().posts(count);
+		return ClientRestClient.get().posts(count);
 	}
 
 	@Override
 	public CompletableFuture<PostListResponse> listPosts(String startId, int count) {
-		return RestClient.get().posts(startId == null ? "" : startId, count);
+		return ClientRestClient.get().posts(startId == null ? "" : startId, count);
 	}
 
 	@Override
 	public CompletableFuture<ActiveBlogsResponse> listFeatured() {
-		return RestClient.get().listFeatured();
+		return ClientRestClient.get().listFeatured();
 	}
 
 	/**
@@ -221,7 +223,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 
 	@Override
 	public CompletableFuture<ActiveBlogsResponse> blogInfo(String username) {
-		return RestClient.get().blogInfo(username);
+		return ClientRestClient.get().blogInfo(username);
 	}
 
 	@Override
@@ -261,6 +263,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 	public void logout() {
 		GWT.log("logout");
 		appModelCache.remove(STEEMCONNECT_KEY);
+		appModelCache.remove(STEEM_USERNAME_KEY);
 		sc2api.revokeToken();
 		loggedIn = false;
 		deferred(() -> {
@@ -271,16 +274,16 @@ public class AppControllerModelImpl implements AppControllerModel {
 
 	@Override
 	public CompletableFuture<List<String>> tagsOracle(final String prefix, int limit) {
-		GWT.log("suggest: "+prefix+" ["+limit+"]");
+		GWT.log("suggest: " + prefix + " [" + limit + "]");
 		final List<String> tags = new ArrayList<>();
 		CompletableFuture<List<String>> future = new CompletableFuture<>();
-		RestClient.get().suggest(prefix==null?"":prefix.trim()).thenAccept(r -> {
-			for (String tag: r.getTags()) {
+		ClientRestClient.get().suggest(prefix == null ? "" : prefix.trim()).thenAccept(r -> {
+			for (String tag : r.getTags()) {
 				if (tag.trim().isEmpty()) {
 					continue;
 				}
 				tags.add(tag);
-				if (tags.size()>=limit) {
+				if (tags.size() >= limit) {
 					break;
 				}
 			}
@@ -298,28 +301,31 @@ public class AppControllerModelImpl implements AppControllerModel {
 	protected interface IpfsHashResponseMapper extends ObjectMapper<IpfsHashResponse> {
 		IpfsHashResponseMapper mapper = GWT.create(IpfsHashResponseMapper.class);
 	}
+
 	@Override
 	public CompletableFuture<List<String>> postBlobToIpfs(String filename, Blob blob, OnprogressFn onprogress) {
 		CompletableFuture<List<String>> future = new CompletableFuture<>();
 		String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
+		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
 		if (authorization.trim().isEmpty()) {
 			future.completeExceptionally(new RuntimeException("NOT AUTHORIZED"));
 			routePresenter.toast("UPLOAD NOT AUTHORIZED");
 			return future;
 		}
-		RestClient.get().postBlobToIpfs(authorization, filename, blob, onprogress).thenAccept((response)->{
-			try {
-				IpfsHashResponse hash = IpfsHashResponseMapper.mapper.read(response);
-				String src0 = "https://ipfs.io/ipfs/"+hash.getIpfsHash()+"/"+hash.getFilename();
-				String src1 = "https://steemitimages.com/0x0/"+src0;
-				future.complete(Arrays.asList(src1, src0));
-			} catch (JsonDeserializationException e) {
-				future.completeExceptionally(e);
-			}
-		}).exceptionally((ex)->{
-			future.completeExceptionally(ex);
-			return null;
-		});
+		ClientRestClient.get().postBlobToIpfs(username, authorization, filename, blob, onprogress)
+				.thenAccept((response) -> {
+					try {
+						IpfsHashResponse hash = IpfsHashResponseMapper.mapper.read(response);
+						String src0 = "https://ipfs.io/ipfs/" + hash.getIpfsHash() + "/" + hash.getFilename();
+						String src1 = "https://steemitimages.com/0x0/" + src0;
+						future.complete(Arrays.asList(src1, src0));
+					} catch (JsonDeserializationException e) {
+						future.completeExceptionally(e);
+					}
+				}).exceptionally((ex) -> {
+					future.completeExceptionally(ex);
+					return null;
+				});
 		return future;
 	}
 }

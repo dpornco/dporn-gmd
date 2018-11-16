@@ -15,49 +15,51 @@ import javax.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public interface DpornCoApi {
-	
+
 	@Consumes(MediaType.WILDCARD)
 	@Path("ipfs/put/{filename}")
 	@PUT
-	IpfsHashResponse ipfsPut(InputStream is, @HeaderParam("Authorization") String authorization, @PathParam("filename") String filename);
-	
+	IpfsHashResponse ipfsPut(InputStream is, @HeaderParam("username") String username,
+			@HeaderParam("Authorization") String authorization, @PathParam("filename") String filename);
+
 	@Path("suggest/{tag}")
 	@GET
-	SuggestTagsResponse suggest(@PathParam("tag")String tag);
-	
+	SuggestTagsResponse suggest(@PathParam("tag") String tag);
+
 	@Path("suggest")
 	@GET
 	SuggestTagsResponse suggest();
-	
+
 	@Path("ping")
 	@GET
 	PingResponse ping();
-	
+
 	@Path("embed/@{authorname}/{permlink}")
 	@GET
 	Map<String, String> embed(@PathParam("authorname") String author, @PathParam("permlink") String permlink);
-	
+
 	@Path("posts/@{username}/{startId}/{count}")
 	@GET
-	PostListResponse postsFor(@PathParam("username")String username, @PathParam("startId")String startId, @PathParam("count")int count);
-	
+	PostListResponse postsFor(@PathParam("username") String username, @PathParam("startId") String startId,
+			@PathParam("count") int count);
+
 	@Path("posts/@{username}/{count}")
 	@GET
-	PostListResponse postsFor(@PathParam("username")String username, @PathParam("count")int count);
-	
+	PostListResponse postsFor(@PathParam("username") String username, @PathParam("count") int count);
+
 	@Path("posts/{startId}/{count}")
 	@GET
-	PostListResponse posts(@PathParam("startId")String startId, @PathParam("count")int count);
-	
+	PostListResponse posts(@PathParam("startId") String startId, @PathParam("count") int count);
+
 	@Path("posts/{count}")
 	@GET
-	PostListResponse posts(@PathParam("count")int count);
-	
+	PostListResponse posts(@PathParam("count") int count);
+
 	@Path("blogs/recent")
 	@GET
 	ActiveBlogsResponse blogsRecent();
-	
+
 	@Path("blog/info/@{username}")
 	@GET
-	ActiveBlogsResponse blogInfo(@PathParam("username")String username);
+	ActiveBlogsResponse blogInfo(@PathParam("username") String username);
 }

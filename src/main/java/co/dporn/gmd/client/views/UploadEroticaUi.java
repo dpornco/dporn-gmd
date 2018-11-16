@@ -18,9 +18,9 @@ import com.google.gwt.user.client.ui.Widget;
 
 import co.dporn.gmd.client.img.ImgUtils;
 import co.dporn.gmd.client.presenters.UploadErotica;
-import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLImageElement;
 import elemental2.dom.ProgressEvent;
+import elemental2.dom.XMLHttpRequest.OnprogressFn;
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete.DefaultMaterialChipProvider;
 import gwt.material.design.addins.client.richeditor.MaterialRichEditor;
@@ -119,7 +119,7 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 		filename = filename.trim();
 		filename = filename.replace(" ", "-");
 		filename = filename.toLowerCase();
-		filename = filename.replaceAll("[^a-z0-9\\.-_]", "");
+		filename = filename.replaceAll("[^a-z0-9\\.\\-_]", "");
 		filename = filename.replaceAll("-+", "-");
 		if (filename.isEmpty() || filename.length() <= guessExtension.length() + 1) {
 			filename = nextCounter() + "." + guessExtension;
@@ -129,10 +129,15 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 		}
 		final String ipfsFilename = filename;
 		new ImgUtils().toBlob(image).thenAccept((blob) -> {
-			presenter.postBlobToIpfs(ipfsFilename, blob).thenAccept((url) -> {
-				image.srcset=StringUtils.join(url, " ");
-				image.src = url.get(0);
-				image.onerror = (e) -> image.src = url.get(1);
+			presenter.postBlobToIpfs(ipfsFilename, blob).thenAccept((urls) -> {
+				MaterialToast.fireToast("Image posted: "+ipfsFilename);
+				image.srcset = StringUtils.join(urls, " ");
+				image.src = urls.get(0);
+				image.onerror = e -> {
+					image.onerror = null;
+					image.src = urls.get(1);
+					return e;
+				};
 			});
 		});
 	}
@@ -299,12 +304,25 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 	}
 
 	@Override
-	public void onprogressfn(ProgressEvent p0) {
-		if (p0.lengthComputable) {
-			DomGlobal.console.log(((int) (p0.loaded * 100d / p0.total)) + " %");
-		} else {
-			DomGlobal.console.log("??? %");
-		}
+	public void onprogressFn(ProgressEvent p0) {
 	}
 
+	@Override
+	public OnprogressFn getOnprogressFn(String filename) {
+		return new OnprogressFn() {
+			int percent = -1;
+
+			@Override
+			public void onInvoke(ProgressEvent p0) {
+				if (!p0.lengthComputable) {
+					return;
+				}
+				int newPercent = 10 * (int) (Math.ceil(p0.loaded * 100 / p0.total) / 10);
+				if (newPercent != percent) {
+					percent = newPercent;
+					MaterialToast.fireToast("Posting to IPFS: " + filename + " " + percent + "%");
+				}
+			}
+		};
+	}
 }

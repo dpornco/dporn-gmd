@@ -8,6 +8,7 @@ import com.google.gwt.user.client.Window;
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.views.IsView;
 import elemental2.dom.Blob;
+import elemental2.dom.XMLHttpRequest.OnprogressFn;
 
 public class UploadEroticaImpl implements UploadErotica {
 
@@ -96,6 +97,7 @@ public class UploadEroticaImpl implements UploadErotica {
 
 	@Override
 	public CompletableFuture<List<String>> postBlobToIpfs(String filename, Blob blob) {
-		return model.postBlobToIpfs(filename, blob, (e)->view.onprogressfn(e));
+		OnprogressFn onprogressfn = view.getOnprogressFn(filename);
+		return model.postBlobToIpfs(filename, blob, (e)->onprogressfn.onInvoke(e));
 	}
 }

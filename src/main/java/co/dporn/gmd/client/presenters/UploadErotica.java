@@ -11,10 +11,12 @@ import co.dporn.gmd.client.views.CommonUploadViewFeatures;
 import co.dporn.gmd.client.views.IsView;
 import elemental2.dom.Blob;
 import elemental2.dom.ProgressEvent;
+import elemental2.dom.XMLHttpRequest.OnprogressFn;
 
 public interface UploadErotica extends IsChildPresenter<UploadEroticaView>, ScheduledCommand {
 	interface UploadEroticaView extends IsView<UploadErotica>, CommonUploadViewFeatures {
-		void onprogressfn(ProgressEvent p0);
+		void onprogressFn(ProgressEvent p0);
+		OnprogressFn getOnprogressFn(String filename);
 	}
 	void selectStockCoverImage(String coverImage);
 	void showAvailableStockCoverImages();
