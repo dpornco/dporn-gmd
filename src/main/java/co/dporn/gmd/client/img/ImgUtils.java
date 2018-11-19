@@ -83,6 +83,16 @@ public class ImgUtils {
 		} else {
 			scale = scaleHeight;
 		}
+
+		// don't canvas resize webp or gif - animations are lost
+		switch (guessExtension(image.src)) {
+		case "webp":
+		case "gif":
+			scale = 1.0d;
+			break;
+		default:
+		}
+
 		if (scale < 1) {
 			int newWidth = (int) (w * scale);
 			int newHeight = (int) (h * scale);
@@ -122,11 +132,11 @@ public class ImgUtils {
 
 	public String guessMime(String dataUrl) {
 		if (dataUrl.startsWith("data:")) {
-			dataUrl=dataUrl.substring(5);
+			dataUrl = dataUrl.substring(5);
 		}
 		if (dataUrl.contains(";base64")) {
 			String xmime = StringUtils.substringBefore(dataUrl, ";base64");
-			//user browser supplied mime type when possible
+			// user browser supplied mime type when possible
 			if (xmime.contains("/")) {
 				return xmime;
 			}
