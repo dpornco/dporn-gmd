@@ -51,7 +51,7 @@ public class ClientRestClient {
 			OnprogressFn onprogress) {
 		CompletableFuture<String> future = new CompletableFuture<>();
 		filename = URL.encode(filename);
-		String xhrUrl = serviceRoot + "/ipfs/put/" + filename;
+		String xhrUrl = serviceRoot + "/ipfs/put-0/" + filename;
 		XMLHttpRequest xhr = new XMLHttpRequest();
 		xhr.upload.onprogress = onprogress;
 		xhr.onloadend = (e) -> future.complete(xhr.responseText);

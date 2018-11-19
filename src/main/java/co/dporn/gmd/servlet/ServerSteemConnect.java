@@ -8,6 +8,8 @@ import java.util.Map;
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 
+import co.dporn.gmd.servlet.utils.ServerRestClient;
+
 public class ServerSteemConnect {
 	private static final long MINUTE_ms = 1000l * 60;
 	private static final String STEEMCONNECT_API = "https://steemconnect.com/api/";

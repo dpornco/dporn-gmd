@@ -183,7 +183,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 	}
 
 	@Override
-	public IpfsHashResponse ipfsPut(InputStream is, String username, String authorization, String filename) {
+	public IpfsHashResponse ipfsPut0(InputStream is, String username, String authorization, String filename) {
 		if (!isAuthorized(username, authorization)) {
 			setResponseAsUnauthorized();
 			return null;
@@ -229,6 +229,34 @@ public class DpornCoApiImpl implements DpornCoApi {
 			response.getWriter().flush();
 			response.getWriter().close();
 		} catch (IOException e) {
+		}
+	}
+
+	@Override
+	public IpfsHashResponse ipfsPut(InputStream is, String username, String authorization, String filename) {
+		if (!isAuthorized(username, authorization)) {
+			setResponseAsUnauthorized();
+			return null;
+		}
+		filename = safeFilename(filename);
+		File tmpDir = null;
+		File tmpFile = null;
+		IPFS ipfs = new IPFS("/ip4/127.0.0.1/tcp/5001");
+		try {
+			tmpDir = Files.createTempDirectory("ipfs-put-").toFile();
+			tmpFile = new File(tmpDir, filename);
+			FileUtils.copyInputStreamToFile(is, tmpFile);
+			List<MerkleNode> m = ipfs.add(new NamedStreamable.FileWrapper(tmpFile), true);
+			IpfsHashResponse response = new IpfsHashResponse();
+			response.setFilename(filename);
+			if (!m.isEmpty()) {
+				response.setIpfsHash(m.get(m.size() - 1).hash.toBase58());
+			}
+			return response;
+		} catch (IOException e) {
+			return null;
+		} finally {
+			FileUtils.deleteQuietly(tmpDir);
 		}
 	}
 }

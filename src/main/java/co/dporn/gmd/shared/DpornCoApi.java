@@ -17,6 +17,12 @@ import javax.ws.rs.core.MediaType;
 public interface DpornCoApi {
 
 	@Consumes(MediaType.WILDCARD)
+	@Path("ipfs/put-0/{filename}")
+	@PUT
+	IpfsHashResponse ipfsPut0(InputStream is, @HeaderParam("username") String username,
+			@HeaderParam("Authorization") String authorization, @PathParam("filename") String filename);
+	
+	@Consumes(MediaType.WILDCARD)
 	@Path("ipfs/put/{filename}")
 	@PUT
 	IpfsHashResponse ipfsPut(InputStream is, @HeaderParam("username") String username,
