@@ -19,6 +19,9 @@ public class ServerRestClient {
 
 	protected static String createUrlWithQuerystring(String url, Map<String, String> queryParams)
 			throws UnsupportedEncodingException {
+		if (queryParams==null) {
+			return url;
+		}
 		boolean isFirst = true;
 		StringBuilder sb = new StringBuilder(url);
 		Iterator<String> iter = queryParams.keySet().iterator();
