@@ -6,6 +6,12 @@
 <urlrewrite>
 
 	<rule>
+		<note>IPFS Gateway: Redirect to nginx IPFS gateway proxy for IPFS access (mainly for dev mode work)</note>
+		<from>^/vidcache/(.*)</from>
+		<to type="redirect">https://dporn.co/vidcache/$1</to>
+	</rule>
+
+	<rule>
 		<note>Steem Connect Auth Callback</note>
 		<from>^/auth/.*</from>
 		<to>/</to>
