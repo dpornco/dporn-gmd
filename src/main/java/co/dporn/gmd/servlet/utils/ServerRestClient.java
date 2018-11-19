@@ -10,16 +10,16 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-
 
 public class ServerRestClient {
 
 	protected static String createUrlWithQuerystring(String url, Map<String, String> queryParams)
 			throws UnsupportedEncodingException {
-		if (queryParams==null) {
+		if (queryParams == null) {
 			return url;
 		}
 		boolean isFirst = true;
@@ -54,7 +54,13 @@ public class ServerRestClient {
 			IOUtils.copy(is, urlConnection.getOutputStream());
 			try (InputStream inputStream = urlConnection.getInputStream()) {
 				response.setBody(getString(inputStream));
-				response.getHeaders().putAll(urlConnection.getHeaderFields());
+				Map<String, List<String>> headerFields = urlConnection.getHeaderFields();
+				for (String header : headerFields.keySet()) {
+					List<String> value = headerFields.get(header);
+					String lcHeader = header == null ? null : header.toLowerCase().trim();
+					response.getHeaders().put(lcHeader, value);
+				}
+				;
 				return response;
 			}
 		} catch (Exception e) {
@@ -63,7 +69,7 @@ public class ServerRestClient {
 			urlConnection.disconnect();
 		}
 	}
-	
+
 	public static ResponseWithHeaders postStream(String url, InputStream is, Map<String, String> params) {
 		ResponseWithHeaders response = new ResponseWithHeaders();
 		HttpURLConnection urlConnection = null;
@@ -87,7 +93,7 @@ public class ServerRestClient {
 			urlConnection.disconnect();
 		}
 	}
-	
+
 	public static ResponseWithHeaders delete(String url, Map<String, String> params) {
 		ResponseWithHeaders response = new ResponseWithHeaders();
 		HttpURLConnection urlConnection = null;
@@ -110,7 +116,7 @@ public class ServerRestClient {
 			urlConnection.disconnect();
 		}
 	}
-	
+
 	public static String get(String url, Map<String, String> params) {
 		HttpURLConnection urlConnection = null;
 		try {
@@ -127,7 +133,7 @@ public class ServerRestClient {
 			urlConnection.disconnect();
 		}
 	}
-	
+
 	public static ResponseWithHeaders head(String url, Map<String, String> params) {
 		HttpURLConnection urlConnection = null;
 		try {

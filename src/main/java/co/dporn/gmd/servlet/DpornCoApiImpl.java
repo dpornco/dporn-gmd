@@ -218,7 +218,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			return false;
 		}
 		String meUsername = ServerSteemConnect.username(authorization);
-		System.err.println("isAuthorized: meUsername = "+meUsername);
+		System.err.println("isAuthorized: meUsername = " + meUsername);
 		boolean authorized = username.equalsIgnoreCase(meUsername);
 		return authorized;
 	}
@@ -236,6 +236,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 	private static final String IPFS_EMPTY_DIR = "QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn";
 	private static final String IPFS_GATEWAY = "http://localhost:8008/ipfs/";
+
 	@Override
 	public IpfsHashResponse ipfsPut(InputStream is, String username, String authorization, String filename) {
 		if (!isAuthorized(username, authorization)) {
@@ -243,12 +244,18 @@ public class DpornCoApiImpl implements DpornCoApi {
 			return null;
 		}
 		filename = safeFilename(filename);
-		ResponseWithHeaders putResponse = ServerRestClient.putStream(IPFS_GATEWAY+IPFS_EMPTY_DIR+"/"+filename, is, null);
-		System.out.print(putResponse.getHeaders());
-		List<String> ipfsHashes = putResponse.getHeaders().get("IPFS-HASH");
+		ResponseWithHeaders putResponse = ServerRestClient.putStream(IPFS_GATEWAY + IPFS_EMPTY_DIR + "/" + filename, is,
+				null);
+		List<String> ipfsHashes = putResponse.getHeaders().get("ipfs-hash");
+		List<String> locations = putResponse.getHeaders().get("location");
 		IpfsHashResponse response = new IpfsHashResponse();
 		response.setFilename(filename);
-		response.setIpfsHash(ipfsHashes.get(ipfsHashes.size()-1));
+		if (!ipfsHashes.isEmpty()) {
+			response.setIpfsHash(ipfsHashes.get(ipfsHashes.size() - 1));
+		}
+		if (!locations.isEmpty()) {
+			response.setLocation(locations.get(locations.size() - 1));
+		}
 		return response;
 	}
 }
