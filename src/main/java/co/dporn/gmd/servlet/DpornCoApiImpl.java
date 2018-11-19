@@ -23,6 +23,8 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.io.FileUtils;
 
+import co.dporn.gmd.servlet.utils.ResponseWithHeaders;
+import co.dporn.gmd.servlet.utils.ServerRestClient;
 import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.DpornCoApi;
@@ -232,6 +234,8 @@ public class DpornCoApiImpl implements DpornCoApi {
 		}
 	}
 
+	private static final String IPFS_EMPTY_DIR = "QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn";
+	private static final String IPFS_GATEWAY = "http://localhost:8008/ipfs/";
 	@Override
 	public IpfsHashResponse ipfsPut(InputStream is, String username, String authorization, String filename) {
 		if (!isAuthorized(username, authorization)) {
@@ -239,24 +243,12 @@ public class DpornCoApiImpl implements DpornCoApi {
 			return null;
 		}
 		filename = safeFilename(filename);
-		File tmpDir = null;
-		File tmpFile = null;
-		IPFS ipfs = new IPFS("/ip4/127.0.0.1/tcp/5001");
-		try {
-			tmpDir = Files.createTempDirectory("ipfs-put-").toFile();
-			tmpFile = new File(tmpDir, filename);
-			FileUtils.copyInputStreamToFile(is, tmpFile);
-			List<MerkleNode> m = ipfs.add(new NamedStreamable.FileWrapper(tmpFile), true);
-			IpfsHashResponse response = new IpfsHashResponse();
-			response.setFilename(filename);
-			if (!m.isEmpty()) {
-				response.setIpfsHash(m.get(m.size() - 1).hash.toBase58());
-			}
-			return response;
-		} catch (IOException e) {
-			return null;
-		} finally {
-			FileUtils.deleteQuietly(tmpDir);
-		}
+		ResponseWithHeaders putResponse = ServerRestClient.putStream(IPFS_GATEWAY+IPFS_EMPTY_DIR+"/"+filename, is, null);
+		System.out.print(putResponse.getHeaders());
+		List<String> ipfsHashes = putResponse.getHeaders().get("IPFS-HASH");
+		IpfsHashResponse response = new IpfsHashResponse();
+		response.setFilename(filename);
+		response.setIpfsHash(ipfsHashes.get(ipfsHashes.size()-1));
+		return response;
 	}
 }
