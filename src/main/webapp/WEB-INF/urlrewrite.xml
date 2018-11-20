@@ -6,8 +6,14 @@
 <urlrewrite>
 
 	<rule>
-		<note>IPFS Gateway: Redirect to nginx IPFS gateway proxy for IPFS access (mainly for dev mode work)</note>
+		<note>IPFS Gateway: Redirect servlet to nginx IPFS gateway proxy for IPFS access (mainly for dev mode work)</note>
 		<from>^/vidcache/(.*)</from>
+		<to type="redirect">https://dporn.co/vidcache/$1</to>
+	</rule>
+	
+	<rule>
+		<note>IPFS Gateway: Redirect servlet to nginx IPFS gateway proxy for IPFS access (mainly for dev mode work)</note>
+		<from>^/ipfs/(.*)</from>
 		<to type="redirect">https://dporn.co/vidcache/$1</to>
 	</rule>
 
