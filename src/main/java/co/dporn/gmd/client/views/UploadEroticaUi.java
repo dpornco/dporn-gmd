@@ -11,7 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
-import com.google.gwt.editor.client.EditorError;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
@@ -31,7 +30,6 @@ import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete.DefaultMaterialChipProvider;
 import gwt.material.design.addins.client.richeditor.MaterialRichEditor;
 import gwt.material.design.addins.client.richeditor.base.constants.ToolbarButton;
-import gwt.material.design.client.base.error.ErrorHandler;
 import gwt.material.design.client.constants.ChipType;
 import gwt.material.design.client.constants.IconType;
 import gwt.material.design.client.ui.MaterialButton;
@@ -179,12 +177,15 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 		editor.setValue("<p><br></p>", true, true);
 		editor.getEditor().find("[data-event='imageClass']").remove();
 		editor.getEditor().find("[data-event='imageShape']").remove();
-		this.btnTagSets.addClickHandler(e -> presenter.viewRecentTagSets("erotica"));
-		this.btnClear.addClickHandler((e)->{
+		btnTagSets.addClickHandler(e -> presenter.viewRecentTagSets("erotica"));
+		btnClear.addClickHandler((e)->{
 			ac.setItemValues(new ArrayList<>(this.mandatorySuggestions), true);
 			title.clear();
 			editor.reset();
 			title.setFocus(true);
+		});
+		btnPreview.addClickHandler(e->{
+			presenter.showPostBodyPreview((double) editor.getEditor().width(), editor.getValue());
 		});
 	}
 

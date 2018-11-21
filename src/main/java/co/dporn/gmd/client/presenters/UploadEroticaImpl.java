@@ -2,9 +2,11 @@ package co.dporn.gmd.client.presenters;
 
 import java.util.concurrent.CompletableFuture;
 
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 
 import co.dporn.gmd.client.app.AppControllerModel;
+import co.dporn.gmd.client.utils.HtmlReformatter;
 import co.dporn.gmd.client.views.IsView;
 import elemental2.dom.Blob;
 import elemental2.dom.XMLHttpRequest.OnprogressFn;
@@ -104,5 +106,14 @@ public class UploadEroticaImpl implements UploadErotica {
 	public Void viewRecentTagSets(String mustHaveTag) {
 		model.recentTagSets(mustHaveTag).thenAccept(sets->view.showTagSets(sets));
 		return null;
+	}
+
+	@Override
+	public void showPostBodyPreview(Double editorWidth, String html) {
+		double imgScaleWidth = Math.min( 640d / editorWidth, 1.0d);
+		GWT.log("SCALE: "+imgScaleWidth);
+		HtmlReformatter reformatter = new HtmlReformatter(imgScaleWidth);
+		String newHtml = reformatter.reformat(html);
+		GWT.log(newHtml);
 	}
 }
