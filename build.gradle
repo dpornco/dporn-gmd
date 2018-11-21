@@ -89,11 +89,11 @@ gwt {
 		localWorkers = 4;
 	}
 	superDev {
-		noPrecompile = false;
+		noPrecompile = true;
 		failOnError = false;
 		bindAddress = "0.0.0.0";
 	}
-	maxHeapSize = "2048M";
+	maxHeapSize = "3128M";
 }
 
 configurations {

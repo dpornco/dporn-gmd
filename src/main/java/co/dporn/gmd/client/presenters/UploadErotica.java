@@ -29,5 +29,5 @@ public interface UploadErotica extends IsChildPresenter<UploadEroticaView>, Sche
 	 * @param blob
 	 * @return
 	 */
-	CompletableFuture<List<String>> postBlobToIpfs(String filename, Blob blob);
+	CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob);
 }

@@ -96,8 +96,8 @@ public class UploadEroticaImpl implements UploadErotica {
 	}
 
 	@Override
-	public CompletableFuture<List<String>> postBlobToIpfs(String filename, Blob blob) {
+	public CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob) {
 		OnprogressFn onprogressfn = view.getOnprogressFn(filename);
-		return model.postBlobToIpfs(filename, blob, (e)->onprogressfn.onInvoke(e));
+		return model.postBlobToIpfsFile(filename, blob, (e)->onprogressfn.onInvoke(e));
 	}
 }

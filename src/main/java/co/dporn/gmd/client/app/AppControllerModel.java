@@ -6,6 +6,7 @@ import java.util.concurrent.CompletableFuture;
 import co.dporn.gmd.client.presenters.RoutePresenter;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.PostListResponse;
+import co.dporn.gmd.shared.TagSet;
 import elemental2.dom.Blob;
 import elemental2.dom.XMLHttpRequestUpload.OnprogressFn;
 import steem.model.DiscussionComment;
@@ -55,5 +56,7 @@ public interface AppControllerModel {
 
 	CompletableFuture<List<String>> tagsOracle(String query, int limit);
 
-	CompletableFuture<List<String>> postBlobToIpfs(String filename, Blob blob, OnprogressFn onprogress);
+	CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob, OnprogressFn onprogress);
+	
+	CompletableFuture<List<TagSet>> recentTagSets(String username, String mustHaveTag);
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -30,6 +31,7 @@ import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.IpfsHashResponse;
 import co.dporn.gmd.shared.Post;
 import co.dporn.gmd.shared.PostListResponse;
+import co.dporn.gmd.shared.TagSet;
 import elemental2.dom.Blob;
 import elemental2.dom.XMLHttpRequestUpload.OnprogressFn;
 import steem.SteemApi;
@@ -38,6 +40,7 @@ import steem.connect.SteemConnectV2;
 import steem.connect.model.SteemAccountMetadata;
 import steem.connect.model.SteemAccountMetadata.AccountProfile;
 import steem.connect.model.SteemConnectMe;
+import steem.model.CommentMetadata;
 import steem.model.DiscussionComment;
 import steem.model.Vote;
 
@@ -303,8 +306,8 @@ public class AppControllerModelImpl implements AppControllerModel {
 	}
 
 	@Override
-	public CompletableFuture<List<String>> postBlobToIpfs(String filename, Blob blob, OnprogressFn onprogress) {
-		CompletableFuture<List<String>> future = new CompletableFuture<>();
+	public CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob, OnprogressFn onprogress) {
+		CompletableFuture<String> future = new CompletableFuture<>();
 		String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
 		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
 		if (authorization.trim().isEmpty()) {
@@ -316,16 +319,72 @@ public class AppControllerModelImpl implements AppControllerModel {
 				.thenAccept((response) -> {
 					try {
 						IpfsHashResponse hash = IpfsHashResponseMapper.mapper.read(response);
-						String src0 = "https://ipfs.io/ipfs/" + hash.getIpfsHash() + "/" + hash.getFilename();
-						String src1 = "https://steemitimages.com/0x0/" + src0;
-						future.complete(Arrays.asList(src1, src0));
+						if (hash.getLocation()==null || hash.getLocation().trim().isEmpty()) {
+							future.completeExceptionally(new RuntimeException("NO IPFS PATH RETURNED"));
+							return;
+						}
+						future.complete(hash.getLocation());
 					} catch (JsonDeserializationException e) {
 						future.completeExceptionally(e);
+						return;
 					}
 				}).exceptionally((ex) -> {
 					future.completeExceptionally(ex);
 					return null;
 				});
+		return future;
+	}
+
+	@Override
+	public CompletableFuture<List<TagSet>> recentTagSets(String username, String mustHaveTag) {
+		mustHaveTag = mustHaveTag.trim().toLowerCase();
+		final String lookFor = mustHaveTag;
+		CompletableFuture<List<TagSet>> future = new CompletableFuture<List<TagSet>>();
+		steem.SteemApi.getDiscussionsByBlog(username).thenAccept(list -> {
+			List<TagSet> tagsets = new ArrayList<>();
+			List<TagSet> fallbacksets = new ArrayList<>();
+			int tagsetsChoiceSize = 6;
+			scanlist: for (DiscussionComment comment : list) {
+				CommentMetadata metadata = CommentMetadata.fromJson(comment.getJsonMetadata());
+				List<String> tags = metadata.getTags();
+				if (tags == null) {
+					continue;
+				}
+				// normalize tags
+				TagSet ts = new TagSet();
+				Iterator<String> iter = tags.iterator();
+				while (iter.hasNext()) {
+					String tag = iter.next();
+					tag = tag.trim().toLowerCase().replace(" ", "-").replaceAll("-+", "-");
+					if (tag.isEmpty()) {
+						continue;
+					}
+					ts.getTags().add(tag);
+				}
+				if (!ts.getTags().contains(lookFor)) {
+					if (!fallbacksets.contains(ts)) {
+						fallbacksets.add(ts);
+					}
+					continue;
+				}
+				if (!tagsets.contains(ts)) {
+					tagsets.add(ts);
+					if (tagsets.size() >= tagsetsChoiceSize) {
+						break scanlist;
+					}
+				}
+			}
+			if (tagsets.size() < tagsetsChoiceSize) {
+				Iterator<TagSet> iterFallback = fallbacksets.iterator();
+				while (iterFallback.hasNext() && tagsets.size() < tagsetsChoiceSize) {
+					tagsets.add(iterFallback.next());
+				}
+			}
+			future.complete(tagsets);
+		}).exceptionally(ex -> {
+			future.completeExceptionally(ex);
+			return null;
+		});
 		return future;
 	}
 }

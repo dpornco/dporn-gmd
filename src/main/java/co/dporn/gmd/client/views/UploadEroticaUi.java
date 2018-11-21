@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
@@ -32,6 +33,7 @@ import gwt.material.design.client.ui.MaterialChip;
 import gwt.material.design.client.ui.MaterialContainer;
 import gwt.material.design.client.ui.MaterialToast;
 import gwt.material.design.jquery.client.api.JQuery;
+import gwt.material.design.jquery.client.api.JQueryElement;
 import jsinterop.base.Js;
 
 public class UploadEroticaUi extends Composite implements UploadErotica.UploadEroticaView {
@@ -129,13 +131,20 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 		}
 		final String ipfsFilename = filename;
 		new ImgUtils().toBlob(image).thenAccept((blob) -> {
-			presenter.postBlobToIpfs(ipfsFilename, blob).thenAccept((urls) -> {
-				MaterialToast.fireToast("Image posted: "+ipfsFilename);
-				image.srcset = StringUtils.join(urls, " ");
-				image.src = urls.get(0);
+			presenter.postBlobToIpfsFile(ipfsFilename, blob).thenAccept((path) -> {
+				MaterialToast.fireToast("Image posted: " + StringUtils.substringAfterLast(path, "/"));
+				StringBuilder srcset = new StringBuilder();
+				for (String ipfsgw : new String[] { "https://ipfs.io",
+						"https://steemitimages.com/0x0/https://ipfs.io" }) {
+					srcset.append(ipfsgw);
+					srcset.append(path);
+					srcset.append(" ");
+				}
+				image.srcset = srcset.toString();
+				image.src = "https://steemitimages.com/0x0/https://ipfs.io" + path;
 				image.onerror = e -> {
 					image.onerror = null;
-					image.src = urls.get(1);
+					image.src = "https://ipfs.io" + path;
 					return e;
 				};
 			});
@@ -150,31 +159,54 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 		editor.getEditor().find(".note-editable").css("height", "100%").css("min-height", "256px");
 
 		// image fixups
-		editor.getEditor().find(".note-editable").find("img[src^='data:']").each((o, e) -> {
-			if (!e.getAttribute("ImgUtilsResizedInplace").equals("true")) {
-				imgUtils.resizeInplace(e)//
-						.thenAccept((img) -> img.setAttribute("ImgUtilsResizedInplace", "true")) //
-						.thenRun(() -> postImageToIpfs(Js.cast(e)));
+		editor.getEditor().find(".note-editable").find("img[src^='data:']")
+				.each((o, e) -> automaticImageResizeAndIpfsPut(e));
+		editor.getEditor().find(".note-editable").find("img").each((o, e) -> automaticImageRestyler(e));
+
+		// TODO: add ipfs => steemitimages sized img src url magic
+
+		// TODO: add save/restore to/from local storage magic in case of hitting
+		// "backspace"
+
+		// TODO: try and magic the images sizes scaled to editor container vs the 640px
+		// fixed width blog view at steemit.com/busy.org
+
+	}
+
+	private void automaticImageResizeAndIpfsPut(Element e) {
+		if (e.getAttribute("ImgUtilsResizedInplace").equals("true")) {
+			return;
+		}
+		imgUtils.resizeInplace(e)//
+				.thenAccept((img) -> img.setAttribute("ImgUtilsResizedInplace", "true")) //
+				.thenRun(() -> postImageToIpfs(Js.cast(e)));
+	};
+
+	private void automaticImageRestyler(Element e) {
+		JQueryElement j = JQuery.$(e);
+		String styles = e.getAttribute("style");
+		if (styles.contains("float: left") || styles.contains("float: right")) {
+			j.css("max-width", "50%");
+			j.css("height", "");
+		} else {
+			j.css("max-width", "100%");
+			j.css("height", "");
+		}
+		String origSrc = e.getAttribute("src");
+		String src = origSrc;
+		if (src.startsWith("https://steemitimages.com/")) {
+			if (src.matches("^https://steemitimages.com/\\d+x\\d+/.*")) {
+				src = "https://steemitimages.com/" + j.width() + "x0/"
+						+ src.replaceFirst("^https://steemitimages.com/\\d+x\\d+/", "");
 			}
-			String styles = e.getAttribute("style");
-			if (styles.contains("float: left") || styles.contains("float: right")) {
-				JQuery.$(e).css("max-width", "50%");
-				JQuery.$(e).css("height", "");
-			} else {
-				JQuery.$(e).css("max-width", "100%");
-				JQuery.$(e).css("height", "");
+		} else {
+			if (src.startsWith("http://") || src.startsWith("https://")) {
+				src = "https://steemitimages.com/" + j.width() + "x0/" + src;
 			}
-			// styles = e.getAttribute("style");
-
-			// TODO: add ipfs => steemitimages sized img src url magic
-
-			// TODO: add save/restore to/from local storage magic in case of hitting
-			// "backspace"
-
-			// TODO: try and magic the images sizes scaled to editor container vs the 640px
-			// fixed width blog view at steemit.com/busy.org
-
-		});
+		}
+		if (!src.equals(origSrc)) {
+			e.setAttribute("src", src);
+		}
 	};
 
 	private class ChipProvider extends DefaultMaterialChipProvider {
