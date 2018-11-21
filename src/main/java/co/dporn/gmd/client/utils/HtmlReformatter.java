@@ -18,17 +18,22 @@ import gwt.material.design.jquery.client.api.JQuery;
 import gwt.material.design.jquery.client.api.JQueryElement;
 
 public class HtmlReformatter {
-	
+
+	/**
+	 * Used to change steemitimages image sizing values to better match fixed 640px
+	 * width display used by steemit/busy.
+	 */
+	@SuppressWarnings("unused")
 	private final double imgScaleWidth;
 
 	public HtmlReformatter() {
 		this(1.0d);
 	}
-	
+
 	public HtmlReformatter(double imgScaleWidth) {
-		this.imgScaleWidth=imgScaleWidth;
+		this.imgScaleWidth = imgScaleWidth;
 	}
-	
+
 	private static final Set<String> TAG_WHITELIST = new HashSet<>(Arrays.asList( //
 			"h1", "h2", "h3", //
 			"h4", "h5", "h6", "a", "div", "span", //
@@ -36,7 +41,7 @@ public class HtmlReformatter {
 			"tr", "td", "thead", "center", "strong", //
 			"b", "em", "i", "strike", "u", "cite", //
 			"blockquote", "pre", "br", "hr"));
-	
+
 	private static final String ATTR_STYLE = "style";
 
 	private static final String STEEMIT_PULL_LEFT = "pull-left";
@@ -44,13 +49,15 @@ public class HtmlReformatter {
 	private static final String STEEMIT_PULL_RIGHT = "pull-right";
 
 	/**
-	 * Reformats HTML to be more steemit.com/busy.org display ready. Works from deepest elements first.
+	 * Reformats HTML to be more steemit.com/busy.org display ready. Works from
+	 * deepest elements first.
+	 * 
 	 * @param html
 	 * @return
 	 */
 	public String reformat(String html) {
 		HTMLDivElement htmlWrapperElement = (HTMLDivElement) DomGlobal.document.createElement("div");
-		htmlWrapperElement.innerHTML=html;
+		htmlWrapperElement.innerHTML = html;
 		try {
 			convertStylesToTags(htmlWrapperElement);
 		} catch (Exception e) {
@@ -61,13 +68,14 @@ public class HtmlReformatter {
 	}
 
 	/**
-	 * TODO: Not working right.
-	 * Moves all DIVs to become siblings of any Ps they are inside of. (HTML Structure Compliancy!)
+	 * TODO: Not working right. Moves all DIVs to become siblings of any Ps they are
+	 * inside of. (HTML Structure Compliancy!)
+	 * 
 	 * @param element
 	 */
 	@SuppressWarnings("unused")
 	private void moveDivsOutsidePs(Element element) {
-		Element parentElement = (Element)element.parentNode;
+		Element parentElement = (Element) element.parentNode;
 		if (parentElement == null) {
 			return;
 		}
@@ -86,7 +94,7 @@ public class HtmlReformatter {
 		if (!element.tagName.toLowerCase().equals("div")) {
 			return;
 		}
-		
+
 		if (!parentElement.tagName.equals("p")) {
 			return;
 		}
@@ -94,7 +102,9 @@ public class HtmlReformatter {
 	}
 
 	/**
-	 * Removes all span tags via unwrapping their contents. Works from deepest elements first.
+	 * Removes all span tags via unwrapping their contents. Works from deepest
+	 * elements first.
+	 * 
 	 * @param element
 	 */
 	private void removeSpanTags(Element element) {
@@ -130,16 +140,16 @@ public class HtmlReformatter {
 			}
 		}
 		String tag = String.valueOf(element.tagName).toLowerCase();
-		GWT.log("tag: "+tag);
+		GWT.log("tag: " + tag);
 		if (!TAG_WHITELIST.contains(tag)) {
 			GWT.log("UNWRAPPED CHILDREN OF: " + tag);
 			JQuery.$(element).contents().unwrap();
 			return;
 		}
-		
+
 		// walk list in reverse to simplify deletes
 		String[] attributes = element.getAttributeNames();
-		attrs: for (String aname: attributes) {
+		attrs: for (String aname : attributes) {
 			aname = aname.toLowerCase();
 			if (aname.equals("src")) {
 				continue;
@@ -163,7 +173,7 @@ public class HtmlReformatter {
 				Iterator<String> iStyles = styles.iterator();
 				style: while (iStyles.hasNext()) {
 					String next = iStyles.next();
-					GWT.log("STYLE: '"+next+"'");
+					GWT.log("STYLE: '" + next + "'");
 					if (next.equals("text-align: center")) {
 						JQuery.$(element).wrap("<center>");
 						continue style;
@@ -191,7 +201,7 @@ public class HtmlReformatter {
 							JQuery.$(element).wrap("<div>");
 							JQueryElement imgDiv = JQuery.$(element.parentNode);
 							imgDiv.addClass(STEEMIT_PULL_LEFT);
-							//"float: left; padding: 4px; max-width: 50%;";
+							// "float: left; padding: 4px; max-width: 50%;";
 							imgDiv.css("float", "left");
 							imgDiv.css("padding", "4px");
 							img.css("float", "");
@@ -202,7 +212,7 @@ public class HtmlReformatter {
 							JQuery.$(element).wrap("<div>");
 							JQueryElement imgDiv = JQuery.$(element.parentNode);
 							imgDiv.addClass(STEEMIT_PULL_RIGHT);
-							//"float: right; padding: 4px; max-width: 50%;";
+							// "float: right; padding: 4px; max-width: 50%;";
 							imgDiv.css("float", "right");
 							imgDiv.css("padding", "4px");
 							img.css("float", "");
