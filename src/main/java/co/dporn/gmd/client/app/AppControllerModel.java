@@ -58,5 +58,5 @@ public interface AppControllerModel {
 
 	CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob, OnprogressFn onprogress);
 	
-	CompletableFuture<List<TagSet>> recentTagSets(String username, String mustHaveTag);
+	CompletableFuture<List<TagSet>> recentTagSets(String mustHaveTag);
 }

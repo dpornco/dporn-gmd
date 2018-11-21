@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy.SnakeCaseStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
@@ -66,6 +67,7 @@ public class DiscussionComment {
 	public BigInteger getId() {
 		return id;
 	}
+	@JsonProperty("json_metadata")
 	public String getJsonMetadata() {
 		return jsonMetadata;
 	}
@@ -132,6 +134,7 @@ public class DiscussionComment {
 	public void setId(BigInteger id) {
 		this.id = id;
 	}
+	@JsonProperty("json_metadata")
 	public void setJsonMetadata(String jsonMetadata) {
 		this.jsonMetadata = jsonMetadata;
 	}

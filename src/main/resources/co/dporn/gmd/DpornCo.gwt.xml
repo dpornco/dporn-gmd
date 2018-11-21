@@ -6,6 +6,12 @@
  "https://raw.githubusercontent.com/gwtproject/gwt/master/distro-source/core/src/gwt-module.dtd">
 <module rename-to='dpornco_application'>
 
+	<!-- routing -->
+	<inherits name="com.wallissoftware.pushstate.PushState" />
+	<inherits name="org.apache.commons.GWTCommonsLang3" />
+	<inherits name="elemental.Elemental" />
+
+
 	<!-- System.getProperties() -->
 	<define-configuration-property
 		name="version" is-multi-valued='false' />
@@ -80,10 +86,4 @@
 		value="safari" />
 	<set-configuration-property
 		name="user.agent.runtimeWarning" value="false" />
-		
-		<!-- routing -->
-	<inherits name="elemental.Elemental" />
-	<inherits name="org.apache.commons.GWTCommonsLang3" />
-	<inherits name="com.wallissoftware.pushstate.PushState" />
-		
 </module>

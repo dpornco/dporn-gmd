@@ -1,6 +1,5 @@
 package co.dporn.gmd.client.presenters;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import com.google.gwt.user.client.Window;
@@ -99,5 +98,11 @@ public class UploadEroticaImpl implements UploadErotica {
 	public CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob) {
 		OnprogressFn onprogressfn = view.getOnprogressFn(filename);
 		return model.postBlobToIpfsFile(filename, blob, (e)->onprogressfn.onInvoke(e));
+	}
+
+	@Override
+	public Void viewRecentTagSets(String mustHaveTag) {
+		model.recentTagSets(mustHaveTag).thenAccept(sets->view.showTagSets(sets));
+		return null;
 	}
 }

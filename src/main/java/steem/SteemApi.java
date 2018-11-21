@@ -82,9 +82,11 @@ public class SteemApi {
 			@Override
 			public void onResult(String error, List<DiscussionComment> result) {
 				if (error != null && !error.trim().isEmpty()) {
+					GWT.log("SteemApi#getDiscussionsByBlog: "+error);
 					future.getFuture().completeExceptionally(new RuntimeException(error));
 					return;
 				}
+				GWT.log("SteemApi#getDiscussionsByBlog: "+result.size());
 				future.getFuture().complete(result);
 			}
 

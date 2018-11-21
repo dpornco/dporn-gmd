@@ -9,6 +9,7 @@ import co.dporn.gmd.client.presenters.AppPresenter.IsChildPresenter;
 import co.dporn.gmd.client.presenters.UploadErotica.UploadEroticaView;
 import co.dporn.gmd.client.views.CommonUploadViewFeatures;
 import co.dporn.gmd.client.views.IsView;
+import co.dporn.gmd.shared.TagSet;
 import elemental2.dom.Blob;
 import elemental2.dom.ProgressEvent;
 import elemental2.dom.XMLHttpRequest.OnprogressFn;
@@ -17,6 +18,7 @@ public interface UploadErotica extends IsChildPresenter<UploadEroticaView>, Sche
 	interface UploadEroticaView extends IsView<UploadErotica>, CommonUploadViewFeatures {
 		void onprogressFn(ProgressEvent p0);
 		OnprogressFn getOnprogressFn(String filename);
+		void showTagSets(List<TagSet> sets);
 	}
 	void selectStockCoverImage(String coverImage);
 	void showAvailableStockCoverImages();
@@ -30,4 +32,5 @@ public interface UploadErotica extends IsChildPresenter<UploadEroticaView>, Sche
 	 * @return
 	 */
 	CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob);
+	Void viewRecentTagSets(String mustHaveTag);
 }
