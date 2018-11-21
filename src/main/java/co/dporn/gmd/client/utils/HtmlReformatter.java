@@ -49,15 +49,48 @@ public class HtmlReformatter {
 	 * @return
 	 */
 	public String reformat(String html) {
-		HTMLDivElement _html = (HTMLDivElement) DomGlobal.document.createElement("div");
-		_html.innerHTML=html;
+		HTMLDivElement htmlWrapperElement = (HTMLDivElement) DomGlobal.document.createElement("div");
+		htmlWrapperElement.innerHTML=html;
 		try {
-			reformat(_html);
+			convertStylesToTags(htmlWrapperElement);
 		} catch (Exception e) {
 			GWT.log(e.getMessage(), e);
 		}
-		removeSpanTags(_html);
-		return _html.innerHTML;
+		removeSpanTags(htmlWrapperElement);
+		return htmlWrapperElement.innerHTML;
+	}
+
+	/**
+	 * TODO: Not working right.
+	 * Moves all DIVs to become siblings of any Ps they are inside of. (HTML Structure Compliancy!)
+	 * @param element
+	 */
+	@SuppressWarnings("unused")
+	private void moveDivsOutsidePs(Element element) {
+		Element parentElement = (Element)element.parentNode;
+		if (parentElement == null) {
+			return;
+		}
+		if (element.nodeType != Node.ELEMENT_NODE) {
+			return;
+		}
+		if (element.hasChildNodes()) {
+			NodeList<Node> children = element.childNodes;
+			for (int ix = children.getLength() - 1; ix >= 0; ix--) {
+				Node item = children.getAt(ix);
+				if (item.nodeType == Node.ELEMENT_NODE) {
+					moveDivsOutsidePs((Element) item);
+				}
+			}
+		}
+		if (!element.tagName.toLowerCase().equals("div")) {
+			return;
+		}
+		
+		if (!parentElement.tagName.equals("p")) {
+			return;
+		}
+		JQuery.$(element).unwrap();
 	}
 
 	/**
@@ -65,7 +98,7 @@ public class HtmlReformatter {
 	 * @param element
 	 */
 	private void removeSpanTags(Element element) {
-		if (element.nodeType == Node.TEXT_NODE) {
+		if (element.nodeType != Node.ELEMENT_NODE) {
 			return;
 		}
 		if (element.hasChildNodes()) {
@@ -82,9 +115,9 @@ public class HtmlReformatter {
 		}
 	}
 
-	public void reformat(Element element) {
-		if (element.nodeType == Node.TEXT_NODE) {
-			GWT.log("Skip text node");
+	public void convertStylesToTags(Element element) {
+		if (element.nodeType != Node.ELEMENT_NODE) {
+			GWT.log("Skip non-element node");
 			return;
 		}
 		if (element.hasChildNodes()) {
@@ -92,7 +125,7 @@ public class HtmlReformatter {
 			for (int ix = children.getLength() - 1; ix >= 0; ix--) {
 				Node item = children.getAt(ix);
 				if (item.nodeType == Node.ELEMENT_NODE) {
-					reformat((Element) item);
+					convertStylesToTags((Element) item);
 				}
 			}
 		}
@@ -157,6 +190,7 @@ public class HtmlReformatter {
 						if (next.equals("float: left")) {
 							JQuery.$(element).wrap("<div>");
 							JQueryElement imgDiv = JQuery.$(element.parentNode);
+							imgDiv.addClass(STEEMIT_PULL_LEFT);
 							//"float: left; padding: 4px; max-width: 50%;";
 							imgDiv.css("float", "left");
 							imgDiv.css("padding", "4px");
@@ -185,15 +219,4 @@ public class HtmlReformatter {
 			continue attrs;
 		}
 	}
-
-	private Element wrapChildrenIn(String tagName, Element element) {
-		Element e = element.ownerDocument.createElement(tagName);
-		NodeList<Node> children = element.childNodes;
-		for (int iz = children.getLength() - 1; iz >= 0; iz--) {
-			e.appendChild(children.getAt(iz));
-		}
-		element.appendChild(e);
-		return e;
-	}
-
 }
