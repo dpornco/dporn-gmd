@@ -23,8 +23,8 @@ public class Post {
 	private String permlink;
 	private String title;
 	private String coverImage;
-	private String coverImageIpfs;
-	private String videoIpfs;
+	private String posterImagePath;
+	private String videoPath;
 	private String id;
 	private List<String> tags;
 	private double score;
@@ -64,17 +64,17 @@ public class Post {
 	public void setScore(double score) {
 		this.score = score;
 	}
-	public String getCoverImageIpfs() {
-		return coverImageIpfs;
+	public String getPosterImagePath() {
+		return posterImagePath;
 	}
-	public void setCoverImageIpfs(String coverImageIpfs) {
-		this.coverImageIpfs = coverImageIpfs;
+	public void setPosterImagePath(String posterImagePath) {
+		this.posterImagePath = posterImagePath;
 	}
-	public String getVideoIpfs() {
-		return videoIpfs;
+	public String getVideoPath() {
+		return videoPath;
 	}
-	public void setVideoIpfs(String videoIpfs) {
-		this.videoIpfs = videoIpfs;
+	public void setVideoPath(String videoPath) {
+		this.videoPath = videoPath;
 	}
 	public List<String> getTags() {
 		return tags;

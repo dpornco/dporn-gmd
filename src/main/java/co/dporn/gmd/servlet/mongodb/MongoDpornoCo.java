@@ -34,6 +34,8 @@ import co.dporn.gmd.shared.Post;
 
 public class MongoDpornoCo {
 
+	private static final String TABLE_BLOG_ENTRIES_V2 = "blogEntries_v2";
+	private static final String TABLE_VIDEOS = "videos";
 	/**
 	 * 30 minute tag cache
 	 */
@@ -88,16 +90,13 @@ public class MongoDpornoCo {
 		try (MongoClient client = MongoClients.create()) {
 			MongoDatabase db = client.getDatabase("dpdb");
 			try {
-				db.createCollection("blogEntries_v2");
+				db.createCollection(TABLE_BLOG_ENTRIES_V2);
 			} catch (Exception e1) {
 			}
-			MongoCollection<Document> videos_old = db.getCollection("videos");
-			MongoCollection<Document> blogEntries = db.getCollection("blogEntries_v2");
+			MongoCollection<Document> videos_old = db.getCollection(TABLE_VIDEOS);
+			MongoCollection<Document> blogEntries = db.getCollection(TABLE_BLOG_ENTRIES_V2);
 
-			try (MongoCursor<Document> forMigration = videos_old.find(Filters.not(Filters.exists("migrated"))).sort(Sorts.ascending("_id")).batchSize(100).iterator()){
-				if (!forMigration.hasNext()) {
-					return;
-				}
+			try (MongoCursor<Document> forMigration = videos_old.find(Filters.exists("migrated", false)).sort(Sorts.ascending("_id")).batchSize(100).iterator()){
 				while (forMigration.hasNext()) {
 					Document next = forMigration.next();
 					BlogEntry entry = new BlogEntry();
@@ -127,6 +126,8 @@ public class MongoDpornoCo {
 
 					try {
 						blogEntries.insertOne(Document.parse(MongoJsonMapper.get().writeValueAsString(entry)));
+						next.put("migrated", true);
+						videos_old.replaceOne(Filters.eq(next.getObjectId("_id")), next);
 					} catch (com.mongodb.MongoWriteException | JsonProcessingException e) {
 						if (!e.getMessage().contains("E11000 duplicate key error collection")) {
 							throw new RuntimeException(e);
@@ -145,25 +146,32 @@ public class MongoDpornoCo {
 		MongoClient client = MongoClients.create();
 		try {
 			MongoDatabase db = client.getDatabase("dpdb");
-			MongoCollection<Document> collection = db.getCollection("videos");
+			MongoCollection<Document> collection = db.getCollection(TABLE_BLOG_ENTRIES_V2);
 			Document item = collection
 					.find(Filters.and(Filters.eq("username", authorname), Filters.eq("permlink", permlink))).first();
 			Post post = new Post();
 			if (item == null || item.isEmpty()) {
 				return post;
 			}
-			post.setAuthor(item.getString("username"));
-			post.setCoverImageIpfs(item.getString("posterHash"));
-			post.setCreated(item.getDate("posteddate"));
-			post.setId(item.getObjectId("_id").toHexString());
-			post.setPermlink(item.getString("permlink"));
-			post.setScore(-1);
-			post.setTitle(item.getString("title"));
-			post.setVideoIpfs(item.getString("originalHash"));
-			post.setTags(extractTags(item.getString("tags")));
-			return post;
+			
+			try {
+				BlogEntry entry = MongoJsonMapper.get().readValue(item.toJson(), BlogEntry.class);
+				post.setAuthor(entry.getUsername());
+				post.setPosterImagePath(entry.getPosterImagePath());
+				post.setCreated(entry.getCreated().get$date());
+				post.setId(entry.get_id().get$oid());
+				post.setPermlink(entry.getPermlink());
+				post.setScore(-1);
+				post.setTitle(entry.getTitle());
+				post.setVideoPath(entry.getVideoPath());
+				post.setTags(entry.getCommunityTags());
+				return post;
+			} catch (IOException e) {
+				return post;
+			}
 		} finally {
 			client.close();
+			System.out.println("getPost: "+authorname+", "+permlink);
 		}
 	}
 
@@ -222,7 +230,7 @@ public class MongoDpornoCo {
 		MongoClient client = MongoClients.create();
 		try {
 			MongoDatabase db = client.getDatabase("dpdb");
-			MongoCollection<Document> collection = db.getCollection("videos");
+			MongoCollection<Document> collection = db.getCollection(TABLE_BLOG_ENTRIES_V2);
 			MongoCursor<Document> find;
 			if (startId != null && !startId.trim().isEmpty()) {
 				find = collection.find(Filters.lte("_id", new ObjectId(startId)))//
@@ -236,21 +244,27 @@ public class MongoDpornoCo {
 			while (find.hasNext()) {
 				Document item = find.next();
 				Post post = new Post();
-				post.setAuthor(item.getString("username"));
-				post.setCoverImageIpfs(item.getString("posterHash"));
-				post.setCreated(item.getDate("posteddate"));
-				post.setId(item.getObjectId("_id").toHexString());
-				post.setPermlink(item.getString("permlink"));
-				post.setScore(-1);
-				post.setTitle(item.getString("title"));
-				post.setVideoIpfs(item.getString("originalHash"));
-				post.setTags(extractTags(item.getString("tags")));
-				list.add(post);
+				try {
+					BlogEntry entry = MongoJsonMapper.get().readValue(item.toJson(), BlogEntry.class);
+					post.setAuthor(entry.getUsername());
+					post.setPosterImagePath(entry.getPosterImagePath());
+					post.setCreated(entry.getCreated().get$date());
+					post.setId(entry.get_id().get$oid());
+					post.setPermlink(entry.getPermlink());
+					post.setScore(-1);
+					post.setTitle(entry.getTitle());
+					post.setVideoPath(entry.getVideoPath());
+					post.setTags(entry.getCommunityTags());
+					list.add(post);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 			find.close();
 		} finally {
 			client.close();
 		}
+		System.out.println("_listPosts: "+startId+", "+count+", "+list.size());
 		return list;
 	}
 
@@ -266,7 +280,7 @@ public class MongoDpornoCo {
 		MongoClient client = MongoClients.create();
 		try {
 			MongoDatabase db = client.getDatabase("dpdb");
-			MongoCollection<Document> collection = db.getCollection("videos");
+			MongoCollection<Document> collection = db.getCollection(TABLE_BLOG_ENTRIES_V2);
 			MongoCursor<Document> find;
 			Bson eqUsername = Filters.eq("username", username);
 			if (startId != null && !startId.trim().isEmpty()) {
@@ -282,22 +296,28 @@ public class MongoDpornoCo {
 			}
 			while (find.hasNext()) {
 				Document item = find.next();
-				Post post = new Post();
-				post.setAuthor(item.getString("username"));
-				post.setCoverImageIpfs(item.getString("posterHash"));
-				post.setCreated(item.getDate("posteddate"));
-				post.setId(item.getObjectId("_id").toHexString());
-				post.setPermlink(item.getString("permlink"));
-				post.setScore(-1);
-				post.setTitle(item.getString("title"));
-				post.setVideoIpfs(item.getString("originalHash"));
-				post.setTags(extractTags(item.getString("tags")));
-				list.add(post);
+				try {
+					Post post = new Post();
+					BlogEntry entry = MongoJsonMapper.get().readValue(item.toJson(), BlogEntry.class);
+					post.setAuthor(entry.getUsername());
+					post.setPosterImagePath(entry.getPosterImagePath());
+					post.setCreated(entry.getCreated().get$date());
+					post.setId(entry.get_id().get$oid());
+					post.setPermlink(entry.getPermlink());
+					post.setScore(-1);
+					post.setTitle(entry.getTitle());
+					post.setVideoPath(entry.getVideoPath());
+					post.setTags(entry.getCommunityTags());
+					list.add(post);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 			find.close();
 		} finally {
 			client.close();
 		}
+		System.out.println("listPostsFor: "+username+", "+startId+", "+count+", "+list.size());
 		return list;
 	}
 }

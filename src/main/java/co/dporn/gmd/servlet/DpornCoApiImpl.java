@@ -71,11 +71,11 @@ public class DpornCoApiImpl implements DpornCoApi {
 		posts.forEach(p -> {
 			if (blacklist.contains(p.getAuthor())) {
 				p.setCoverImage(null);
-				p.setCoverImageIpfs(null);
+				p.setPosterImagePath(null);
 				p.setPermlink(null);
 				p.setScore(-1000);
 				p.setTitle(null);
-				p.setVideoIpfs(null);
+				p.setVideoPath(null);
 			}
 		});
 		posts.forEach(p -> accountNameList.add(p.getAuthor()));

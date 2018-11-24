@@ -22,6 +22,7 @@ import gwt.material.design.addins.client.scrollfire.MaterialScrollfire;
 
 public class MainContentPresenter implements ContentPresenter, ScheduledCommand {
 
+	private static final int FEATURED_POSTS_COUNT = 4;
 	private ContentView view;
 	private AppControllerModel model;
 
@@ -36,12 +37,13 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 	}
 
 	/*
-	 * For Featured Posts, take most recent 12 mongoid desc, use scaled vote count
-	 * based on list index, use as sort value desc, select first 4.
+	 * For Featured Posts, take several recent mongoid desc, use scaled vote count
+	 * based on list index, use as sort value desc, select best subset.
 	 */
 
 	protected void loadFeaturedPosts() {
-		model.featuredPosts(4).thenAccept(posts -> {
+		model.featuredPosts(FEATURED_POSTS_COUNT).thenAccept(posts -> {
+			GWT.log("HAVE "+posts.getPosts().size()+" FEATURED POSTS");
 			getContentView().getFeaturedPosts().clear();
 			int[] showDelay = { 0 };
 			Map<String, AccountInfo> infoMap = posts.getInfoMap();
@@ -49,6 +51,7 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 				showDelay[0] += 500;
 				AccountInfo i = infoMap.get(p.getAuthor());
 				if (i == null) {
+					GWT.log("NO AUTHOR FOR FEATURED POST!");
 					return;
 				}
 				VideoCardUi card = new VideoCardUi();
@@ -58,14 +61,17 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 				card.setDisplayName(displayName);
 				card.setAvatarUrl(Routes.avatarImage(p.getAuthor()));
 				card.setTitle(p.getTitle());
-				String videoIpfs = p.getVideoIpfs();
-				if (videoIpfs == null || videoIpfs.trim().isEmpty() || videoIpfs.length() != 46) {
+				String videoPath = p.getVideoPath();
+				if (videoPath == null || !videoPath.startsWith("/ipfs/")) {
 					return;
 				}
 				card.setVideoEmbedUrl(Routes.embedVideo(p.getAuthor(), p.getPermlink()));
 				card.setViewLink(Routes.post(p.getAuthor(), p.getPermlink()));
 				getContentView().getFeaturedPosts().add(card);
 			});
+		}).exceptionally(ex->{
+			GWT.log(ex.getMessage(), ex);
+			return null;
 		});
 	}
 
@@ -119,8 +125,8 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 					card.setDisplayName(displayName);
 					card.setAvatarUrl(Routes.avatarImage(p.getAuthor()));
 					card.setTitle(p.getTitle());
-					String videoIpfs = p.getVideoIpfs();
-					if (videoIpfs == null || videoIpfs.trim().isEmpty() || videoIpfs.length() != 46) {
+					String videoPath = p.getVideoPath();
+					if (videoPath == null || !videoPath.startsWith("/ipfs/")) {
 						return;
 					}
 					card.setViewLink(Routes.post(p.getAuthor(), p.getPermlink()));

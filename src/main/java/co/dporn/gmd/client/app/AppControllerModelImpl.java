@@ -48,7 +48,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 		IpfsHashResponseMapper mapper = GWT.create(IpfsHashResponseMapper.class);
 	}
 	private static final int CHANNEL_POSTS_INITIAL_SIZE = 8;
-	private static final int FEATURED_POST_POOL_SIZE = 16;
+	private static final int FEATURED_POST_POOL_MULTIPLIER_SIZE = 4;
 	private static final String STEEM_USERNAME_KEY = "steem-username";
 	private static final String STEEMCONNECT_KEY = "steemconnectv2";
 	private static final int TAGSETS_MAX_SIZE = 6;
@@ -89,7 +89,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 	@Override
 	public CompletableFuture<PostListResponse> featuredPosts(int count) {
 		CompletableFuture<PostListResponse> finalFuture = new CompletableFuture<>();
-		listPosts(FEATURED_POST_POOL_SIZE).thenAccept((response) -> {
+		listPosts(FEATURED_POST_POOL_MULTIPLIER_SIZE*count).thenAccept((response) -> {
 			List<CompletableFuture<List<Vote>>> voteFutures = new ArrayList<>();
 			List<Post> list = new ArrayList<>();
 			double mul = 1.0d;
@@ -104,6 +104,9 @@ public class AppControllerModelImpl implements AppControllerModel {
 					synchronized (list) {
 						list.add(post);
 					}
+				}).exceptionally(ex->{
+					GWT.log(ex.getMessage(), ex);
+					return null;
 				});
 				voteFutures.add(voteFuture);
 			}
@@ -113,6 +116,12 @@ public class AppControllerModelImpl implements AppControllerModel {
 				int size = response.getPosts().size();
 				response.getPosts().subList(Math.min(count, size), size).clear();
 				deferred(() -> finalFuture.complete(response));
+			}).exceptionally(ex->{
+				Collections.sort(response.getPosts(), (a, b) -> -Double.compare(a.getScore(), b.getScore()));
+				int size = response.getPosts().size();
+				response.getPosts().subList(Math.min(count, size), size).clear();
+				deferred(() -> finalFuture.complete(response));
+				return null;
 			});
 		});
 		return finalFuture;

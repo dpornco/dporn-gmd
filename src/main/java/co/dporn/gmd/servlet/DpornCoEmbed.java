@@ -18,6 +18,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
@@ -28,8 +29,8 @@ import co.dporn.gmd.shared.Post;
 @Consumes(MediaType.TEXT_HTML)
 @Path("/")
 public class DpornCoEmbed {
-	private static final long _30_DAYS_ms = 1000l*60l*60l*24l*30l;
-	private static final int _30_DAYS_sec = 60*60*24*30;
+	private static final long _30_DAYS_ms = 1000l * 60l * 60l * 24l * 30l;
+	private static final int _30_DAYS_sec = 60 * 60 * 24 * 30;
 	private static String _template;
 
 	private static String template() {
@@ -48,7 +49,7 @@ public class DpornCoEmbed {
 	private HttpServletRequest request;
 	private static final long LAST_MODIFIED = System.currentTimeMillis();
 
-	private static Map<String, String> cache = Collections.synchronizedMap(new HashMap<>());
+	private static final Map<String, String> CACHE = Collections.synchronizedMap(new LRUMap<>(1024));
 
 	@Produces(MediaType.TEXT_HTML)
 	@Path("@{authorname}/{permlink}")
@@ -59,8 +60,8 @@ public class DpornCoEmbed {
 		response.setCharacterEncoding("UTF-8");
 		response.setContentType(MediaType.TEXT_HTML);
 		response.addDateHeader("Last-Modified", LAST_MODIFIED);
-		response.addHeader("Cache-Control", "max-age="+_30_DAYS_sec+", must-revalidate");
-		response.addDateHeader("Expires", System.currentTimeMillis()+_30_DAYS_ms);
+		response.addHeader("Cache-Control", "max-age=" + _30_DAYS_sec + ", must-revalidate");
+		response.addDateHeader("Expires", System.currentTimeMillis() + _30_DAYS_ms);
 		long ifModifiedSince = request.getDateHeader("If-Modified-Since");
 		if (ifModifiedSince >= LAST_MODIFIED) {
 			response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
@@ -85,8 +86,8 @@ public class DpornCoEmbed {
 	public String get(@PathParam("authorname") String author, @PathParam("permlink") String permlink) {
 		response.setCharacterEncoding("UTF-8");
 		response.addDateHeader("Last-Modified", LAST_MODIFIED);
-		response.addHeader("Cache-Control", "max-age="+_30_DAYS_sec+", must-revalidate");
-		response.addDateHeader("Expires", System.currentTimeMillis()+_30_DAYS_ms);
+		response.addHeader("Cache-Control", "max-age=" + _30_DAYS_sec + ", must-revalidate");
+		response.addDateHeader("Expires", System.currentTimeMillis() + _30_DAYS_ms);
 		String embedHtml = getEmbedHtml(author, permlink);
 		if (embedHtml == null) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -97,10 +98,9 @@ public class DpornCoEmbed {
 
 	public static String getEmbedHtml(String author, String permlink) {
 		String key = author.trim() + "|" + permlink.trim();
-		synchronized (cache) {
-			if (cache.containsKey(key)) {
-				return cache.get(key);
-			}
+		String cached = CACHE.get(key);
+		if (cached != null) {
+			return cached;
 		}
 		Post post = MongoDpornoCo.getPost(author, permlink);
 		if (post == null) {
@@ -109,40 +109,36 @@ public class DpornCoEmbed {
 		if (!author.equals(post.getAuthor())) {
 			return null;
 		}
-		String posterImageIpfs = post.getCoverImageIpfs();
-		if (posterImageIpfs == null) {
+		String posterImagePath = post.getPosterImagePath();
+		if (posterImagePath == null) {
 			return null;
 		}
-		posterImageIpfs = posterImageIpfs.trim();
-		String lcPosterImageIpfs = posterImageIpfs.toLowerCase();
+		posterImagePath = posterImagePath.trim();
+		String lcPosterImageIpfs = posterImagePath.toLowerCase();
+		boolean isPath = lcPosterImageIpfs.startsWith("/ipfs/");
 		boolean isHttp = lcPosterImageIpfs.startsWith("http://");
 		boolean isHttps = lcPosterImageIpfs.startsWith("https://");
-		if (posterImageIpfs.length() != 46 && !isHttp && !isHttps) {
-			posterImageIpfs = "QmTTtAi3ZwLdGpEzy2LHpFKQHFqLUrHy61miko9LSbVp72";
+		if (!isPath && !isHttp && !isHttps) {
+			posterImagePath = "/ipfs/QmTTtAi3ZwLdGpEzy2LHpFKQHFqLUrHy61miko9LSbVp72";
 		}
-		String videoIpfs = post.getVideoIpfs();
-		if (videoIpfs == null) {
+		String videoPath = post.getVideoPath();
+		if (videoPath == null) {
 			return null;
 		}
-		videoIpfs = videoIpfs.trim();
-		if (videoIpfs.length() != 46) {
+		videoPath = videoPath.trim();
+		if (!videoPath.startsWith("/ipfs/")) {
 			return null;
 		}
 		String embedHtml = template();
 		embedHtml = embedHtml.replace("__TITLE__", StringEscapeUtils.escapeXml10(post.getTitle()));
-		embedHtml = embedHtml.replace("__POSTERHASH__", StringEscapeUtils.escapeXml10(posterImageIpfs));
-		embedHtml = embedHtml.replace("__VIDEOHASH__", StringEscapeUtils.escapeXml10(videoIpfs));
-		// hack to deal with non IPFS poster images
+		embedHtml = embedHtml.replace("__POSTERPATH__", StringEscapeUtils.escapeXml10(posterImagePath));
+		embedHtml = embedHtml.replace("__VIDEOPATH__", StringEscapeUtils.escapeXml10(videoPath));
+		// hack to deal with non IPFS path images or videos
 		if (isHttp || isHttps) {
-			embedHtml = embedHtml.replace("https://steemitimages.com/400x400/https://ipfs.io/ipfs/" + posterImageIpfs,
-					"https://steemitimages.com/400x400/" + posterImageIpfs);
+			embedHtml = embedHtml.replace("https://steemitimages.com/400x400/https://ipfs.io/ipfs" + posterImagePath,
+					"https://steemitimages.com/400x400/" + posterImagePath);
 		}
-		synchronized (cache) {
-			if (cache.size() > 1024) {
-				cache.clear();
-			}
-			cache.put(key, embedHtml);
-		}
+		CACHE.put(key, embedHtml);
 		return embedHtml;
 	}
 

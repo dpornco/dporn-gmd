@@ -38,14 +38,14 @@ html, body {
 </head>
 <body class="video-container">
 	<video id="player" class="video-js vjs-default-skin" preload="none"
-		poster="https://steemitimages.com/400x400/https://ipfs.io/ipfs/__POSTERHASH__"
+		poster="https://steemitimages.com/400x400/https://ipfs.io__POSTERPATH__"
 		style="max-width: 100%; max-height: 100%; width: 1920px; height: 1080px;">
-		<source src="https://ipfs.io/ipfs/__VIDEOHASH__" type="video/mp4" />
+		<source src="https://ipfs.io__VIDEOPATH__" type="video/mp4" />
 		<!-- Cloudflare doesn't handle "ranged" requests properly, use as last fallback -->
-		<source src="https://cloudflare-ipfs.com/ipfs/__VIDEOHASH__"
+		<source src="https://cloudflare-ipfs.com__VIDEOPATH__"
 			type="video/mp4" />
-		<source src="https://dporn.co/vidcache/__VIDEOHASH__" type="video/mp4" />
-		<source src="https://gateway.ipfs.io/ipfs/__VIDEOHASH__"
+		<source src="https://dporn.co__VIDEOPATH__" type="video/mp4" />
+		<source src="https://gateway.ipfs.io__VIDEOPATH__"
 			type="video/mp4" />
 	</video>
 	<script>

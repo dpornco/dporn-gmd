@@ -87,8 +87,8 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 					card.setDisplayName(displayName);
 					card.setAvatarUrl(Routes.avatarImage(p.getAuthor()));
 					card.setTitle(p.getTitle());
-					String videoIpfs = p.getVideoIpfs();
-					if (videoIpfs == null || videoIpfs.trim().isEmpty() || videoIpfs.length() != 46) {
+					String videoPath = p.getVideoPath();
+					if (videoPath == null || !videoPath.startsWith("/ipfs/")) {
 						return;
 					}
 					card.setViewLink(Routes.post(p.getAuthor(), p.getPermlink()));
