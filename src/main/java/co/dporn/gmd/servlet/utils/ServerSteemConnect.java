@@ -1,4 +1,4 @@
-package co.dporn.gmd.servlet;
+package co.dporn.gmd.servlet.utils;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -8,7 +8,7 @@ import java.util.Map;
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 
-import co.dporn.gmd.servlet.utils.ServerRestClient;
+import co.dporn.gmd.servlet.MeAuthorizationCheck;
 
 public class ServerSteemConnect {
 	private static final long MINUTE_ms = 1000l * 60;

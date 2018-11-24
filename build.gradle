@@ -110,7 +110,7 @@ dependencies {
 	
 	compile 'com.github.muksihs.steem-java-api-wrapper:steemj-core:d9f07155e7'
     compile 'com.github.tommyettinger:RegExodus:v0.1.10'
-    compile 'org.mongodb:mongodb-driver-sync:3.8.2'
+    compile 'org.mongodb:mongodb-driver-sync:3.9.0'
     
     //simplistic server side LRU caching (read LRUMap caveats when mucking with it)
     // https://mvnrepository.com/artifact/org.apache.commons/commons-collections4

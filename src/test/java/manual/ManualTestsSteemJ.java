@@ -2,7 +2,7 @@ package manual;
 
 import java.util.List;
 
-import co.dporn.gmd.servlet.SteemJInstance;
+import co.dporn.gmd.servlet.utils.SteemJInstance;
 
 public class ManualTestsSteemJ {
 

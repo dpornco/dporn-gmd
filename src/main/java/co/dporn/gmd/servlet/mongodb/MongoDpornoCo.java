@@ -1,8 +1,10 @@
-package co.dporn.gmd.servlet;
+package co.dporn.gmd.servlet.mongodb;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -15,6 +17,7 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -23,11 +26,18 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
 
+import co.dporn.gmd.servlet.utils.Mapper;
+import co.dporn.gmd.shared.BlogEntry;
+import co.dporn.gmd.shared.MongoDate;
+import co.dporn.gmd.shared.MongoId;
 import co.dporn.gmd.shared.Post;
 
 public class MongoDpornoCo {
 
-	private static final long TAGS_EXPIRE_TIME = 1000l * 60l * 5l;
+	/**
+	 * 30 minute tag cache
+	 */
+	private static final long TAGS_EXPIRE_TIME = 1000l * 60l * 30l;
 
 	static {
 		Logger mongoLogger = Logger.getLogger("org.mongodb");
@@ -61,16 +71,73 @@ public class MongoDpornoCo {
 		return new ArrayList<>(tags);
 	}
 
-	private static final String[] NO_TAG_SUGGEST = { "dporn", "dpornvideo", "dpornco", "dporncovideo", "nsfw"};
+	private static final String[] NO_TAG_SUGGEST = { "dporn", "dpornvideo", "dpornco", "dporncovideo", "nsfw" };
 
-	private static void initCachedTags() {
+	private static synchronized void initCachedTags() {
 		CACHED_TAGS.clear();
-		_listPosts("", 500).forEach(p -> {
+		_listPosts("", 1000).forEach(p -> {
 			CACHED_TAGS.addAll(p.getTags());
 		});
 		CACHED_TAGS.removeAll(Arrays.asList(NO_TAG_SUGGEST));
 		if (!CACHED_TAGS.isEmpty()) {
 			cachedTagsExpire = System.currentTimeMillis() + TAGS_EXPIRE_TIME;
+		}
+	}
+
+	private static synchronized void migrationCheck() {
+		try (MongoClient client = MongoClients.create()) {
+			MongoDatabase db = client.getDatabase("dpdb");
+			try {
+				db.createCollection("blogEntries_v2");
+			} catch (Exception e1) {
+			}
+			MongoCollection<Document> videos_old = db.getCollection("videos");
+			MongoCollection<Document> blogEntries = db.getCollection("blogEntries_v2");
+
+			try (MongoCursor<Document> forMigration = videos_old.find(Filters.not(Filters.exists("migrated"))).sort(Sorts.ascending("_id")).batchSize(100).iterator()){
+				if (!forMigration.hasNext()) {
+					return;
+				}
+				while (forMigration.hasNext()) {
+					Document next = forMigration.next();
+					BlogEntry entry = new BlogEntry();
+					String id = next.getObjectId("_id").toHexString();
+					String title = next.getString("title");
+					String permlink = next.getString("permlink");
+					String content = next.getString("content");
+					String videoPath = "/ipfs/" + next.getString("originalHash");
+					String posterImagePath = "/ipfs/" + next.getString("posterHash");
+					String username = next.getString("username");
+					Date postedDate = next.getDate("posteddate");
+					Set<String> extractedTags = new LinkedHashSet<>(extractTags(next.getString("tags")));
+					extractedTags.add("@" + username);
+
+					entry.set_id(new MongoId(id));
+					entry.setTitle(title);
+					entry.setPermlink(permlink);
+					entry.setContent(content);
+					entry.setPostTags(new ArrayList<>(extractedTags));
+					entry.setCommunityTags(new ArrayList<>(extractedTags));
+					entry.setVideoPath(videoPath);
+					entry.setPosterImagePath(posterImagePath);
+					entry.setUsername(username);
+
+					entry.setCreated(new MongoDate(postedDate));
+					entry.setModified(entry.getCreated());
+
+					try {
+						blogEntries.insertOne(Document.parse(MongoJsonMapper.get().writeValueAsString(entry)));
+					} catch (com.mongodb.MongoWriteException | JsonProcessingException e) {
+						if (!e.getMessage().contains("E11000 duplicate key error collection")) {
+							throw new RuntimeException(e);
+						} else {
+							System.err.println(e.getMessage());
+							next.put("migrated", true);
+							videos_old.replaceOne(Filters.eq(next.getObjectId("_id")), next);
+						}
+					}					
+				}
+			};
 		}
 	}
 
@@ -109,7 +176,7 @@ public class MongoDpornoCo {
 			return new ArrayList<>();
 		}
 		string = string.trim();
-		Set<String> tags = new TreeSet<String>();
+		Set<String> tags = new LinkedHashSet<String>();
 		// tags are either a) a json array of strings, b) a comma list of words
 		if (!string.startsWith("[")) {
 			// munge comma array of words into a json array list;
@@ -144,6 +211,7 @@ public class MongoDpornoCo {
 	}
 
 	protected static synchronized List<Post> _listPosts(String startId, int count) {
+		migrationCheck();
 		if (count < 1) {
 			count = 1;
 		}
@@ -187,6 +255,7 @@ public class MongoDpornoCo {
 	}
 
 	public static synchronized List<Post> listPostsFor(String username, String startId, int count) {
+		migrationCheck();
 		if (count < 1) {
 			count = 1;
 		}

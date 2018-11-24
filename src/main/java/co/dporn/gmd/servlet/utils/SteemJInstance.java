@@ -1,4 +1,4 @@
-package co.dporn.gmd.servlet;
+package co.dporn.gmd.servlet.utils;
 
 import java.io.IOException;
 import java.util.ArrayList;
