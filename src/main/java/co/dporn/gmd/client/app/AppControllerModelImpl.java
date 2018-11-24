@@ -32,6 +32,7 @@ import co.dporn.gmd.shared.Post;
 import co.dporn.gmd.shared.PostListResponse;
 import co.dporn.gmd.shared.TagSet;
 import elemental2.dom.Blob;
+import elemental2.dom.DomGlobal;
 import elemental2.dom.XMLHttpRequestUpload.OnprogressFn;
 import steem.SteemApi;
 import steem.connect.SteemConnectInit;
@@ -47,8 +48,9 @@ public class AppControllerModelImpl implements AppControllerModel {
 	protected interface IpfsHashResponseMapper extends ObjectMapper<IpfsHashResponse> {
 		IpfsHashResponseMapper mapper = GWT.create(IpfsHashResponseMapper.class);
 	}
+
 	private static final int CHANNEL_POSTS_INITIAL_SIZE = 8;
-	private static final int FEATURED_POST_POOL_SIZE = 16;
+	private static final int FEATURED_POST_POOL_SIZE = 24;
 	private static final String STEEM_USERNAME_KEY = "steem-username";
 	private static final String STEEMCONNECT_KEY = "steemconnectv2";
 	private static final int TAGSETS_MAX_SIZE = 6;
@@ -113,7 +115,23 @@ public class AppControllerModelImpl implements AppControllerModel {
 				int size = response.getPosts().size();
 				response.getPosts().subList(Math.min(count, size), size).clear();
 				deferred(() -> finalFuture.complete(response));
+			}).exceptionally(ex -> {
+				GWT.log(ex.getMessage(), ex);
+				// desc by score
+				Collections.sort(response.getPosts(), (a, b) -> -Double.compare(a.getScore(), b.getScore()));
+				int size = response.getPosts().size();
+				response.getPosts().subList(Math.min(count, size), size).clear();
+				deferred(() -> finalFuture.complete(response));
+				return null;
 			});
+		}).exceptionally(ex -> {
+			Throwable cause = ex.getCause();
+			if (cause!=null) {
+				DomGlobal.console.log(cause);
+			} else {
+				DomGlobal.console.log(ex);
+			}
+			return null;
 		});
 		return finalFuture;
 	}
@@ -301,7 +319,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 
 	@Override
 	public CompletableFuture<List<TagSet>> recentTagSets(String mustHaveTag) {
-		mustHaveTag = mustHaveTag==null?"":mustHaveTag.trim().toLowerCase();
+		mustHaveTag = mustHaveTag == null ? "" : mustHaveTag.trim().toLowerCase();
 		final String lookFor = mustHaveTag;
 		final CompletableFuture<List<TagSet>> future = new CompletableFuture<List<TagSet>>();
 		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
@@ -311,7 +329,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 			List<TagSet> fallbacksets = new ArrayList<>();
 			scanlist: for (DiscussionComment comment : list) {
 				if (!comment.getAuthor().equals(username)) {
-					//skip reblogs
+					// skip reblogs
 					continue;
 				}
 				if (tagsets.size() >= TAGSETS_MAX_SIZE) {
@@ -340,7 +358,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 				}
 				boolean isDpornSet = ts.getTags().contains("dporn") || ts.getTags().contains("dpornco")
 						|| ts.getTags().contains("dporncovideo");
-				//remove dporn/nsfw specific tags for display purposes
+				// remove dporn/nsfw specific tags for display purposes
 				ts.getTags().remove("dporn");
 				ts.getTags().remove("dpornco");
 				ts.getTags().remove("dporncovideo");
@@ -392,6 +410,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 		// TODO Auto-generated method stub
 
 	}
+
 	@Override
 	public CompletableFuture<List<String>> tagsOracle(final String prefix, int limit) {
 		GWT.log("suggest: " + prefix + " [" + limit + "]");
