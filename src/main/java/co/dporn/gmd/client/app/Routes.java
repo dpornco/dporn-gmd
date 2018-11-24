@@ -33,7 +33,7 @@ public class Routes {
 			while (iter.hasNext()) {
 				sb.append(iter.next());
 				if (iter.hasNext()) {
-					sb.append("/");
+					sb.append(" ");
 				}
 			}
 		}
@@ -46,7 +46,7 @@ public class Routes {
 				sb.append("-");
 				sb.append(iter.next());
 				if (iter.hasNext()) {
-					sb.append("/");
+					sb.append(" ");
 				}
 			}
 		}
