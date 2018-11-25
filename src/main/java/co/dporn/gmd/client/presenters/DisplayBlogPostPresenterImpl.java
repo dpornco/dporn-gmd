@@ -7,7 +7,6 @@ import co.dporn.gmd.client.app.Routes;
 import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.BlogEntryType;
-import gwt.material.design.client.ui.MaterialVideo;
 
 public class DisplayBlogPostPresenterImpl implements DisplayBlogPostPresenter {
 
