@@ -31,16 +31,16 @@ import co.dporn.gmd.shared.Post;
 public class DpornCoEmbed {
 	private static final long _30_DAYS_ms = 1000l * 60l * 60l * 24l * 30l;
 	private static final int _30_DAYS_sec = 60 * 60 * 24 * 30;
-	private static String _template;
+	private static String htmlTemplateVideo;
 
-	private static String template() {
-		if (_template == null) {
+	private static String htmlTemplateVideo() {
+		if (htmlTemplateVideo == null) {
 			try {
-				_template = IOUtils.toString(DpornCoEmbed.class.getResourceAsStream("/embed/embed-player.html"));
+				htmlTemplateVideo = IOUtils.toString(DpornCoEmbed.class.getResourceAsStream("/embed/embed-player.html"));
 			} catch (IOException e) {
 			}
 		}
-		return _template;
+		return htmlTemplateVideo;
 	}
 
 	@Context
@@ -49,7 +49,7 @@ public class DpornCoEmbed {
 	private HttpServletRequest request;
 	private static final long LAST_MODIFIED = System.currentTimeMillis();
 
-	private static final Map<String, String> CACHE = Collections.synchronizedMap(new LRUMap<>(1024));
+	private static final Map<String, String> CACHE = Collections.synchronizedMap(new LRUMap<>(256));
 
 	@Produces(MediaType.TEXT_HTML)
 	@Path("@{authorname}/{permlink}")
@@ -129,7 +129,7 @@ public class DpornCoEmbed {
 		if (!videoPath.startsWith("/ipfs/")) {
 			return null;
 		}
-		String embedHtml = template();
+		String embedHtml = htmlTemplateVideo();
 		embedHtml = embedHtml.replace("__TITLE__", StringEscapeUtils.escapeXml10(post.getTitle()));
 		embedHtml = embedHtml.replace("__POSTERPATH__", StringEscapeUtils.escapeXml10(posterImagePath));
 		embedHtml = embedHtml.replace("__VIDEOPATH__", StringEscapeUtils.escapeXml10(videoPath));
