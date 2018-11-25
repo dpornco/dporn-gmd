@@ -22,6 +22,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import co.dporn.gmd.client.img.ImgUtils;
 import co.dporn.gmd.client.presenters.UploadErotica;
+import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.TagSet;
 import elemental2.dom.HTMLImageElement;
 import elemental2.dom.ProgressEvent;
@@ -38,11 +39,10 @@ import gwt.material.design.client.ui.MaterialContainer;
 import gwt.material.design.client.ui.MaterialDialog;
 import gwt.material.design.client.ui.MaterialDialogContent;
 import gwt.material.design.client.ui.MaterialDialogFooter;
+import gwt.material.design.client.ui.MaterialLoader;
 import gwt.material.design.client.ui.MaterialRow;
 import gwt.material.design.client.ui.MaterialTextBox;
 import gwt.material.design.client.ui.MaterialToast;
-import gwt.material.design.jquery.client.api.JQuery;
-import gwt.material.design.jquery.client.api.JQueryElement;
 import jsinterop.base.Js;
 
 public class UploadEroticaUi extends Composite implements UploadErotica.UploadEroticaView {
@@ -130,7 +130,7 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 
 	@UiField
 	protected MaterialButton btnTagSets;
-	
+
 	@UiField
 	protected MaterialButton btnClear;
 	@UiField
@@ -177,52 +177,63 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 		editor.setValue("<p><br></p>", true, true);
 		editor.getEditor().find("[data-event='imageClass']").remove();
 		editor.getEditor().find("[data-event='imageShape']").remove();
+		editor.setMinHeight("550px");
 		btnTagSets.addClickHandler(e -> presenter.viewRecentTagSets("erotica"));
-		btnClear.addClickHandler((e)->{
-			ac.setItemValues(new ArrayList<>(this.mandatorySuggestions), true);
-			title.clear();
-			editor.reset();
-			title.setFocus(true);
-		});
-		btnPreview.addClickHandler(e->{
+		btnClear.addClickHandler((e) -> reset());
+		btnPreview.addClickHandler(e -> {
 			presenter.showPostBodyPreview((double) editor.getEditor().width(), editor.getValue());
 		});
+		btnSubmit.addClickHandler(e -> {
+			title.clearErrorText();
+			editor.clearErrorText();
+			ac.clearErrorText();
+			presenter.doPostBlogEntry( //
+					BlogEntryType.EROTICA, //
+					(double) editor.getEditor().width(), //
+					title.getValue(), //
+					ac.getValue(), //
+					editor.getValue() //
+			);
+		});
+		ac.setSuggestions(suggestOracle);
+		Scheduler.get().scheduleDeferred(() -> {
+			ac.setChipProvider(new ChipProvider());
+			ac.setAllowBlank(false);
+			ac.setAutoValidate(true);
+			ac.setLimit(MAX_TAGS);
+			ac.setAutoSuggestLimit(4);
+			ac.setItemValues(new ArrayList<>(this.mandatorySuggestions), true);
+			ac.addValueChangeHandler(list -> {
+				ac.clearErrorText();
+				if (list.getValue().size() > MAX_TAGS) {
+					ac.setErrorText("MAX TAGS: " + MAX_TAGS);
+				}
+				Set<String> already = new HashSet<>();
+				for (Suggestion tag : list.getValue()) {
+					if (already.contains(tag.getDisplayString())) {
+						ac.setErrorText("DUPLICATE TAGS DETECTED");
+						break;
+					}
+					already.add(tag.getDisplayString());
+				}
+			});
+		});
+		editor.addValueChangeHandler(this::valueChangeHandler);
 	}
 
 	private void automaticImageResizeAndIpfsPut(Element e) {
 		if (e.getAttribute("ImgUtilsResizedInplace").equals("true")) {
 			return;
 		}
+		showLoading(true);
 		imgUtils.resizeInplace(e)//
 				.thenAccept((img) -> img.setAttribute("ImgUtilsResizedInplace", "true")) //
-				.thenRun(() -> postImageToIpfs(Js.cast(e)));
-	}
-
-	private void automaticImageRestyler(Element e) {
-		JQueryElement j = JQuery.$(e);
-		String styles = e.getAttribute("style");
-		if (styles.contains("float: left") || styles.contains("float: right")) {
-			j.css("max-width", "50%");
-			j.css("height", "");
-		} else {
-			j.css("max-width", "100%");
-			j.css("height", "");
-		}
-		String origSrc = e.getAttribute("src");
-		String src = origSrc;
-		if (src.startsWith("https://steemitimages.com/")) {
-			if (src.matches("^https://steemitimages.com/\\d+x\\d+/.*")) {
-				src = "https://steemitimages.com/" + j.width() + "x0/"
-						+ src.replaceFirst("^https://steemitimages.com/\\d+x\\d+/", "");
-			}
-		} else {
-			if (src.startsWith("http://") || src.startsWith("https://")) {
-				src = "https://steemitimages.com/" + j.width() + "x0/" + src;
-			}
-		}
-		if (!src.equals(origSrc)) {
-			e.setAttribute("src", src);
-		}
+				.thenRun(() -> postImageToIpfs(Js.cast(e)))//
+				.exceptionally(ex -> {
+					MaterialToast.fireToast("ERROR: " + ex.getMessage());
+					showLoading(false);
+					return null;
+				});
 	}
 
 	@Override
@@ -232,8 +243,7 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 
 	@Override
 	public String getBody() {
-		// TODO Auto-generated method stub
-		return null;
+		return editor.getValue();
 	};
 
 	@Override
@@ -276,30 +286,6 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 	@Override
 	protected void onLoad() {
 		super.onLoad();
-		ac.setSuggestions(suggestOracle);
-		Scheduler.get().scheduleDeferred(() -> {
-			ac.setChipProvider(new ChipProvider());
-			ac.setAllowBlank(false);
-			ac.setAutoValidate(true);
-			ac.setLimit(MAX_TAGS);
-			ac.setAutoSuggestLimit(4);
-			ac.setItemValues(new ArrayList<>(this.mandatorySuggestions), true);
-			ac.addValueChangeHandler(list -> {
-				ac.clearErrorText();
-				if (list.getValue().size() > MAX_TAGS) {
-					ac.setErrorText("MAX TAGS: " + MAX_TAGS);
-				} 
-				Set<String> already = new HashSet<>();
-				for (Suggestion tag: list.getValue()) {
-					if (already.contains(tag.getDisplayString())) {
-						ac.setErrorText("DUPLICATE TAGS DETECTED");
-						break;
-					}
-					already.add(tag.getDisplayString());
-				}
-			});
-		});
-		editor.addValueChangeHandler(this::valueChangeHandler);
 		title.setFocus(true);
 	}
 
@@ -333,6 +319,7 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 		new ImgUtils().toBlob(image).thenAccept((blob) -> {
 			presenter.postBlobToIpfsFile(ipfsFilename, blob).thenAccept((path) -> {
 				MaterialToast.fireToast("Image posted: " + StringUtils.substringAfterLast(path, "/"));
+				showLoading(false);
 				StringBuilder srcset = new StringBuilder();
 				for (String ipfsgw : new String[] { "https://ipfs.io",
 						"https://steemitimages.com/0x0/https://ipfs.io" }) {
@@ -349,6 +336,10 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 				};
 			});
 		});
+	}
+
+	private void showLoading(boolean loading) {
+		MaterialLoader.loading(loading);
 	}
 
 	@Override
@@ -452,9 +443,7 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 		// image fixups
 		editor.getEditor().find(".note-editable").find("img[src^='data:']")
 				.each((o, e) -> automaticImageResizeAndIpfsPut(e));
-		editor.getEditor().find(".note-editable").find("img").each((o, e) -> automaticImageRestyler(e));
-
-		// TODO: add ipfs => steemitimages sized img src url magic
+		editor.getEditor().find(".note-editable").find("img").each((o, e) -> ImgUtils.automaticImageRestyler(e));
 
 		// TODO: add save/restore to/from local storage magic in case of hitting
 		// "backspace"
@@ -462,5 +451,60 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 		// TODO: try and magic the images sizes scaled to editor container vs the 640px
 		// fixed width blog view at steemit.com/busy.org
 
+	}
+
+	@Override
+	public void showPreview(String html) {
+		MaterialDialog dialog = new MaterialDialog();
+		dialog.addCloseHandler(e -> dialog.removeFromParent());
+		MaterialDialogContent content = new MaterialDialogContent();
+		dialog.add(content);
+		MaterialDialogFooter footer = new MaterialDialogFooter();
+		MaterialButton btnClose = new MaterialButton("CLOSE");
+		btnClose.addClickHandler((e) -> dialog.close());
+		footer.add(btnClose);
+		dialog.add(footer);
+
+		MaterialRow row = new MaterialRow();
+		row.setWidth("640px");
+		row.getElement().setInnerHTML(html);
+		content.add(row);
+
+		RootPanel.get().add(dialog);
+		dialog.open();
+	}
+
+	@Override
+	public double getEditorWidth() {
+		return (double) editor.getEditor().width();
+	}
+
+	@Override
+	public void setErrorBadTitle() {
+		title.setErrorText("Title must not be blank");
+		title.setFocus(true);
+	}
+
+	@Override
+	public void setErrorBadContent() {
+		MaterialToast.fireToast("Not enough content for blog body");
+		MaterialToast.fireToast("Add content");
+		GWT.log("Not enough content");
+		editor.setErrorText("Not enough content");
+		editor.setFocus(true);
+	}
+
+	@Override
+	public void setErrorBadTags() {
+		ac.setErrorText("Must specify at least one tag");
+		ac.setFocus(true);
+	}
+
+	@Override
+	public void reset() {
+		ac.setItemValues(new ArrayList<>(this.mandatorySuggestions), true);
+		title.clear();
+		editor.reset();
+		title.setFocus(true);		
 	}
 }

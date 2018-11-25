@@ -14,6 +14,7 @@ import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsType;
 import steem.model.DiscussionComment;
+import steem.model.TrendingTag;
 import steem.model.Vote;
 
 @JsType(namespace = "steem", name = "api", isNative = true)
@@ -21,6 +22,37 @@ public class SteemApi {
 
 	@JsMethod(name = "getTrendingTags")
 	private static native void _getTrendingTags(String afterTags, int limit, JsCallback jscb);
+	
+	public static interface ListTrendingTagMapper extends ObjectMapper<List<TrendingTag>> {
+	}
+	
+	@JsOverlay
+	public static CompletableFuture<List<TrendingTag>> getTrendingTags(int limit) {
+		return getTrendingTags("", limit);
+	}
+	
+	@JsOverlay
+	public static CompletableFuture<List<TrendingTag>> getTrendingTags(String afterTag, int limit) {
+		GWT.log("SteemApi#getTrendingTags: " + afterTag + " [" + limit+"]");
+		SteemCallbackAsFuture<List<TrendingTag>> future = new SteemCallbackAsFuture<>();
+		SteemTypedCallback<List<TrendingTag>, ObjectMapper<List<TrendingTag>>> typed = new SteemTypedCallback<List<TrendingTag>, ObjectMapper<List<TrendingTag>>>() {
+			@Override
+			public void onResult(String error, List<TrendingTag> result) {
+				if (error != null && !error.trim().isEmpty()) {
+					future.getFuture().completeExceptionally(new RuntimeException(error));
+					return;
+				}
+				future.getFuture().complete(result);
+			}
+
+			@Override
+			public ObjectMapper<List<TrendingTag>> mapper() {
+				return GWT.create(ListTrendingTagMapper.class);
+			}
+		};
+		_getTrendingTags(afterTag, limit, typed.call());
+		return future.getFuture();
+	}
 
 	/**
 	 * steem api only responds with an empty array

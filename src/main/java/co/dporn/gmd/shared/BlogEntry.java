@@ -4,10 +4,12 @@ import java.util.List;
 
 public class BlogEntry {
 	private MongoId _id;
+	private String app;
 	private String commentJsonMetadata;
 	private List<String> communityTags;
 	private String content;
 	private MongoDate created;
+	private String embed;
 	private BlogEntryType entryType=BlogEntryType.VIDEO;
 	private List<String> galleryImagePaths;
 	private List<String> galleryImageThumbPaths;
@@ -22,6 +24,9 @@ public class BlogEntry {
 	public MongoId get_id() {
 		return _id;
 	}
+	public String getApp() {
+		return app;
+	}
 	public String getCommentJsonMetadata() {
 		return commentJsonMetadata;
 	}
@@ -33,6 +38,9 @@ public class BlogEntry {
 	}
 	public MongoDate getCreated() {
 		return created;
+	}
+	public String getEmbed() {
+		return embed;
 	}
 	public BlogEntryType getEntryType() {
 		return entryType;
@@ -70,6 +78,9 @@ public class BlogEntry {
 	public void set_id(MongoId _id) {
 		this._id = _id;
 	}
+	public void setApp(String app) {
+		this.app = app;
+	}
 	public void setCommentJsonMetadata(String commentJsonMetadata) {
 		this.commentJsonMetadata = commentJsonMetadata;
 	}
@@ -81,6 +92,9 @@ public class BlogEntry {
 	}
 	public void setCreated(MongoDate created) {
 		this.created = created;
+	}
+	public void setEmbed(String embed) {
+		this.embed = embed;
 	}
 	public void setEntryType(BlogEntryType entryType) {
 		this.entryType = entryType;

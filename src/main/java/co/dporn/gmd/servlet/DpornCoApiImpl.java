@@ -1,13 +1,12 @@
 package co.dporn.gmd.servlet;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,24 +20,26 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.commons.io.FileUtils;
-
 import co.dporn.gmd.servlet.mongodb.MongoDpornoCo;
+import co.dporn.gmd.servlet.utils.Mapper;
 import co.dporn.gmd.servlet.utils.ResponseWithHeaders;
 import co.dporn.gmd.servlet.utils.ServerRestClient;
 import co.dporn.gmd.servlet.utils.ServerSteemConnect;
-import co.dporn.gmd.servlet.utils.SteemJInstance;
+import co.dporn.gmd.servlet.utils.steemj.DpornMetadata;
+import co.dporn.gmd.servlet.utils.steemj.SJCommentMetadata;
+import co.dporn.gmd.servlet.utils.steemj.SteemJInstance;
 import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
+import co.dporn.gmd.shared.BlogEntry;
+import co.dporn.gmd.shared.CommentConfirmResponse;
 import co.dporn.gmd.shared.DpornCoApi;
 import co.dporn.gmd.shared.IpfsHashResponse;
+import co.dporn.gmd.shared.MongoDate;
 import co.dporn.gmd.shared.PingResponse;
 import co.dporn.gmd.shared.Post;
 import co.dporn.gmd.shared.PostListResponse;
 import co.dporn.gmd.shared.SuggestTagsResponse;
-import io.ipfs.api.IPFS;
-import io.ipfs.api.MerkleNode;
-import io.ipfs.api.NamedStreamable;
+import eu.bittrade.libs.steemj.apis.database.models.state.Discussion;
 
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -232,5 +233,56 @@ public class DpornCoApiImpl implements DpornCoApi {
 			response.setLocation(locations.get(locations.size() - 1));
 		}
 		return response;
+	}
+
+	@Override
+	public CommentConfirmResponse commentConfirm(String username, String authorization, String permlink) {
+		if (!isAuthorized(username, authorization)) {
+			setResponseAsUnauthorized();
+			return null;
+		}
+		if (username.equals(MongoDpornoCo.getPost(username, permlink).getAuthor())) {
+			return new CommentConfirmResponse(true);
+		};
+		Discussion content = SteemJInstance.get().getContent(username, permlink);
+		SJCommentMetadata metadata;
+		try {
+			metadata = Mapper.get().readValue(content.getJsonMetadata(), SJCommentMetadata.class);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return new CommentConfirmResponse(false);
+		}
+		if (metadata == null) {
+			return new CommentConfirmResponse(false);
+		}
+		DpornMetadata dpornMetadata = metadata.getDpornMetadata();
+		if (dpornMetadata==null) {
+			return new CommentConfirmResponse(false);
+		}
+		
+		BlogEntry entry = new BlogEntry();
+		Set<String> extractedTags = new LinkedHashSet<>(Arrays.asList(metadata.getTags()));
+		extractedTags.add("@" + username);
+
+		entry.set_id(null);
+		entry.setTitle(content.getTitle());
+		entry.setPermlink(permlink);
+		entry.setContent(content.getBody());
+		entry.setPostTags(new ArrayList<>(extractedTags));
+		entry.setCommunityTags(new ArrayList<>(extractedTags));
+		entry.setGalleryImagePaths(dpornMetadata.getPhotoGalleryImagePaths());
+		entry.setVideoPath(dpornMetadata.getVideoPath());
+		entry.setPosterImagePath(dpornMetadata.getPosterImagePath());
+		entry.setUsername(username);
+		entry.setCommentJsonMetadata(content.getJsonMetadata());
+		entry.setCreated(new MongoDate(content.getCreated().getDateTimeAsDate()));
+		entry.setModified(entry.getCreated());
+		entry.setEntryType(dpornMetadata.getBlogEntryType());
+		entry.setGalleryImageThumbPaths(dpornMetadata.getPhotoGalleryImagePaths());
+		entry.setMigrated(false);
+		entry.setApp(dpornMetadata.getApp());
+		entry.setEmbed(dpornMetadata.getEmbed());
+		
+		return new CommentConfirmResponse(MongoDpornoCo.insertPost(entry));
 	}
 }

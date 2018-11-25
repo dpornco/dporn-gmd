@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture;
 
 import co.dporn.gmd.client.presenters.RoutePresenter;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
+import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.PostListResponse;
 import co.dporn.gmd.shared.TagSet;
 import elemental2.dom.Blob;
@@ -59,4 +60,9 @@ public interface AppControllerModel {
 	CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob, OnprogressFn onprogress);
 	
 	CompletableFuture<List<TagSet>> recentTagSets(String mustHaveTag);
+	
+	CompletableFuture<List<String>> sortTagsByNetVoteDesc(List<String> tags);
+	
+	CompletableFuture<String> postBlogEntry(BlogEntryType erotica, double width, String title, List<String> tags, String content);
+	
 }

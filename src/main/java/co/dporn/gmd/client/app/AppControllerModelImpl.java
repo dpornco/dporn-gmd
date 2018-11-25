@@ -1,7 +1,9 @@
 package co.dporn.gmd.client.app;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -17,7 +19,13 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
+import com.google.gwt.i18n.client.DateTimeFormat;
+import com.google.gwt.i18n.client.TimeZone;
+import com.google.gwt.json.client.JSONArray;
+import com.google.gwt.json.client.JSONBoolean;
+import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
+import com.google.gwt.json.client.JSONString;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.storage.client.StorageMap;
 import com.google.gwt.user.client.Window.Location;
@@ -26,22 +34,32 @@ import com.wallissoftware.pushstate.client.PushStateHistorian;
 import co.dporn.gmd.client.ClientRestClient;
 import co.dporn.gmd.client.presenters.RoutePresenter;
 import co.dporn.gmd.client.presenters.RoutePresenter.ActiveUserInfo;
+import co.dporn.gmd.client.utils.HtmlReformatter;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
+import co.dporn.gmd.shared.BlogEntryType;
+import co.dporn.gmd.shared.DpornConsts;
 import co.dporn.gmd.shared.IpfsHashResponse;
 import co.dporn.gmd.shared.Post;
 import co.dporn.gmd.shared.PostListResponse;
 import co.dporn.gmd.shared.TagSet;
 import elemental2.dom.Blob;
 import elemental2.dom.DomGlobal;
+import elemental2.dom.HTMLImageElement;
 import elemental2.dom.XMLHttpRequestUpload.OnprogressFn;
+import gwt.material.design.client.ui.MaterialToast;
+import gwt.material.design.jquery.client.api.JQuery;
+import gwt.material.design.jquery.client.api.JQueryElement;
+import jsinterop.base.Js;
 import steem.SteemApi;
 import steem.connect.SteemConnectInit;
 import steem.connect.SteemConnectV2;
 import steem.connect.model.SteemAccountMetadata;
 import steem.connect.model.SteemAccountMetadata.AccountProfile;
 import steem.connect.model.SteemConnectMe;
+import steem.model.Beneficiary;
 import steem.model.CommentMetadata;
 import steem.model.DiscussionComment;
+import steem.model.TrendingTag;
 import steem.model.Vote;
 
 public class AppControllerModelImpl implements AppControllerModel {
@@ -91,7 +109,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 	@Override
 	public CompletableFuture<PostListResponse> featuredPosts(int count) {
 		CompletableFuture<PostListResponse> finalFuture = new CompletableFuture<>();
-		listPosts(FEATURED_POST_POOL_MULTIPLIER_SIZE*count).thenAccept((response) -> {
+		listPosts(FEATURED_POST_POOL_MULTIPLIER_SIZE * count).thenAccept((response) -> {
 			List<CompletableFuture<List<Vote>>> voteFutures = new ArrayList<>();
 			List<Post> list = new ArrayList<>();
 			double mul = 1.0d;
@@ -106,7 +124,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 					synchronized (list) {
 						list.add(post);
 					}
-				}).exceptionally(ex->{
+				}).exceptionally(ex -> {
 					GWT.log(ex.getMessage(), ex);
 					return null;
 				});
@@ -129,7 +147,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 			});
 		}).exceptionally(ex -> {
 			Throwable cause = ex.getCause();
-			if (cause!=null) {
+			if (cause != null) {
 				DomGlobal.console.log(cause);
 			} else {
 				DomGlobal.console.log(ex);
@@ -439,4 +457,241 @@ public class AppControllerModelImpl implements AppControllerModel {
 		});
 		return future;
 	}
+
+	@Override
+	public CompletableFuture<List<String>> sortTagsByNetVoteDesc(List<String> tags) {
+		CompletableFuture<List<String>> future = new CompletableFuture<>();
+		if (tags == null) {
+			future.completeExceptionally(new NullPointerException("Tags to be sorted cannot be null"));
+			return future;
+		}
+
+		// always make sure we have "dporn" and "nsfw" in the tag list
+		if (!tags.contains("dporn")) {
+			tags.add("dporn");
+		}
+		if (!tags.contains("nsfw")) {
+			tags.add("nsfw");
+		}
+
+		List<TrendingTag> trendingList = new ArrayList<>();
+		List<CompletableFuture<List<TrendingTag>>> futures = new ArrayList<>();
+		for (String tag : tags) {
+			if (tag == null || tag.trim().isEmpty()) {
+				continue;
+			}
+			tag = tag.trim();
+			CompletableFuture<List<TrendingTag>> futureTrendingTags = SteemApi.getTrendingTags(tag, 1);
+			futureTrendingTags.thenAccept(list -> {
+				if (list == null || list.isEmpty()) {
+					return;
+				}
+				for (TrendingTag t : list) {
+					GWT.log(String.valueOf(t.getName()) + ": " + String.valueOf(t.getNetVotes()));
+				}
+				synchronized (trendingList) {
+					trendingList.addAll(list);
+				}
+			}).exceptionally(ex -> {
+				if (ex == null) {
+					GWT.log("NULL EXCEPTION: futureTrendingTags in sortTagsByNetVoteDesc");
+					return null;
+				}
+				GWT.log(ex.getMessage(), ex);
+				return null;
+			});
+			futures.add(futureTrendingTags);
+		}
+		CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[0])).thenRun(() -> {
+			BigInteger totalNetVotes = BigInteger.ZERO;
+			// get sum of weights and then pre-weight several special tags like "dporn" and
+			// "nsfw" to always be first in sorted list
+			for (TrendingTag t : trendingList) {
+				totalNetVotes = totalNetVotes.add(t.getNetVotes());
+			}
+			for (TrendingTag t : trendingList) {
+				if (t.getName().equals("dporn")) {
+					t.setNetVotes(totalNetVotes.add(BigInteger.valueOf(5)));
+					continue;
+				}
+				if (t.getName().equals("nsfw")) {
+					t.setNetVotes(totalNetVotes.add(BigInteger.valueOf(4)));
+					continue;
+				}
+				if (DpornConsts.MANDATORY_VIDEO_TAGS.contains(t.getName())) {
+					t.setNetVotes(totalNetVotes.add(BigInteger.valueOf(3)));
+					continue;
+				}
+				if (DpornConsts.MANDATORY_PHOTO_GALLERY_TAGS.contains(t.getName())) {
+					t.setNetVotes(totalNetVotes.add(BigInteger.valueOf(2)));
+					continue;
+				}
+				if (DpornConsts.MANDATORY_EROTICA_TAGS.contains(t.getName())) {
+					t.setNetVotes(totalNetVotes.add(BigInteger.valueOf(1)));
+					continue;
+				}
+			}
+			// sort, build simple string list, then sort desc and return list
+			Collections.sort(trendingList, (a, b) -> b.getNetVotes().compareTo(a.getNetVotes()));
+			List<String> result = new ArrayList<>();
+			for (TrendingTag t : trendingList) {
+				result.add(t.getName());
+			}
+			future.complete(result);
+		}).exceptionally(ex -> {
+			if (ex == null) {
+				GWT.log("NULL EXCEPTION: CompletableFuture.allOf(...) in sortTagsByNetVoteDesc");
+				return null;
+			}
+			GWT.log(ex.getMessage(), ex);
+			return null;
+		});
+		return future;
+	}
+
+	private String getTimestampedPermlink(String title) {
+		if (title == null || title.trim().isEmpty()) {
+			title = "dporn";
+		}
+		DateTimeFormat formatter = DateTimeFormat.getFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		String utcdatetime = formatter.format(new Date(), TimeZone.createTimeZone(0));
+
+		utcdatetime = utcdatetime.toLowerCase();
+		utcdatetime = utcdatetime.replaceAll("[^a-z0-9\\-]", "-");
+		utcdatetime = utcdatetime.replaceAll("-+", "-");
+		utcdatetime = "dporn-" + utcdatetime;
+
+		title = title.toLowerCase();
+		title = title.replaceAll("[^a-z0-9\\-]", "-");
+		title = title.replaceAll("-+", "-");
+
+		while (utcdatetime.length() + title.length() > 63 && title.length() > 0) {
+			title = title.substring(0, title.length() - 1);
+		}
+		while (title.startsWith("-")) {
+			title = title.substring(1);
+		}
+		while (title.endsWith("-")) {
+			title = title.substring(0, title.length() - 1);
+		}
+		return title + "-" + utcdatetime;
+	}
+
+	@Override
+	public CompletableFuture<String> postBlogEntry(BlogEntryType blogEntryType, double width, String title,
+			List<String> tags, String content) {
+
+		HtmlReformatter reformatter = new HtmlReformatter(width);
+		content = reformatter.reformat(content);
+		GWT.log(content);
+
+		CompletableFuture<String> future = new CompletableFuture<String>();
+
+		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
+		if (username.trim().isEmpty()) {
+			future.completeExceptionally(new IllegalStateException("You must be logged in to post"));
+			return future;
+		}
+		String permlink = getTimestampedPermlink(title);
+
+		JSONArray comment = new JSONArray();
+		JSONObject commentData = new JSONObject();
+		comment.set(0, new JSONString("comment"));
+		comment.set(1, commentData);
+
+		commentData.put("parent_author", new JSONString(""));
+		commentData.put("parent_permlink", new JSONString(tags.get(0)));
+		commentData.put("author", new JSONString(username));
+		commentData.put("permlink", new JSONString(permlink));
+		commentData.put("title", new JSONString(title));
+		commentData.put("body", new JSONString(content));
+
+		JSONObject commentJsonMetadata = new JSONObject();
+		commentJsonMetadata.put("app", new JSONString(DpornConsts.APP_ID_VERSION));
+		JSONArray jsonTagsArray = new JSONArray();
+		for (String tag : tags) {
+			jsonTagsArray.set(jsonTagsArray.size(), new JSONString(tag));
+		}
+		commentJsonMetadata.put("tags", jsonTagsArray);
+		// extract image links via JQuery operation on HTML fragment
+		JSONArray jsonImageArray = new JSONArray();
+		if (content.toLowerCase().contains("<img")) {
+			JQueryElement imgs = JQuery.$(content).find("img");
+			if (imgs != null) {
+				// use non-async code!
+				for (int ix = 0; ix < imgs.length(); ix++) {
+					HTMLImageElement img = Js.cast(imgs.get(ix));
+					jsonImageArray.set(jsonImageArray.size(), new JSONString(img.src));
+				}
+			}
+		}
+		commentJsonMetadata.put("image", jsonImageArray);
+		commentJsonMetadata.put("canonical", new JSONString("https://dporn.co" + Routes.post(username, permlink)));
+
+		JSONObject dpornMetadata = new JSONObject();
+		dpornMetadata.put("app", new JSONString(DpornConsts.APP_ID_VERSION));
+		dpornMetadata.put("embed", new JSONString(Routes.embedVideo(username, permlink)));
+		dpornMetadata.put("blogEntryType", new JSONString(blogEntryType.name()));
+		dpornMetadata.put("videoPath", null);
+		dpornMetadata.put("posterImagePath", null);
+		dpornMetadata.put("photoGalleryImagePaths", new JSONArray());
+
+		commentJsonMetadata.put("dpornMetadata", dpornMetadata);
+
+		commentData.put("json_metadata", new JSONString(commentJsonMetadata.toString()));
+
+		JSONArray commentOptions = new JSONArray();
+		JSONObject optionData = new JSONObject();
+		commentOptions.set(0, new JSONString("comment_options"));
+		commentOptions.set(1, optionData);
+
+		optionData.put("author", new JSONString(username));
+		optionData.put("permlink", new JSONString(permlink));
+		optionData.put("max_accepted_payout", new JSONString("1000000.000 SBD"));
+		optionData.put("percent_steem_dollars", new JSONNumber(10000));
+		optionData.put("allow_votes", JSONBoolean.getInstance(true));
+		optionData.put("allow_curation_rewards", JSONBoolean.getInstance(true));
+
+		JSONArray extensionsList = new JSONArray();
+		optionData.put("extensions", extensionsList);
+		JSONArray extensionBeneficiaries = new JSONArray();
+		extensionsList.set(0, extensionBeneficiaries);
+
+		JSONObject beneficiariesData = new JSONObject();
+		// TODO: support user specified post splits
+		JSONArray beneficiaryList = new JSONArray();
+		for (Beneficiary ben : DpornConsts.BENEFICIARIES) {
+			JSONObject beneficiary = new JSONObject();
+			beneficiary.put("account", new JSONString(ben.getAccount()));
+			beneficiary.put("weight", new JSONNumber(ben.getWeight()));
+			beneficiaryList.set(beneficiaryList.size(), beneficiary);
+		}
+		beneficiariesData.put("beneficiaries", beneficiaryList);
+
+		extensionBeneficiaries.set(0, new JSONNumber(0));
+		extensionBeneficiaries.set(1, beneficiariesData);
+
+		sc2api.broadcast(comment, commentOptions).thenAccept(result -> {
+			String pnewToken = "@"+username+"/"+permlink;
+			String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
+			ClientRestClient.get().commentConfirm(username, authorization, permlink).thenRun(()->{
+				PushStateHistorian.replaceItem(pnewToken, true);
+			}).exceptionally(ex->{
+				PushStateHistorian.replaceItem(pnewToken, true);
+				return null;
+			});
+			future.complete(pnewToken);
+		}).exceptionally(ex -> {
+			if (ex.getCause() != null) {
+				DomGlobal.console.log(ex.getCause());
+				MaterialToast.fireToast(ex.getCause().getMessage(), 15000);
+			} else {
+				DomGlobal.console.log(ex);
+			}
+			return null;
+		});
+
+		return future;
+	}
+
 }

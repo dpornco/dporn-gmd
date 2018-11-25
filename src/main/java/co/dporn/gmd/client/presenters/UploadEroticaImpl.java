@@ -1,13 +1,19 @@
 package co.dporn.gmd.client.presenters;
 
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.utils.HtmlReformatter;
 import co.dporn.gmd.client.views.IsView;
+import co.dporn.gmd.shared.BlogEntryType;
 import elemental2.dom.Blob;
 import elemental2.dom.XMLHttpRequest.OnprogressFn;
 
@@ -115,5 +121,39 @@ public class UploadEroticaImpl implements UploadErotica {
 		HtmlReformatter reformatter = new HtmlReformatter(imgScaleWidth);
 		String newHtml = reformatter.reformat(html);
 		GWT.log(newHtml);
+		view.showPreview(html);
+	}
+
+	@Override
+	public void doPostBlogEntry(BlogEntryType erotica, double width, String title, List<? extends Suggestion> tags,
+			String content) {
+		if (tags == null || tags.isEmpty()) {
+			view.setErrorBadTags();
+			return;
+		}
+		if (title == null || title.trim().isEmpty()) {
+			view.setErrorBadTitle();
+			return;
+		}
+		GWT.log("Content: "+content.length()+"\n"+content);
+		if (content.length()<16) {
+			view.setErrorBadContent();
+			return;
+		}
+		Set<String> _tags = new LinkedHashSet<>();
+		for (Suggestion tag: tags) {
+			_tags.add(tag.getReplacementString());
+		}
+		model.sortTagsByNetVoteDesc(new ArrayList<>(_tags)).thenAccept(t->{
+			model.postBlogEntry(erotica, width, title, t, content).thenAccept(permlink->{
+				view.reset();
+			});
+		}).exceptionally(ex->{
+			GWT.log(ex.getMessage(), ex);
+			model.postBlogEntry(erotica, width, title, new ArrayList<>(_tags), content).thenAccept(permlink->{
+				view.reset();
+			});
+			return null;
+		});
 	}
 }

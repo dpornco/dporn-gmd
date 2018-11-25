@@ -1,4 +1,4 @@
-package co.dporn.gmd.servlet.utils;
+package co.dporn.gmd.servlet.utils.steemj;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -14,15 +14,18 @@ import java.util.TreeSet;
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 
+import co.dporn.gmd.servlet.utils.Mapper;
 import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.AccountMetadata;
 import co.dporn.gmd.shared.AccountMetadata.AccountProfile;
 import eu.bittrade.libs.steemj.SteemJ;
+import eu.bittrade.libs.steemj.apis.database.models.state.Discussion;
 import eu.bittrade.libs.steemj.apis.follow.enums.FollowType;
 import eu.bittrade.libs.steemj.apis.follow.model.BlogEntry;
 import eu.bittrade.libs.steemj.apis.follow.model.FollowApiObject;
 import eu.bittrade.libs.steemj.base.models.AccountName;
 import eu.bittrade.libs.steemj.base.models.ExtendedAccount;
+import eu.bittrade.libs.steemj.base.models.Permlink;
 import eu.bittrade.libs.steemj.exceptions.SteemCommunicationException;
 import eu.bittrade.libs.steemj.exceptions.SteemResponseException;
 
@@ -47,6 +50,20 @@ public class SteemJInstance {
 		}
 		cachedStringLists = Collections.synchronizedMap(new PassiveExpiringMap<>(30*MINUTE_ms, new LRUMap<>(16)));
 		cachedBlogDetailMaps = Collections.synchronizedMap(new PassiveExpiringMap<>(10*MINUTE_ms, new LRUMap<>(16)));
+	}
+	
+	public Discussion getContent(String username, String permlink) {
+		for (int retries=0; retries<3; retries++) {
+			try {
+				return _steemJ.getContent(new AccountName(username), new Permlink(permlink));
+			} catch (SteemCommunicationException | SteemResponseException e) {
+				try {
+					Thread.sleep(250);
+				} catch (InterruptedException e1) {
+				}
+			}
+		}
+		return null;
 	}
 
 	public static SteemJInstance get() {

@@ -13,6 +13,8 @@ import elemental2.dom.Event;
 import elemental2.dom.EventListener;
 import elemental2.dom.HTMLCanvasElement;
 import elemental2.dom.HTMLImageElement;
+import gwt.material.design.jquery.client.api.JQuery;
+import gwt.material.design.jquery.client.api.JQueryElement;
 import jsinterop.base.Js;
 
 public class ImgUtils {
@@ -178,5 +180,39 @@ public class ImgUtils {
 			future.completeExceptionally(ex);
 		}
 		return future;
+	}
+
+	public static void automaticImageRestyler(Element e) {
+		JQueryElement j = JQuery.$(e);
+		String styles = e.getAttribute("style");
+		if (styles.contains("float: left") || styles.contains("float: right")) {
+			j.css("max-width", "50%");
+			j.css("height", "");
+		} else {
+			j.css("max-width", "100%");
+			j.css("height", "");
+		}
+		String origSrc = e.getAttribute("src");
+		String src = origSrc;
+		if (src.startsWith("https://steemitimages.com/")) {
+			if (src.matches("^https://steemitimages.com/\\d+x\\d+/.*")) {
+				src = "https://steemitimages.com/" + j.width() + "x0/"
+						+ src.replaceFirst("^https://steemitimages.com/\\d+x\\d+/", "");
+			}
+		} else {
+			if (src.startsWith("http://") || src.startsWith("https://")) {
+				src = "https://steemitimages.com/" + j.width() + "x0/" + src;
+			}
+		}
+		String srcset = e.getAttribute("srcset");
+		if (srcset != null && srcset.contains("://steemitimages.com/")) {
+			String newsrcset = srcset.replaceAll("https://steemitimages.com/\\d+x\\d+/", "https://steemitimages.com/" + j.width() + "x0/");
+			if (!newsrcset.equals(srcset)) {
+				e.setAttribute("srcset", newsrcset);
+			}
+		}
+		if (!src.equals(origSrc)) {
+			e.setAttribute("src", src);
+		}
 	}
 }

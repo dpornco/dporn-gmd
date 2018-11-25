@@ -1,5 +1,6 @@
 package co.dporn.gmd.servlet.mongodb;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -29,6 +30,7 @@ public class MongoJsonMapper {
 		mapper.configure(Feature.WRITE_BIGDECIMAL_AS_PLAIN, true);
 		mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
 		mapper.configure(Feature.IGNORE_UNKNOWN, true);
+		mapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
 		return _mapper=mapper;
 	}
 }

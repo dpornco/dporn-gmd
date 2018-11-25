@@ -64,41 +64,59 @@ public class HtmlReformatter {
 			GWT.log(e.getMessage(), e);
 		}
 		removeSpanTags(htmlWrapperElement);
+		moveDivsOutsidePs(htmlWrapperElement);
+		moveImgsOutsidePs(htmlWrapperElement);
 		return htmlWrapperElement.innerHTML;
+	}
+	
+	/**
+	 * Moves all IMGs to become after siblings of any Ps they are
+	 * inside of. (Display fidelity for steemit/busy!)
+	 * 
+	 * @param element
+	 */
+	private void moveImgsOutsidePs(Element element) {
+		while (true)  {
+			JQueryElement divs = JQuery.$(element).find("p img");
+			GWT.log("Have "+divs.length()+" imgs to relocate");
+			if (divs.length()==0) {
+				return;
+			}
+			for (int ix=0; ix<divs.length(); ix++) {
+				JQueryElement img = JQuery.$(divs.get(ix));
+				JQueryElement parent = img.parent();
+				if (parent==null) {
+					continue;
+				}
+				img.remove();
+				parent.after(img);
+			}
+		}
 	}
 
 	/**
-	 * TODO: Not working right. Moves all DIVs to become siblings of any Ps they are
+	 * Moves all DIVs to become before siblings of any Ps they are
 	 * inside of. (HTML Structure Compliancy!)
 	 * 
 	 * @param element
 	 */
-	@SuppressWarnings("unused")
 	private void moveDivsOutsidePs(Element element) {
-		Element parentElement = (Element) element.parentNode;
-		if (parentElement == null) {
-			return;
-		}
-		if (element.nodeType != Node.ELEMENT_NODE) {
-			return;
-		}
-		if (element.hasChildNodes()) {
-			NodeList<Node> children = element.childNodes;
-			for (int ix = children.getLength() - 1; ix >= 0; ix--) {
-				Node item = children.getAt(ix);
-				if (item.nodeType == Node.ELEMENT_NODE) {
-					moveDivsOutsidePs((Element) item);
+		while (true)  {
+			JQueryElement divs = JQuery.$(element).find("p div");
+			GWT.log("Have "+divs.length()+" divs to relocate");
+			if (divs.length()==0) {
+				return;
+			}
+			for (int ix=0; ix<divs.length(); ix++) {
+				JQueryElement div = JQuery.$(divs.get(ix));
+				JQueryElement parent = div.parent();
+				if (parent==null) {
+					continue;
 				}
+				div.remove();
+				parent.before(div);
 			}
 		}
-		if (!element.tagName.toLowerCase().equals("div")) {
-			return;
-		}
-
-		if (!parentElement.tagName.equals("p")) {
-			return;
-		}
-		JQuery.$(element).unwrap();
 	}
 
 	/**
@@ -204,6 +222,7 @@ public class HtmlReformatter {
 							// "float: left; padding: 4px; max-width: 50%;";
 							imgDiv.css("float", "left");
 							imgDiv.css("padding", "4px");
+							imgDiv.css("max-width", "50%");
 							img.css("float", "");
 							img.css("padding", "");
 							continue style;
@@ -215,6 +234,7 @@ public class HtmlReformatter {
 							// "float: right; padding: 4px; max-width: 50%;";
 							imgDiv.css("float", "right");
 							imgDiv.css("padding", "4px");
+							imgDiv.css("max-width", "50%");
 							img.css("float", "");
 							img.css("padding", "");
 							continue style;

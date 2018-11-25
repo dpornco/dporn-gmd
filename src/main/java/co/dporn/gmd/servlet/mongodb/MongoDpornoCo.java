@@ -96,7 +96,8 @@ public class MongoDpornoCo {
 			MongoCollection<Document> videos_old = db.getCollection(TABLE_VIDEOS);
 			MongoCollection<Document> blogEntries = db.getCollection(TABLE_BLOG_ENTRIES_V2);
 
-			try (MongoCursor<Document> forMigration = videos_old.find(Filters.exists("migrated", false)).sort(Sorts.ascending("_id")).batchSize(100).iterator()){
+			try (MongoCursor<Document> forMigration = videos_old.find(Filters.exists("migrated", false))
+					.sort(Sorts.ascending("_id")).batchSize(100).iterator()) {
 				while (forMigration.hasNext()) {
 					Document next = forMigration.next();
 					BlogEntry entry = new BlogEntry();
@@ -136,9 +137,10 @@ public class MongoDpornoCo {
 							next.put("migrated", true);
 							videos_old.replaceOne(Filters.eq(next.getObjectId("_id")), next);
 						}
-					}					
+					}
 				}
-			};
+			}
+			;
 		}
 	}
 
@@ -153,7 +155,7 @@ public class MongoDpornoCo {
 			if (item == null || item.isEmpty()) {
 				return post;
 			}
-			
+
 			try {
 				BlogEntry entry = MongoJsonMapper.get().readValue(item.toJson(), BlogEntry.class);
 				post.setAuthor(entry.getUsername());
@@ -171,7 +173,7 @@ public class MongoDpornoCo {
 			}
 		} finally {
 			client.close();
-			System.out.println("getPost: "+authorname+", "+permlink);
+			System.out.println("getPost: " + authorname + ", " + permlink);
 		}
 	}
 
@@ -264,7 +266,7 @@ public class MongoDpornoCo {
 		} finally {
 			client.close();
 		}
-		System.out.println("_listPosts: "+startId+", "+count+", "+list.size());
+		System.out.println("_listPosts: " + startId + ", " + count + ", " + list.size());
 		return list;
 	}
 
@@ -317,7 +319,31 @@ public class MongoDpornoCo {
 		} finally {
 			client.close();
 		}
-		System.out.println("listPostsFor: "+username+", "+startId+", "+count+", "+list.size());
+		System.out.println("listPostsFor: " + username + ", " + startId + ", " + count + ", " + list.size());
 		return list;
+	}
+
+	public static boolean insertPost(BlogEntry entry) {
+		String json;
+		try {
+			json = MongoJsonMapper.get().writeValueAsString(entry);
+			System.out.println("INSERT JSON: "+json);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			return false;
+		}
+		Document doc = Document.parse(json);
+		System.out.println("INSERT DOC: "+doc.toJson());
+		try (MongoClient client = MongoClients.create()) {
+			MongoDatabase db = client.getDatabase("dpdb");
+			MongoCollection<Document> collection = db.getCollection(TABLE_BLOG_ENTRIES_V2);
+			try {
+				collection.insertOne(doc);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
+		return true;
 	}
 }

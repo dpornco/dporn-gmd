@@ -13,6 +13,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.URL;
 
 import co.dporn.gmd.shared.ActiveBlogsResponse;
+import co.dporn.gmd.shared.CommentConfirmResponse;
 import co.dporn.gmd.shared.DpornCoApi;
 import co.dporn.gmd.shared.PingResponse;
 import co.dporn.gmd.shared.PostListResponse;
@@ -46,6 +47,13 @@ public class ClientRestClient {
 	}
 
 	private final DpornCoRestApi rest;
+	
+	public CompletableFuture<CommentConfirmResponse> commentConfirm(String username, String authorization, String permlink) {
+		MethodCallbackAsFuture<CommentConfirmResponse> callback = new MethodCallbackAsFuture<>();
+		call(callback).commentConfirm(username, authorization, permlink);
+		return callback.getFuture();
+	}
+
 
 	public CompletableFuture<String> postBlobToIpfs(String username, String authorization, String filename, Blob blob,
 			OnprogressFn onprogress) {
@@ -152,4 +160,5 @@ public class ClientRestClient {
 			};
 		}
 	}
+
 }
