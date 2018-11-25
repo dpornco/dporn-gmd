@@ -62,9 +62,9 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 				card.setAvatarUrl(Routes.avatarImage(p.getUsername()));
 				card.setTitle(p.getTitle());
 				String videoPath = p.getVideoPath();
-				if (videoPath == null || !videoPath.startsWith("/ipfs/")) {
-					return;
-				}
+//				if (videoPath == null || !videoPath.startsWith("/ipfs/")) {
+//					return;
+//				}
 				card.setVideoEmbedUrl(Routes.embedVideo(p.getUsername(), p.getPermlink()));
 				card.setViewLink(Routes.post(p.getUsername(), p.getPermlink()));
 				getContentView().getFeaturedPosts().add(card);
@@ -126,9 +126,9 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 					card.setAvatarUrl(Routes.avatarImage(p.getUsername()));
 					card.setTitle(p.getTitle());
 					String videoPath = p.getVideoPath();
-					if (videoPath == null || !videoPath.startsWith("/ipfs/")) {
-						return;
-					}
+//					if (videoPath == null || !videoPath.startsWith("/ipfs/")) {
+//						return;
+//					}
 					card.setViewLink(Routes.post(p.getUsername(), p.getPermlink()));
 					card.setVideoEmbedUrl(Routes.embedVideo(p.getUsername(), p.getPermlink()));
 					getContentView().getRecentPosts().add(card);
