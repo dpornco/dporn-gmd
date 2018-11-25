@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 
 import co.dporn.gmd.servlet.mongodb.MongoDpornoCo;
 import co.dporn.gmd.shared.BlogEntry;
+import co.dporn.gmd.shared.BlogEntryType;
 
 @Produces(MediaType.TEXT_HTML)
 @Consumes(MediaType.TEXT_HTML)
@@ -32,6 +33,7 @@ public class DpornCoEmbed {
 	private static final long _30_DAYS_ms = 1000l * 60l * 60l * 24l * 30l;
 	private static final int _30_DAYS_sec = 60 * 60 * 24 * 30;
 	private static String htmlTemplateVideo;
+	private static String htmlTemplateBlog;
 
 	private static String htmlTemplateVideo() {
 		if (htmlTemplateVideo == null) {
@@ -41,6 +43,16 @@ public class DpornCoEmbed {
 			}
 		}
 		return htmlTemplateVideo;
+	}
+	
+	private static String htmlTemplateBlog() {
+		if (htmlTemplateBlog == null) {
+			try {
+				htmlTemplateBlog = IOUtils.toString(DpornCoEmbed.class.getResourceAsStream("/embed/embed-blog.html"));
+			} catch (IOException e) {
+			}
+		}
+		return htmlTemplateBlog;
 	}
 
 	@Context
@@ -56,7 +68,6 @@ public class DpornCoEmbed {
 	@HEAD
 	public Response head(@PathParam("authorname") String author, @PathParam("permlink") String permlink,
 			@QueryParam("base-url") String baseUrl) {
-		String key = author.trim() + "|" + permlink.trim();
 		response.setCharacterEncoding("UTF-8");
 		response.setContentType(MediaType.TEXT_HTML);
 		response.addDateHeader("Last-Modified", LAST_MODIFIED);
@@ -101,14 +112,48 @@ public class DpornCoEmbed {
 		if (cached != null) {
 			return cached;
 		}
-		BlogEntry post = MongoDpornoCo.getEntry(author, permlink);
-		if (post == null) {
+		BlogEntry entry = MongoDpornoCo.getEntry(author, permlink);
+		if (entry == null) {
 			return null;
 		}
-		if (!author.equals(post.getUsername())) {
+		if (!author.equals(entry.getUsername())) {
 			return null;
 		}
-		String posterImagePath = post.getPosterImagePath();
+		String embedHtml = null;
+		if (BlogEntryType.VIDEO == entry.getEntryType() || entry.getVideoPath()!=null) {
+			embedHtml = getVideoEmbedHtml(entry);
+		} else {
+			embedHtml = getGenericEmbedHtml(entry);
+		}
+		
+		if (embedHtml!=null) {
+			CACHE.put(key, embedHtml);
+		}
+		return embedHtml;
+	}
+
+	private static String getGenericEmbedHtml(BlogEntry entry) {
+		String content = entry.getContent();
+		if (content==null) {
+			return null;
+		}
+		content=content.trim();
+		if (content.toLowerCase().startsWith("<html>")) {
+			content = content.substring("<html>".length());
+		}
+		if (content.toLowerCase().endsWith("</html>")) {
+			content = content.substring(0, content.length()-"</html>".length());
+		}
+		String html = htmlTemplateBlog();
+		String title = entry.getTitle();
+		html = html.replace("__TITLE__",StringEscapeUtils.escapeXml10(title==null?"":title));
+		html = html.replace("__CONTENT__",content);
+		
+		return html;
+	}
+
+	private static String getVideoEmbedHtml(BlogEntry entry) {
+		String posterImagePath = entry.getPosterImagePath();
 		if (posterImagePath == null) {
 			return null;
 		}
@@ -120,7 +165,7 @@ public class DpornCoEmbed {
 		if (!isPath && !isHttp && !isHttps) {
 			posterImagePath = "/ipfs/QmTTtAi3ZwLdGpEzy2LHpFKQHFqLUrHy61miko9LSbVp72";
 		}
-		String videoPath = post.getVideoPath();
+		String videoPath = entry.getVideoPath();
 		if (videoPath == null) {
 			return null;
 		}
@@ -129,7 +174,7 @@ public class DpornCoEmbed {
 			return null;
 		}
 		String embedHtml = htmlTemplateVideo();
-		embedHtml = embedHtml.replace("__TITLE__", StringEscapeUtils.escapeXml10(post.getTitle()));
+		embedHtml = embedHtml.replace("__TITLE__", StringEscapeUtils.escapeXml10(entry.getTitle()));
 		embedHtml = embedHtml.replace("__POSTERPATH__", StringEscapeUtils.escapeXml10(posterImagePath));
 		embedHtml = embedHtml.replace("__VIDEOPATH__", StringEscapeUtils.escapeXml10(videoPath));
 		// hack to deal with non IPFS path images or videos
@@ -137,7 +182,6 @@ public class DpornCoEmbed {
 			embedHtml = embedHtml.replace("https://steemitimages.com/400x400/https://ipfs.io/ipfs" + posterImagePath,
 					"https://steemitimages.com/400x400/" + posterImagePath);
 		}
-		CACHE.put(key, embedHtml);
 		return embedHtml;
 	}
 
