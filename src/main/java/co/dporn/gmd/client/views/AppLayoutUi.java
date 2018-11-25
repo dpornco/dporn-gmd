@@ -22,7 +22,13 @@ import gwt.material.design.client.ui.MaterialToast;
 public class AppLayoutUi extends Composite implements AppLayoutView {
 
 	@UiField
-	MaterialLink linkHome;
+	protected MaterialLink linkHome;
+	
+	@UiField
+	protected MaterialLink linkSearch;
+	
+	@UiField
+	protected MaterialLink linkVerified;
 
 	@UiField
 	protected MaterialSideNavPush sidenav;
@@ -133,5 +139,14 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 	@Override
 	public void toast(String message) {
 		MaterialToast.fireToast(message);
+	}
+
+	@Override
+	public void enableUnimplementedFeatures(boolean enabled) {
+		linkSearch.setEnabled(enabled);
+		linkVerified.setEnabled(enabled);
+		linkUploadPhotos.setEnabled(enabled);
+		linkUploadVideo.setEnabled(enabled);
+		linkSettings.setEnabled(enabled);
 	}
 }

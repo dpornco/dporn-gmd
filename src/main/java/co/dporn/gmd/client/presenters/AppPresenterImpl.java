@@ -12,6 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.SuggestOracle;
 
@@ -182,6 +183,12 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 		setRootDisplay(rootDisplay);
 		setModel(model);
 		setView(appLayoutView);
+		String hostName = Location.getHostName();
+		if (hostName.startsWith("localhost") || hostName.startsWith("dev")) {
+			view.enableUnimplementedFeatures(true);
+		} else {
+			view.enableUnimplementedFeatures(false);
+		}
 	}
 	
 	@Override
@@ -227,6 +234,12 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 		//TODO: FUTURE: view.setUsername("@"+info.getUsername());
 		view.setUsername("Logout");
 		view.enableContentCreatorRoles(true);
+		String hostName = Location.getHostName();
+		if (hostName.startsWith("localhost") || hostName.startsWith("dev")) {
+			view.enableUnimplementedFeatures(true);
+		} else {
+			view.enableUnimplementedFeatures(false);
+		}
 	}
 
 	private int posX = 0;
