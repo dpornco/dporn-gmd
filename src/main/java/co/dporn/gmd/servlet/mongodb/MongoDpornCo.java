@@ -40,7 +40,7 @@ import co.dporn.gmd.shared.BlogEntry;
 import co.dporn.gmd.shared.MongoDate;
 import co.dporn.gmd.shared.MongoId;
 
-public class MongoDpornoCo {
+public class MongoDpornCo {
 
 	@SuppressWarnings("serial")
 	protected static class ListOfStrings extends ArrayList<String> {
@@ -141,7 +141,7 @@ public class MongoDpornoCo {
 			.and(Sanitizers.FORMATTING)//
 			.and(Sanitizers.IMAGES)//
 			.and(Sanitizers.LINKS)//
-			.and(MongoDpornoCo.STYLES)//
+			.and(MongoDpornCo.STYLES)//
 			.and(Sanitizers.TABLES);
 
 	private static BlogEntry deserializeAndSanitizeContent(Document item)

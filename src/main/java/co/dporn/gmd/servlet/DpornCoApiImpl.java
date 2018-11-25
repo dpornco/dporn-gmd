@@ -20,7 +20,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
-import co.dporn.gmd.servlet.mongodb.MongoDpornoCo;
+import co.dporn.gmd.servlet.mongodb.MongoDpornCo;
 import co.dporn.gmd.servlet.utils.Mapper;
 import co.dporn.gmd.servlet.utils.ResponseWithHeaders;
 import co.dporn.gmd.servlet.utils.ServerRestClient;
@@ -66,7 +66,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		if (count > 50) {
 			count = 50;
 		}
-		List<BlogEntry> posts = MongoDpornoCo.listEntries(startId, count);
+		List<BlogEntry> posts = MongoDpornCo.listEntries(startId, count);
 		Set<String> accountNameList = new HashSet<>();
 		Set<String> blacklist = new HashSet<>(SteemJInstance.get().getBlacklist());
 		posts.forEach(p -> {
@@ -117,7 +117,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		if (count > 50) {
 			count = 50;
 		}
-		List<BlogEntry> posts = MongoDpornoCo.listEntriesFor(username, startId, count);
+		List<BlogEntry> posts = MongoDpornCo.listEntriesFor(username, startId, count);
 		Set<String> accountNameList = new HashSet<>();
 		posts.forEach(p -> accountNameList.add(p.getUsername()));
 		Map<String, AccountInfo> infoMap = SteemJInstance.get().getBlogDetails(accountNameList);
@@ -161,7 +161,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		}
 		tag = tag.trim().toLowerCase();
 		SuggestTagsResponse response = new SuggestTagsResponse();
-		response.setTags(MongoDpornoCo.getMatchingTags(tag));
+		response.setTags(MongoDpornCo.getMatchingTags(tag));
 		return response;
 	}
 
@@ -241,7 +241,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			setResponseAsUnauthorized();
 			return null;
 		}
-		if (username.equals(MongoDpornoCo.getEntry(username, permlink).getUsername())) {
+		if (username.equals(MongoDpornCo.getEntry(username, permlink).getUsername())) {
 			return new CommentConfirmResponse(true);
 		}
 		;
@@ -284,7 +284,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		entry.setApp(dpornMetadata.getApp());
 		entry.setEmbed(dpornMetadata.getEmbed());
 
-		return new CommentConfirmResponse(MongoDpornoCo.insertEntry(entry));
+		return new CommentConfirmResponse(MongoDpornCo.insertEntry(entry));
 	}
 
 	@Override
@@ -297,7 +297,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		}
 		username = username.toLowerCase().trim();
 		permlink = permlink.trim();
-		BlogEntry entry = MongoDpornoCo.getEntry(username, permlink);
+		BlogEntry entry = MongoDpornCo.getEntry(username, permlink);
 		if (entry==null || !username.equals(entry.getUsername())) {
 			return;
 		}
@@ -308,7 +308,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 				content = SteemJInstance.get().getContent(username, permlink);
 				if (content == null || content.getAuthor() == null || !username.equals(content.getAuthor().getName())) {
 					System.err.println("BAD ENTRY: " + username + " | " + permlink);
-					MongoDpornoCo.deleteEntry(username, permlink);
+					MongoDpornCo.deleteEntry(username, permlink);
 				}
 
 			} catch (Exception e) {
@@ -320,7 +320,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 	@Override
 	public BlogEntryResponse blogEntry(String username, String permlink) {
 		BlogEntryResponse response = new BlogEntryResponse();
-		response.setBlogEntry(MongoDpornoCo.getEntry(username, permlink));
+		response.setBlogEntry(MongoDpornCo.getEntry(username, permlink));
 		return response;
 	}
 }

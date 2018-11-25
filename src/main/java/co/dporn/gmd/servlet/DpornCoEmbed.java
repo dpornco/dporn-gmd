@@ -22,7 +22,7 @@ import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
-import co.dporn.gmd.servlet.mongodb.MongoDpornoCo;
+import co.dporn.gmd.servlet.mongodb.MongoDpornCo;
 import co.dporn.gmd.shared.BlogEntry;
 import co.dporn.gmd.shared.BlogEntryType;
 
@@ -112,7 +112,7 @@ public class DpornCoEmbed {
 		if (cached != null) {
 			return cached;
 		}
-		BlogEntry entry = MongoDpornoCo.getEntry(author, permlink);
+		BlogEntry entry = MongoDpornCo.getEntry(author, permlink);
 		if (entry == null) {
 			return null;
 		}
