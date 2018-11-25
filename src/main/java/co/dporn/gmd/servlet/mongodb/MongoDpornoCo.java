@@ -77,7 +77,7 @@ public class MongoDpornoCo {
 
 	private static synchronized void initCachedTags() {
 		CACHED_TAGS.clear();
-		_listPosts("", 1000).forEach(p -> {
+		_listPosts("", 250).forEach(p -> {
 			CACHED_TAGS.addAll(p.getTags());
 		});
 		CACHED_TAGS.removeAll(Arrays.asList(NO_TAG_SUGGEST));

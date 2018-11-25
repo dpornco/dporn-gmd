@@ -81,9 +81,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 					activeChildPresenter = presenters.get(route);
 					view.setChildPresenter(presenters.get(route));
 					deferred(() -> activeChildPresenter.restoreScrollPosition());
-				} else {
-					Window.scrollTo(0, 0);
-				}
+				} 
 			});
 		} else {
 			if (activeChildPresenter != null) {
