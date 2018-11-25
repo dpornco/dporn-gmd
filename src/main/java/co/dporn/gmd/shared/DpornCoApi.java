@@ -17,6 +17,10 @@ import javax.ws.rs.core.MediaType;
 @Consumes(MediaType.APPLICATION_JSON)
 public interface DpornCoApi {
 
+	@Path("posts/check/{username}/{permlink}")
+	@GET
+	void check(@PathParam("username") String username, @PathParam("permlink") String permlink);
+
 	@Path("comment/confirm/{permlink}")
 	@POST
 	CommentConfirmResponse commentConfirm(@HeaderParam("username") String username,

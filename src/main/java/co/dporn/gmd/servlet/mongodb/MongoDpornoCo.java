@@ -19,7 +19,9 @@ import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -84,7 +86,7 @@ public class MongoDpornoCo {
 			while (find.hasNext()) {
 				Document item = find.next();
 				try {
-					list.add(MongoJsonMapper.get().readValue(item.toJson(), BlogEntry.class));
+					list.add(deserializeAndSanitizeEntry(item));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -93,6 +95,13 @@ public class MongoDpornoCo {
 		}
 		System.out.println("_listEntries: " + startId + ", " + count + ", " + list.size());
 		return list;
+	}
+
+	private static BlogEntry deserializeAndSanitizeEntry(Document item)
+			throws IOException, JsonParseException, JsonMappingException {
+		BlogEntry entry = MongoJsonMapper.get().readValue(item.toJson(), BlogEntry.class);
+		
+		return entry;
 	}
 
 	private static List<String> extractTags(String string) {
@@ -141,7 +150,7 @@ public class MongoDpornoCo {
 					return new BlogEntry();
 				}
 				try {
-					BlogEntry entry = MongoJsonMapper.get().readValue(item.toJson(), BlogEntry.class);
+					BlogEntry entry = deserializeAndSanitizeEntry(item);
 					ENTRY_CACHE.put(key, entry);
 					return entry;
 				} catch (IOException e) {
@@ -249,7 +258,7 @@ public class MongoDpornoCo {
 			while (find.hasNext()) {
 				Document item = find.next();
 				try {
-					BlogEntry entry = MongoJsonMapper.get().readValue(item.toJson(), BlogEntry.class);
+					BlogEntry entry = deserializeAndSanitizeEntry(item);
 					list.add(entry);
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -315,6 +324,14 @@ public class MongoDpornoCo {
 					}
 				}
 			}
+		}
+	}
+
+	public static synchronized void deleteEntry(String username, String permlink) {
+		try (MongoClient client = MongoClients.create()) {
+			MongoDatabase db = client.getDatabase("dpdb");
+			MongoCollection<Document> blogEntries = db.getCollection(TABLE_BLOG_ENTRIES_V2);
+			blogEntries.deleteOne(Filters.and(Filters.eq("username", username), Filters.eq("permlink", permlink)));
 		}
 	}
 }

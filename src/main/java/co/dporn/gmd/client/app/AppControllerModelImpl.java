@@ -130,6 +130,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 						list.add(post);
 					}
 				}).exceptionally(ex -> {
+					ClientRestClient.get().check(post.getUsername(), post.getPermlink());
 					GWT.log(ex.getMessage(), ex);
 					return null;
 				});

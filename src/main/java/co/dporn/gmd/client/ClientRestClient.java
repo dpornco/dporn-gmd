@@ -44,6 +44,7 @@ public class ClientRestClient {
 	}
 
 	public static interface DpornCoRestApi extends DpornCoApi, DirectRestService {
+		
 	}
 
 	private final DpornCoRestApi rest;
@@ -159,6 +160,13 @@ public class ClientRestClient {
 				}
 			};
 		}
+	}
+
+	public CompletableFuture<Void> check(String username, String permlink) {
+		GWT.log("-> embed html");
+		MethodCallbackAsFuture<Void> callback = new MethodCallbackAsFuture<>();
+		call(callback).check(username, permlink);
+		return callback.getFuture();		
 	}
 
 }

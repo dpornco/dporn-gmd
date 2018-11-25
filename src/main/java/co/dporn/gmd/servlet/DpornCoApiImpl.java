@@ -242,7 +242,8 @@ public class DpornCoApiImpl implements DpornCoApi {
 		}
 		if (username.equals(MongoDpornoCo.getEntry(username, permlink).getUsername())) {
 			return new CommentConfirmResponse(true);
-		};
+		}
+		;
 		Discussion content = SteemJInstance.get().getContent(username, permlink);
 		SJCommentMetadata metadata;
 		try {
@@ -255,10 +256,10 @@ public class DpornCoApiImpl implements DpornCoApi {
 			return new CommentConfirmResponse(false);
 		}
 		DpornMetadata dpornMetadata = metadata.getDpornMetadata();
-		if (dpornMetadata==null) {
+		if (dpornMetadata == null) {
 			return new CommentConfirmResponse(false);
 		}
-		
+
 		BlogEntry entry = new BlogEntry();
 		Set<String> extractedTags = new LinkedHashSet<>(Arrays.asList(metadata.getTags()));
 		extractedTags.add("@" + username);
@@ -281,7 +282,37 @@ public class DpornCoApiImpl implements DpornCoApi {
 		entry.setMigrated(false);
 		entry.setApp(dpornMetadata.getApp());
 		entry.setEmbed(dpornMetadata.getEmbed());
-		
+
 		return new CommentConfirmResponse(MongoDpornoCo.insertEntry(entry));
+	}
+
+	@Override
+	public void check(String username, String permlink) {
+		if (username == null || permlink == null) {
+			return;
+		}
+		if (username.trim().isEmpty() || permlink.trim().isEmpty()) {
+			return;
+		}
+		username = username.toLowerCase().trim();
+		permlink = permlink.trim();
+		BlogEntry entry = MongoDpornoCo.getEntry(username, permlink);
+		if (entry==null || !username.equals(entry.getUsername())) {
+			return;
+		}
+		synchronized (DpornCoApiImpl.class) {
+			System.out.println("=== CHECK: " + username + " | " + permlink);
+			Discussion content;
+			try {
+				content = SteemJInstance.get().getContent(username, permlink);
+				if (content == null || content.getAuthor() == null || !username.equals(content.getAuthor().getName())) {
+					System.err.println("BAD ENTRY: " + username + " | " + permlink);
+					MongoDpornoCo.deleteEntry(username, permlink);
+				}
+
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }
