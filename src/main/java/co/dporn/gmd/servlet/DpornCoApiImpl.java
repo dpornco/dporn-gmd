@@ -36,7 +36,6 @@ import co.dporn.gmd.shared.DpornCoApi;
 import co.dporn.gmd.shared.IpfsHashResponse;
 import co.dporn.gmd.shared.MongoDate;
 import co.dporn.gmd.shared.PingResponse;
-import co.dporn.gmd.shared.Post;
 import co.dporn.gmd.shared.PostListResponse;
 import co.dporn.gmd.shared.SuggestTagsResponse;
 import eu.bittrade.libs.steemj.apis.database.models.state.Discussion;
@@ -66,12 +65,12 @@ public class DpornCoApiImpl implements DpornCoApi {
 		if (count > 50) {
 			count = 50;
 		}
-		List<Post> posts = MongoDpornoCo.listEntries(startId, count);
+		List<BlogEntry> posts = MongoDpornoCo.listEntries(startId, count);
 		Set<String> accountNameList = new HashSet<>();
 		Set<String> blacklist = new HashSet<>(SteemJInstance.get().getBlacklist());
 		posts.forEach(p -> {
-			if (blacklist.contains(p.getAuthor())) {
-				p.setCoverImage(null);
+			if (blacklist.contains(p.getUsername())) {
+				p.setPosterImagePath(null);
 				p.setPosterImagePath(null);
 				p.setPermlink(null);
 				p.setScore(-1000);
@@ -79,7 +78,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 				p.setVideoPath(null);
 			}
 		});
-		posts.forEach(p -> accountNameList.add(p.getAuthor()));
+		posts.forEach(p -> accountNameList.add(p.getUsername()));
 		Map<String, AccountInfo> infoMap = SteemJInstance.get().getBlogDetails(accountNameList);
 		PostListResponse response = new PostListResponse();
 		response.setPosts(posts);
@@ -117,9 +116,9 @@ public class DpornCoApiImpl implements DpornCoApi {
 		if (count > 50) {
 			count = 50;
 		}
-		List<Post> posts = MongoDpornoCo.listEntriesFor(username, startId, count);
+		List<BlogEntry> posts = MongoDpornoCo.listEntriesFor(username, startId, count);
 		Set<String> accountNameList = new HashSet<>();
-		posts.forEach(p -> accountNameList.add(p.getAuthor()));
+		posts.forEach(p -> accountNameList.add(p.getUsername()));
 		Map<String, AccountInfo> infoMap = SteemJInstance.get().getBlogDetails(accountNameList);
 		response.setPosts(posts);
 		response.setInfoMap(infoMap);
@@ -241,7 +240,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			setResponseAsUnauthorized();
 			return null;
 		}
-		if (username.equals(MongoDpornoCo.getPost(username, permlink).getAuthor())) {
+		if (username.equals(MongoDpornoCo.getEntry(username, permlink).getUsername())) {
 			return new CommentConfirmResponse(true);
 		};
 		Discussion content = SteemJInstance.get().getContent(username, permlink);
@@ -264,7 +263,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		Set<String> extractedTags = new LinkedHashSet<>(Arrays.asList(metadata.getTags()));
 		extractedTags.add("@" + username);
 
-		entry.set_id(null);
+		entry.setId(null);
 		entry.setTitle(content.getTitle());
 		entry.setPermlink(permlink);
 		entry.setContent(content.getBody());

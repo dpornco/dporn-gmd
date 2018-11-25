@@ -287,7 +287,7 @@ public class MongoDpornoCo {
 					Set<String> extractedTags = new LinkedHashSet<>(extractTags(next.getString("tags")));
 					extractedTags.add("@" + username);
 
-					entry.set_id(new MongoId(id));
+					entry.setId(new MongoId(id));
 					entry.setTitle(title);
 					entry.setPermlink(permlink);
 					entry.setContent(content);

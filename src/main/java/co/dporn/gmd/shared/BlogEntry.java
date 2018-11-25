@@ -2,6 +2,8 @@ package co.dporn.gmd.shared;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class BlogEntry {
 	private MongoId _id;
 	private String app;
@@ -22,7 +24,8 @@ public class BlogEntry {
 	private String title;
 	private String username;
 	private String videoPath;
-	public MongoId get_id() {
+	@JsonProperty("_id")
+	public MongoId getId() {
 		return _id;
 	}
 	public String getApp() {
@@ -79,7 +82,8 @@ public class BlogEntry {
 	public boolean isMigrated() {
 		return migrated;
 	}
-	public void set_id(MongoId _id) {
+	@JsonProperty("_id")
+	public void setId(MongoId _id) {
 		this._id = _id;
 	}
 	public void setApp(String app) {

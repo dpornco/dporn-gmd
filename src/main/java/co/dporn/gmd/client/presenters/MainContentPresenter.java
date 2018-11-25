@@ -49,24 +49,24 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 			Map<String, AccountInfo> infoMap = posts.getInfoMap();
 			posts.getPosts().forEach(p -> {
 				showDelay[0] += 500;
-				AccountInfo i = infoMap.get(p.getAuthor());
+				AccountInfo i = infoMap.get(p.getUsername());
 				if (i == null) {
 					GWT.log("NO AUTHOR FOR FEATURED POST!");
 					return;
 				}
 				VideoCardUi card = new VideoCardUi();
-				card.setDisplayName(p.getAuthor());
+				card.setDisplayName(p.getUsername());
 				card.setShowDelay(showDelay[0]);
-				String displayName = i.getDisplayName() == null ? p.getAuthor() : i.getDisplayName();
+				String displayName = i.getDisplayName() == null ? p.getUsername() : i.getDisplayName();
 				card.setDisplayName(displayName);
-				card.setAvatarUrl(Routes.avatarImage(p.getAuthor()));
+				card.setAvatarUrl(Routes.avatarImage(p.getUsername()));
 				card.setTitle(p.getTitle());
 				String videoPath = p.getVideoPath();
 				if (videoPath == null || !videoPath.startsWith("/ipfs/")) {
 					return;
 				}
-				card.setVideoEmbedUrl(Routes.embedVideo(p.getAuthor(), p.getPermlink()));
-				card.setViewLink(Routes.post(p.getAuthor(), p.getPermlink()));
+				card.setVideoEmbedUrl(Routes.embedVideo(p.getUsername(), p.getPermlink()));
+				card.setViewLink(Routes.post(p.getUsername(), p.getPermlink()));
 				getContentView().getFeaturedPosts().add(card);
 			});
 		}).exceptionally(ex->{
@@ -108,29 +108,29 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 			int[] showDelay = { 0 };
 			Map<String, AccountInfo> infoMap = l.getInfoMap();
 			l.getPosts().forEach(p -> {
-				if (p.getId().equals(lastRecentId)) {
+				if (p.getId().get$oid().equals(lastRecentId)) {
 					return;
 				}
-				lastRecentId = p.getId();
+				lastRecentId = p.getId().get$oid();
 				deferred(() -> {
-					AccountInfo i = infoMap.get(p.getAuthor());
+					AccountInfo i = infoMap.get(p.getUsername());
 					if (i == null) {
 						return;
 					}
 					VideoCardUi card = new VideoCardUi();
-					card.setDisplayName(p.getAuthor());
+					card.setDisplayName(p.getUsername());
 					card.setShowDelay(showDelay[0]);
 					showDelay[0] += 150; // 75
-					String displayName = i.getDisplayName() == null ? p.getAuthor() : i.getDisplayName();
+					String displayName = i.getDisplayName() == null ? p.getUsername() : i.getDisplayName();
 					card.setDisplayName(displayName);
-					card.setAvatarUrl(Routes.avatarImage(p.getAuthor()));
+					card.setAvatarUrl(Routes.avatarImage(p.getUsername()));
 					card.setTitle(p.getTitle());
 					String videoPath = p.getVideoPath();
 					if (videoPath == null || !videoPath.startsWith("/ipfs/")) {
 						return;
 					}
-					card.setViewLink(Routes.post(p.getAuthor(), p.getPermlink()));
-					card.setVideoEmbedUrl(Routes.embedVideo(p.getAuthor(), p.getPermlink()));
+					card.setViewLink(Routes.post(p.getUsername(), p.getPermlink()));
+					card.setVideoEmbedUrl(Routes.embedVideo(p.getUsername(), p.getPermlink()));
 					getContentView().getRecentPosts().add(card);
 					if (timer[0] != null) {
 						timer[0].cancel();

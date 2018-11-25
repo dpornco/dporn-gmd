@@ -38,6 +38,7 @@ import co.dporn.gmd.client.presenters.RoutePresenter;
 import co.dporn.gmd.client.presenters.RoutePresenter.ActiveUserInfo;
 import co.dporn.gmd.client.utils.HtmlReformatter;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
+import co.dporn.gmd.shared.BlogEntry;
 import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.DpornConsts;
 import co.dporn.gmd.shared.IpfsHashResponse;
@@ -116,13 +117,13 @@ public class AppControllerModelImpl implements AppControllerModel {
 		CompletableFuture<PostListResponse> finalFuture = new CompletableFuture<>();
 		listPosts(FEATURED_POST_POOL_MULTIPLIER_SIZE * count).thenAccept((response) -> {
 			List<CompletableFuture<List<Vote>>> voteFutures = new ArrayList<>();
-			List<Post> list = new ArrayList<>();
+			List<BlogEntry> list = new ArrayList<>();
 			double mul = 1.0d;
 			for (int ix = 0; ix < response.getPosts().size(); ix++) {
 				mul = mul * .9d;
 				final double weight = mul;
-				Post post = response.getPosts().get(ix);
-				CompletableFuture<List<Vote>> voteFuture = SteemApi.getActiveVotes(post.getAuthor(),
+				BlogEntry post = response.getPosts().get(ix);
+				CompletableFuture<List<Vote>> voteFuture = SteemApi.getActiveVotes(post.getUsername(),
 						post.getPermlink());
 				voteFuture.thenAccept((v) -> {
 					post.setScore((double) v.size() * weight);

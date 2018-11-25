@@ -23,6 +23,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import co.dporn.gmd.servlet.mongodb.MongoDpornoCo;
+import co.dporn.gmd.shared.BlogEntry;
 import co.dporn.gmd.shared.Post;
 
 @Produces(MediaType.TEXT_HTML)
@@ -101,11 +102,11 @@ public class DpornCoEmbed {
 		if (cached != null) {
 			return cached;
 		}
-		Post post = MongoDpornoCo.getPost(author, permlink);
+		BlogEntry post = MongoDpornoCo.getEntry(author, permlink);
 		if (post == null) {
 			return null;
 		}
-		if (!author.equals(post.getAuthor())) {
+		if (!author.equals(post.getUsername())) {
 			return null;
 		}
 		String posterImagePath = post.getPosterImagePath();
