@@ -18,6 +18,7 @@ public class BlogEntry {
 	private String permlink;
 	private String posterImagePath;
 	private List<String> postTags;
+	private double score;
 	private String title;
 	private String username;
 	private String videoPath;
@@ -62,6 +63,9 @@ public class BlogEntry {
 	}
 	public List<String> getPostTags() {
 		return postTags;
+	}
+	public double getScore() {
+		return score;
 	}
 	public String getTitle() {
 		return title;
@@ -119,6 +123,9 @@ public class BlogEntry {
 	}
 	public void setPostTags(List<String> postTags) {
 		this.postTags = postTags;
+	}
+	public void setScore(double score) {
+		this.score = score;
 	}
 	public void setTitle(String title) {
 		this.title = title;
