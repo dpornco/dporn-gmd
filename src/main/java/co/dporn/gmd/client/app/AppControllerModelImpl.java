@@ -42,7 +42,6 @@ import co.dporn.gmd.shared.BlogEntry;
 import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.DpornConsts;
 import co.dporn.gmd.shared.IpfsHashResponse;
-import co.dporn.gmd.shared.Post;
 import co.dporn.gmd.shared.PostListResponse;
 import co.dporn.gmd.shared.TagSet;
 import elemental2.dom.Blob;

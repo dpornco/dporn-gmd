@@ -24,7 +24,6 @@ import org.apache.commons.lang3.StringEscapeUtils;
 
 import co.dporn.gmd.servlet.mongodb.MongoDpornoCo;
 import co.dporn.gmd.shared.BlogEntry;
-import co.dporn.gmd.shared.Post;
 
 @Produces(MediaType.TEXT_HTML)
 @Consumes(MediaType.TEXT_HTML)
