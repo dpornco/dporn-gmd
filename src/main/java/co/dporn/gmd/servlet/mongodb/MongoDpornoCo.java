@@ -32,12 +32,23 @@ import co.dporn.gmd.servlet.utils.Mapper;
 import co.dporn.gmd.shared.BlogEntry;
 import co.dporn.gmd.shared.MongoDate;
 import co.dporn.gmd.shared.MongoId;
-import co.dporn.gmd.shared.Post;
 
 public class MongoDpornoCo {
 
+	@SuppressWarnings("serial")
+	protected static class ListOfStrings extends ArrayList<String> {
+	}
+	private static final Set<String> CACHED_TAGS = new TreeSet<>();
+	private static long cachedTagsExpire = 0;
+
+	private static Map<String, BlogEntry> ENTRY_CACHE = new LRUMap<>(128);
+
+	private static final int MAX_TAG_SUGGEST = 20;
+	private static final String[] NO_TAG_SUGGEST = { "dporn", "dpornvideo", "dpornco", "dporncovideo", "nsfw" };
 	private static final String TABLE_BLOG_ENTRIES_V2 = "blogEntries_v2";
+
 	private static final String TABLE_VIDEOS = "videos";
+
 	/**
 	 * 30 minute tag cache
 	 */
@@ -48,9 +59,99 @@ public class MongoDpornoCo {
 		mongoLogger.setLevel(Level.WARNING);
 	}
 
-	private static final int MAX_TAG_SUGGEST = 20;
-	private static final Set<String> CACHED_TAGS = new TreeSet<>();
-	private static long cachedTagsExpire = 0;
+	protected static synchronized List<BlogEntry> _listEntries(String startId, int count) {
+		migrationCheck();
+		if (count < 1) {
+			count = 1;
+		}
+		if (count > 1000) {
+			count = 1000;
+		}
+		List<BlogEntry> list = new ArrayList<>();
+		try (MongoClient client = MongoClients.create()) {
+			MongoDatabase db = client.getDatabase("dpdb");
+			MongoCollection<Document> collection = db.getCollection(TABLE_BLOG_ENTRIES_V2);
+			MongoCursor<Document> find;
+			if (startId != null && !startId.trim().isEmpty()) {
+				find = collection.find(Filters.lte("_id", new ObjectId(startId)))//
+						.sort(Sorts.descending("_id"))//
+						.limit(count).iterator();
+			} else {
+				find = collection.find()//
+						.sort(Sorts.descending("_id"))//
+						.limit(count).iterator();
+			}
+			while (find.hasNext()) {
+				Document item = find.next();
+				try {
+					list.add(MongoJsonMapper.get().readValue(item.toJson(), BlogEntry.class));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			find.close();
+		}
+		System.out.println("_listEntries: " + startId + ", " + count + ", " + list.size());
+		return list;
+	}
+
+	private static List<String> extractTags(String string) {
+		if (string == null || string.trim().isEmpty()) {
+			return new ArrayList<>();
+		}
+		string = string.trim();
+		Set<String> tags = new LinkedHashSet<String>();
+		// tags are either a) a json array of strings, b) a comma list of words
+		if (!string.startsWith("[")) {
+			// munge comma array of words into a json array list;
+			string = StringEscapeUtils.escapeJson(string);
+			string = string.replace(",", "\",\"");
+			string = "[\"" + string + "\"]";
+		}
+		List<String> tmptags;
+		try {
+			tmptags = Mapper.get().readValue(string, ListOfStrings.class);
+		} catch (IOException e) {
+			tmptags = new ArrayList<>();
+		}
+		for (String tmp : tmptags) {
+			tmp = tmp.trim().toLowerCase().replace(" ", "-");
+			if (tmp.isEmpty() || StringUtils.countMatches(tmp, "-") > 1) {
+				continue;
+			}
+			tags.add(tmp);
+		}
+		return new ArrayList<>(tags);
+	}
+
+	public static BlogEntry getEntry(String authorname, String permlink) {
+		String key = authorname + "|" + permlink;
+		BlogEntry cached = ENTRY_CACHE.get(key);
+		if (cached != null) {
+			return cached;
+		}
+		synchronized (ENTRY_CACHE) {
+			try (MongoClient client = MongoClients.create()) {
+				MongoDatabase db = client.getDatabase("dpdb");
+				MongoCollection<Document> collection = db.getCollection(TABLE_BLOG_ENTRIES_V2);
+				Document item = collection
+						.find(Filters.and(Filters.eq("username", authorname), Filters.eq("permlink", permlink)))
+						.first();
+				if (item == null || item.isEmpty()) {
+					return new BlogEntry();
+				}
+				try {
+					BlogEntry entry = MongoJsonMapper.get().readValue(item.toJson(), BlogEntry.class);
+					ENTRY_CACHE.put(key, entry);
+					return entry;
+				} catch (IOException e) {
+				}
+			} finally {
+				System.out.println("getEntry: " + authorname + ", " + permlink);
+			}
+			return new BlogEntry();
+		}
+	}
 
 	public static synchronized List<String> getMatchingTags(String prefix) {
 
@@ -73,19 +174,91 @@ public class MongoDpornoCo {
 			}
 		}
 		return new ArrayList<>(tags);
-	}
-
-	private static final String[] NO_TAG_SUGGEST = { "dporn", "dpornvideo", "dpornco", "dporncovideo", "nsfw" };
+	};
 
 	private static synchronized void initCachedTags() {
 		CACHED_TAGS.clear();
-		_listPosts("", 250).forEach(p -> {
-			CACHED_TAGS.addAll(p.getTags());
+		_listEntries("", 250).forEach(p -> {
+			CACHED_TAGS.addAll(p.getCommunityTags());
 		});
 		CACHED_TAGS.removeAll(Arrays.asList(NO_TAG_SUGGEST));
 		if (!CACHED_TAGS.isEmpty()) {
 			cachedTagsExpire = System.currentTimeMillis() + TAGS_EXPIRE_TIME;
 		}
+	}
+
+	public static boolean insertEntry(BlogEntry entry) {
+		String json;
+		try {
+			json = MongoJsonMapper.get().writeValueAsString(entry);
+			System.out.println("INSERT JSON: " + json);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			return false;
+		}
+		Document doc = Document.parse(json);
+		System.out.println("INSERT DOC: " + doc.toJson());
+		try (MongoClient client = MongoClients.create()) {
+			MongoDatabase db = client.getDatabase("dpdb");
+			MongoCollection<Document> collection = db.getCollection(TABLE_BLOG_ENTRIES_V2);
+			try {
+				collection.insertOne(doc);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public static synchronized List<BlogEntry> listEntries(String startId, int count) {
+		if (count < 1) {
+			count = 1;
+		}
+		if (count > 50) {
+			count = 50;
+		}
+		return _listEntries(startId, count);
+	}
+
+	public static synchronized List<BlogEntry> listEntriesFor(String username, String startId, int count) {
+		migrationCheck();
+		if (count < 1) {
+			count = 1;
+		}
+		if (count > 50) {
+			count = 50;
+		}
+		List<BlogEntry> list = new ArrayList<>();
+		try (MongoClient client = MongoClients.create()) {
+			MongoDatabase db = client.getDatabase("dpdb");
+			MongoCollection<Document> collection = db.getCollection(TABLE_BLOG_ENTRIES_V2);
+			MongoCursor<Document> find;
+			Bson eqUsername = Filters.eq("username", username);
+			if (startId != null && !startId.trim().isEmpty()) {
+				Bson lteId = Filters.lte("_id", new ObjectId(startId));
+				Bson and = Filters.and(eqUsername, lteId);
+				find = collection.find(and) //
+						.sort(Sorts.descending("_id"))//
+						.limit(count).iterator();
+			} else {
+				find = collection.find(eqUsername) //
+						.sort(Sorts.descending("_id"))//
+						.limit(count).iterator();
+			}
+			while (find.hasNext()) {
+				Document item = find.next();
+				try {
+					BlogEntry entry = MongoJsonMapper.get().readValue(item.toJson(), BlogEntry.class);
+					list.add(entry);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			find.close();
+		}
+		System.out.println("listEntriesFor: " + username + ", " + startId + ", " + count + ", " + list.size());
+		return list;
 	}
 
 	private static synchronized void migrationCheck() {
@@ -142,239 +315,6 @@ public class MongoDpornoCo {
 					}
 				}
 			}
-			;
 		}
-	}
-
-	public static synchronized Post getPost(String authorname, String permlink) {
-		MongoClient client = MongoClients.create();
-		try {
-			MongoDatabase db = client.getDatabase("dpdb");
-			MongoCollection<Document> collection = db.getCollection(TABLE_BLOG_ENTRIES_V2);
-			Document item = collection
-					.find(Filters.and(Filters.eq("username", authorname), Filters.eq("permlink", permlink))).first();
-			Post post = new Post();
-			if (item == null || item.isEmpty()) {
-				return post;
-			}
-
-			try {
-				BlogEntry entry = MongoJsonMapper.get().readValue(item.toJson(), BlogEntry.class);
-				post.setAuthor(entry.getUsername());
-				post.setPosterImagePath(entry.getPosterImagePath());
-				post.setCreated(entry.getCreated().get$date());
-				post.setId(entry.get_id().get$oid());
-				post.setPermlink(entry.getPermlink());
-				post.setScore(-1);
-				post.setTitle(entry.getTitle());
-				post.setVideoPath(entry.getVideoPath());
-				post.setTags(entry.getCommunityTags());
-				return post;
-			} catch (IOException e) {
-				return post;
-			}
-		} finally {
-			client.close();
-			System.out.println("getPost: " + authorname + ", " + permlink);
-		}
-	}
-	
-	private static Map<String, BlogEntry> ENTRY_CACHE = new LRUMap<>(128);
-	public static BlogEntry getEntry(String authorname, String permlink) {
-		String key = authorname+"|"+permlink;
-		BlogEntry cached = ENTRY_CACHE.get(key);
-		if (cached!=null) {
-			return cached;
-		}
-		synchronized (ENTRY_CACHE) {
-			try (MongoClient client = MongoClients.create()) {
-				MongoDatabase db = client.getDatabase("dpdb");
-				MongoCollection<Document> collection = db.getCollection(TABLE_BLOG_ENTRIES_V2);
-				Document item = collection
-						.find(Filters.and(Filters.eq("username", authorname), Filters.eq("permlink", permlink))).first();
-				if (item == null || item.isEmpty()) {
-					return new BlogEntry();
-				}
-				try {
-					BlogEntry entry = MongoJsonMapper.get().readValue(item.toJson(), BlogEntry.class);
-					ENTRY_CACHE.put(key, entry);
-					return entry;
-				} catch (IOException e) {
-				}
-			} finally {
-				System.out.println("getEntry: " + authorname + ", " + permlink);
-			}
-			return new BlogEntry();
-		}
-	}
-
-	@SuppressWarnings("serial")
-	protected static class ListOfStrings extends ArrayList<String> {
-	};
-
-	private static List<String> extractTags(String string) {
-		if (string == null || string.trim().isEmpty()) {
-			return new ArrayList<>();
-		}
-		string = string.trim();
-		Set<String> tags = new LinkedHashSet<String>();
-		// tags are either a) a json array of strings, b) a comma list of words
-		if (!string.startsWith("[")) {
-			// munge comma array of words into a json array list;
-			string = StringEscapeUtils.escapeJson(string);
-			string = string.replace(",", "\",\"");
-			string = "[\"" + string + "\"]";
-		}
-		List<String> tmptags;
-		try {
-			tmptags = Mapper.get().readValue(string, ListOfStrings.class);
-		} catch (IOException e) {
-			tmptags = new ArrayList<>();
-		}
-		for (String tmp : tmptags) {
-			tmp = tmp.trim().toLowerCase().replace(" ", "-");
-			if (tmp.isEmpty() || StringUtils.countMatches(tmp, "-") > 1) {
-				continue;
-			}
-			tags.add(tmp);
-		}
-		return new ArrayList<>(tags);
-	}
-
-	public static synchronized List<Post> listPosts(String startId, int count) {
-		if (count < 1) {
-			count = 1;
-		}
-		if (count > 50) {
-			count = 50;
-		}
-		return _listPosts(startId, count);
-	}
-
-	protected static synchronized List<Post> _listPosts(String startId, int count) {
-		migrationCheck();
-		if (count < 1) {
-			count = 1;
-		}
-		if (count > 1000) {
-			count = 1000;
-		}
-		List<Post> list = new ArrayList<>();
-		MongoClient client = MongoClients.create();
-		try {
-			MongoDatabase db = client.getDatabase("dpdb");
-			MongoCollection<Document> collection = db.getCollection(TABLE_BLOG_ENTRIES_V2);
-			MongoCursor<Document> find;
-			if (startId != null && !startId.trim().isEmpty()) {
-				find = collection.find(Filters.lte("_id", new ObjectId(startId)))//
-						.sort(Sorts.descending("_id"))//
-						.limit(count).iterator();
-			} else {
-				find = collection.find()//
-						.sort(Sorts.descending("_id"))//
-						.limit(count).iterator();
-			}
-			while (find.hasNext()) {
-				Document item = find.next();
-				Post post = new Post();
-				try {
-					BlogEntry entry = MongoJsonMapper.get().readValue(item.toJson(), BlogEntry.class);
-					post.setAuthor(entry.getUsername());
-					post.setPosterImagePath(entry.getPosterImagePath());
-					post.setCreated(entry.getCreated().get$date());
-					post.setId(entry.get_id().get$oid());
-					post.setPermlink(entry.getPermlink());
-					post.setScore(-1);
-					post.setTitle(entry.getTitle());
-					post.setVideoPath(entry.getVideoPath());
-					post.setTags(entry.getCommunityTags());
-					list.add(post);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			find.close();
-		} finally {
-			client.close();
-		}
-		System.out.println("_listPosts: " + startId + ", " + count + ", " + list.size());
-		return list;
-	}
-
-	public static synchronized List<Post> listPostsFor(String username, String startId, int count) {
-		migrationCheck();
-		if (count < 1) {
-			count = 1;
-		}
-		if (count > 50) {
-			count = 50;
-		}
-		List<Post> list = new ArrayList<>();
-		MongoClient client = MongoClients.create();
-		try {
-			MongoDatabase db = client.getDatabase("dpdb");
-			MongoCollection<Document> collection = db.getCollection(TABLE_BLOG_ENTRIES_V2);
-			MongoCursor<Document> find;
-			Bson eqUsername = Filters.eq("username", username);
-			if (startId != null && !startId.trim().isEmpty()) {
-				Bson lteId = Filters.lte("_id", new ObjectId(startId));
-				Bson and = Filters.and(eqUsername, lteId);
-				find = collection.find(and) //
-						.sort(Sorts.descending("_id"))//
-						.limit(count).iterator();
-			} else {
-				find = collection.find(eqUsername) //
-						.sort(Sorts.descending("_id"))//
-						.limit(count).iterator();
-			}
-			while (find.hasNext()) {
-				Document item = find.next();
-				try {
-					Post post = new Post();
-					BlogEntry entry = MongoJsonMapper.get().readValue(item.toJson(), BlogEntry.class);
-					post.setAuthor(entry.getUsername());
-					post.setPosterImagePath(entry.getPosterImagePath());
-					post.setCreated(entry.getCreated().get$date());
-					post.setId(entry.get_id().get$oid());
-					post.setPermlink(entry.getPermlink());
-					post.setScore(-1);
-					post.setTitle(entry.getTitle());
-					post.setVideoPath(entry.getVideoPath());
-					post.setTags(entry.getCommunityTags());
-					list.add(post);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			find.close();
-		} finally {
-			client.close();
-		}
-		System.out.println("listPostsFor: " + username + ", " + startId + ", " + count + ", " + list.size());
-		return list;
-	}
-
-	public static boolean insertPost(BlogEntry entry) {
-		String json;
-		try {
-			json = MongoJsonMapper.get().writeValueAsString(entry);
-			System.out.println("INSERT JSON: "+json);
-		} catch (JsonProcessingException e) {
-			e.printStackTrace();
-			return false;
-		}
-		Document doc = Document.parse(json);
-		System.out.println("INSERT DOC: "+doc.toJson());
-		try (MongoClient client = MongoClients.create()) {
-			MongoDatabase db = client.getDatabase("dpdb");
-			MongoCollection<Document> collection = db.getCollection(TABLE_BLOG_ENTRIES_V2);
-			try {
-				collection.insertOne(doc);
-			} catch (Exception e) {
-				e.printStackTrace();
-				return false;
-			}
-		}
-		return true;
 	}
 }

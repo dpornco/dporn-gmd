@@ -66,7 +66,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		if (count > 50) {
 			count = 50;
 		}
-		List<Post> posts = MongoDpornoCo.listPosts(startId, count);
+		List<Post> posts = MongoDpornoCo.listEntries(startId, count);
 		Set<String> accountNameList = new HashSet<>();
 		Set<String> blacklist = new HashSet<>(SteemJInstance.get().getBlacklist());
 		posts.forEach(p -> {
@@ -117,7 +117,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		if (count > 50) {
 			count = 50;
 		}
-		List<Post> posts = MongoDpornoCo.listPostsFor(username, startId, count);
+		List<Post> posts = MongoDpornoCo.listEntriesFor(username, startId, count);
 		Set<String> accountNameList = new HashSet<>();
 		posts.forEach(p -> accountNameList.add(p.getAuthor()));
 		Map<String, AccountInfo> infoMap = SteemJInstance.get().getBlogDetails(accountNameList);
@@ -283,6 +283,6 @@ public class DpornCoApiImpl implements DpornCoApi {
 		entry.setApp(dpornMetadata.getApp());
 		entry.setEmbed(dpornMetadata.getEmbed());
 		
-		return new CommentConfirmResponse(MongoDpornoCo.insertPost(entry));
+		return new CommentConfirmResponse(MongoDpornoCo.insertEntry(entry));
 	}
 }
