@@ -40,6 +40,7 @@ public class MongoDpornoCo {
 	@SuppressWarnings("serial")
 	protected static class ListOfStrings extends ArrayList<String> {
 	}
+
 	private static final Set<String> CACHED_TAGS = new TreeSet<>();
 	private static long cachedTagsExpire = 0;
 
@@ -48,6 +49,7 @@ public class MongoDpornoCo {
 	private static final int MAX_TAG_SUGGEST = 20;
 	private static final String[] NO_TAG_SUGGEST = { "dporn", "dpornvideo", "dpornco", "dporncovideo", "nsfw" };
 	private static final String TABLE_BLOG_ENTRIES_V2 = "blogEntries_v2";
+	private static final String TABLE_BLOG_ENTRIES_V2_BACKUP = "blogEntries_v2_backup";
 
 	private static final String TABLE_VIDEOS = "videos";
 
@@ -100,7 +102,7 @@ public class MongoDpornoCo {
 	private static BlogEntry deserializeAndSanitizeEntry(Document item)
 			throws IOException, JsonParseException, JsonMappingException {
 		BlogEntry entry = MongoJsonMapper.get().readValue(item.toJson(), BlogEntry.class);
-		
+
 		return entry;
 	}
 
@@ -220,6 +222,32 @@ public class MongoDpornoCo {
 		return true;
 	}
 
+	public static boolean insertBackupEntry(BlogEntry entry) {
+		String json;
+		try {
+			json = MongoJsonMapper.get().writeValueAsString(entry);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+			return false;
+		}
+		Document doc = Document.parse(json);
+		try (MongoClient client = MongoClients.create()) {
+			MongoDatabase db = client.getDatabase("dpdb");
+			try {
+				db.createCollection(TABLE_BLOG_ENTRIES_V2_BACKUP);
+			} catch (Exception e1) {
+			}
+			MongoCollection<Document> collection = db.getCollection(TABLE_BLOG_ENTRIES_V2_BACKUP);
+			try {
+				collection.insertOne(doc);
+			} catch (Exception e) {
+				e.printStackTrace();
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public static synchronized List<BlogEntry> listEntries(String startId, int count) {
 		if (count < 1) {
 			count = 1;
@@ -328,10 +356,19 @@ public class MongoDpornoCo {
 	}
 
 	public static synchronized void deleteEntry(String username, String permlink) {
-		try (MongoClient client = MongoClients.create()) {
-			MongoDatabase db = client.getDatabase("dpdb");
-			MongoCollection<Document> blogEntries = db.getCollection(TABLE_BLOG_ENTRIES_V2);
-			blogEntries.deleteOne(Filters.and(Filters.eq("username", username), Filters.eq("permlink", permlink)));
+		BlogEntry entry = getEntry(username, permlink);
+		if (entry == null || !username.equals(entry.getUsername())) {
+			return;
+		}
+		if (insertBackupEntry(entry)) {
+			try (MongoClient client = MongoClients.create()) {
+				MongoDatabase db = client.getDatabase("dpdb");
+				MongoCollection<Document> blogEntries = db.getCollection(TABLE_BLOG_ENTRIES_V2);
+				Bson eqUsername = Filters.eq("username", username);
+				Bson eqPermlink = Filters.eq("permlink", permlink);
+				Bson filter = Filters.and(eqUsername, eqPermlink);
+				blogEntries.deleteOne(filter);
+			}
 		}
 	}
 }

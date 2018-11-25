@@ -1,6 +1,7 @@
 package co.dporn.gmd.client.presenters;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -17,12 +18,14 @@ import co.dporn.gmd.client.app.Routes;
 import co.dporn.gmd.client.views.BlogCardUi;
 import co.dporn.gmd.client.views.VideoCardUi;
 import co.dporn.gmd.shared.AccountInfo;
+import co.dporn.gmd.shared.BlogEntry;
+import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.PostListResponse;
 import gwt.material.design.addins.client.scrollfire.MaterialScrollfire;
 
 public class MainContentPresenter implements ContentPresenter, ScheduledCommand {
 
-	private static final int FEATURED_POSTS_COUNT = 4;
+	private static final int FEATURED_VIDEO_COUNT = 4;
 	private ContentView view;
 	private AppControllerModel model;
 
@@ -37,17 +40,21 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 	}
 
 	/*
-	 * For Featured Posts, take several recent mongoid desc, use scaled vote count
+	 * For Featured Videos, take several recent mongoid desc, use scaled vote count
 	 * based on list index, use as sort value desc, select best subset.
 	 */
 
-	protected void loadFeaturedPosts() {
-		model.featuredPosts(FEATURED_POSTS_COUNT).thenAccept(posts -> {
-			GWT.log("HAVE "+posts.getPosts().size()+" FEATURED POSTS");
+	protected void loadFeaturedVideos() {
+		model.featuredPosts(FEATURED_VIDEO_COUNT).thenAccept(posts -> {
+			GWT.log("HAVE "+posts.getPosts().size()+" FEATURED VIDEOS");
 			getContentView().getFeaturedPosts().clear();
 			int[] showDelay = { 0 };
 			Map<String, AccountInfo> infoMap = posts.getInfoMap();
 			posts.getPosts().forEach(p -> {
+				String videoPath = p.getVideoPath();
+				if (videoPath == null || !videoPath.startsWith("/ipfs/")) {
+					return;
+				}
 				showDelay[0] += 500;
 				AccountInfo i = infoMap.get(p.getUsername());
 				if (i == null) {
@@ -61,10 +68,6 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 				card.setDisplayName(displayName);
 				card.setAvatarUrl(Routes.avatarImage(p.getUsername()));
 				card.setTitle(p.getTitle());
-				String videoPath = p.getVideoPath();
-//				if (videoPath == null || !videoPath.startsWith("/ipfs/")) {
-//					return;
-//				}
 				card.setVideoEmbedUrl(Routes.embedVideo(p.getUsername(), p.getPermlink()));
 				card.setViewLink(Routes.post(p.getUsername(), p.getPermlink()));
 				getContentView().getFeaturedPosts().add(card);
@@ -80,7 +83,7 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 		MaterialScrollfire scrollfire = new MaterialScrollfire();
 		scrollfire.setCallback(() -> {
 			GWT.log("activateScrollfire#callback");
-			loadRecentPosts();
+			loadRecentVideos();
 		});
 		scrollfire.setOffset(0);
 		scrollfire.setElement(widget.asWidget().getElement());
@@ -88,16 +91,25 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 	}
 
 	private String lastRecentId = null;
-
-	private void loadRecentPosts() {
+	private int _recentVideosCounter = 0;
+	private synchronized int incRecentVideoCount() {
+		return ++_recentVideosCounter;
+	}
+	private synchronized int getRecentVideoCount() {
+		return _recentVideosCounter;
+	}
+	private void loadRecentVideos() {
+		loadRecentVideos(4);
+	}
+	private void loadRecentVideos(int count) {
 		showLoading(true);
 		Timer[] timer = { null };
 		CompletableFuture<PostListResponse> listPosts;
 		if (lastRecentId == null) {
-			listPosts = model.listPosts(4);
+			listPosts = model.listPosts(count);
 			getContentView().getRecentPosts().clear();
 		} else {
-			listPosts = model.listPosts(lastRecentId, 5);
+			listPosts = model.listPosts(lastRecentId, count+1);
 		}
 		listPosts.thenAccept((l) -> {
 			GWT.log("Recent posts: " + l.getPosts().size());
@@ -105,13 +117,32 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 				showLoading(false);
 				return;
 			}
+			Iterator<BlogEntry> ilist = l.getPosts().iterator();
+			String newLastRecentId = lastRecentId;
+			while (ilist.hasNext()) {
+				BlogEntry next = ilist.next();
+				if (next.getId().getOid().equals(lastRecentId)) {
+					ilist.remove();
+					continue;
+				}
+				newLastRecentId = next.getId().getOid();
+				if (BlogEntryType.VIDEO != next.getEntryType()) {
+					GWT.log("SKIPPING RECENT POST: "+next.getUsername()+" | "+next.getPermlink());
+					ilist.remove();
+					continue;
+				}
+			}
 			int[] showDelay = { 0 };
 			Map<String, AccountInfo> infoMap = l.getInfoMap();
 			l.getPosts().forEach(p -> {
 				if (p.getId().getOid().equals(lastRecentId)) {
 					return;
 				}
-				lastRecentId = p.getId().getOid();
+				String videoPath = p.getVideoPath();
+				if (videoPath == null || !videoPath.startsWith("/ipfs/")) {
+					return;
+				}
+				incRecentVideoCount();
 				deferred(() -> {
 					AccountInfo i = infoMap.get(p.getUsername());
 					if (i == null) {
@@ -125,10 +156,6 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 					card.setDisplayName(displayName);
 					card.setAvatarUrl(Routes.avatarImage(p.getUsername()));
 					card.setTitle(p.getTitle());
-					String videoPath = p.getVideoPath();
-//					if (videoPath == null || !videoPath.startsWith("/ipfs/")) {
-//						return;
-//					}
 					card.setViewLink(Routes.post(p.getUsername(), p.getPermlink()));
 					card.setVideoEmbedUrl(Routes.embedVideo(p.getUsername(), p.getPermlink()));
 					getContentView().getRecentPosts().add(card);
@@ -139,7 +166,7 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 						@Override
 						public void run() {
 							if (Document.get().getBody().getScrollHeight()<=Window.getClientHeight()) {
-								loadRecentPosts();
+								loadRecentVideos();
 							} else {
 								activateScrollfire(card);
 								showLoading(false);
@@ -149,6 +176,12 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 					timer[0].schedule(500);
 				});
 			});
+			lastRecentId=newLastRecentId;
+			GWT.log("Have "+getRecentVideoCount()+" recent videos.");
+			if (getRecentVideoCount()%4 != 0) {
+				GWT.log("Loading extra recent videos: "+(4-getRecentVideoCount()%4));
+				loadRecentVideos(4-getRecentVideoCount()%4);
+			}
 		});
 	}
 
@@ -208,9 +241,9 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 	@Override
 	public void execute() {
 		GWT.log(this.getClass().getSimpleName() + "#execute");
-		loadRecentPosts();
+		loadRecentVideos();
 		loadFeaturedBlogs();
-		loadFeaturedPosts();
+		loadFeaturedVideos();
 	}
 
 	private int posX=0;

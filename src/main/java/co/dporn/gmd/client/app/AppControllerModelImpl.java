@@ -73,7 +73,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 	}
 
 	private static final int CHANNEL_POSTS_INITIAL_SIZE = 8;
-	private static final int FEATURED_POST_POOL_MULTIPLIER_SIZE = 4;
+	private static final int FEATURED_POST_POOL_MULTIPLIER_SIZE = 6;
 	private static final String STEEM_USERNAME_KEY = "steem-username";
 	private static final String STEEMCONNECT_KEY = "steemconnectv2";
 	private static final int TAGSETS_MAX_SIZE = 6;
@@ -118,10 +118,19 @@ public class AppControllerModelImpl implements AppControllerModel {
 			List<CompletableFuture<List<Vote>>> voteFutures = new ArrayList<>();
 			List<BlogEntry> list = new ArrayList<>();
 			double mul = 1.0d;
-			for (int ix = 0; ix < response.getPosts().size(); ix++) {
+			List<BlogEntry> entries = response.getPosts();
+			Iterator<BlogEntry> iEntries = entries.iterator();
+			while (iEntries.hasNext()) {
+				BlogEntry next = iEntries.next();
+				if (BlogEntryType.VIDEO != next.getEntryType()) {
+					iEntries.remove();
+					continue;
+				}
+			}
+			for (int ix = 0; ix < entries.size(); ix++) {
 				mul = mul * .9d;
 				final double weight = mul;
-				BlogEntry post = response.getPosts().get(ix);
+				BlogEntry post = entries.get(ix);
 				CompletableFuture<List<Vote>> voteFuture = SteemApi.getActiveVotes(post.getUsername(),
 						post.getPermlink());
 				voteFuture.thenAccept((v) -> {
@@ -138,16 +147,16 @@ public class AppControllerModelImpl implements AppControllerModel {
 			}
 			CompletableFuture.allOf(voteFutures.toArray(new CompletableFuture<?>[0])).thenRun(() -> {
 				// desc by score
-				Collections.sort(response.getPosts(), (a, b) -> -Double.compare(a.getScore(), b.getScore()));
-				int size = response.getPosts().size();
-				response.getPosts().subList(Math.min(count, size), size).clear();
+				Collections.sort(entries, (a, b) -> -Double.compare(a.getScore(), b.getScore()));
+				int size = entries.size();
+				entries.subList(Math.min(count, size), size).clear();
 				deferred(() -> finalFuture.complete(response));
 			}).exceptionally(ex -> {
 				GWT.log(ex.getMessage(), ex);
 				// desc by score
-				Collections.sort(response.getPosts(), (a, b) -> -Double.compare(a.getScore(), b.getScore()));
-				int size = response.getPosts().size();
-				response.getPosts().subList(Math.min(count, size), size).clear();
+				Collections.sort(entries, (a, b) -> -Double.compare(a.getScore(), b.getScore()));
+				int size = entries.size();
+				entries.subList(Math.min(count, size), size).clear();
 				deferred(() -> finalFuture.complete(response));
 				return null;
 			});
@@ -208,11 +217,13 @@ public class AppControllerModelImpl implements AppControllerModel {
 
 	@Override
 	public CompletableFuture<PostListResponse> listPosts(int count) {
+		GWT.log("listPosts: ["+count+"]");
 		return ClientRestClient.get().posts(count);
 	}
 
 	@Override
 	public CompletableFuture<PostListResponse> listPosts(String startId, int count) {
+		GWT.log("listPosts: "+startId+" ["+count+"]");
 		return ClientRestClient.get().posts(startId == null ? "" : startId, count);
 	}
 
