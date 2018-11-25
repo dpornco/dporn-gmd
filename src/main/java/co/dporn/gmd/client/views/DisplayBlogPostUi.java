@@ -19,6 +19,7 @@ import gwt.material.design.client.constants.TextAlign;
 import gwt.material.design.client.ui.MaterialContainer;
 import gwt.material.design.client.ui.MaterialHeader;
 import gwt.material.design.client.ui.MaterialLabel;
+import gwt.material.design.client.ui.MaterialPanel;
 import gwt.material.design.client.ui.MaterialProgress;
 import gwt.material.design.client.ui.MaterialRow;
 import gwt.material.design.client.ui.MaterialVideo;
@@ -93,7 +94,9 @@ public class DisplayBlogPostUi extends Composite implements DisplayBlogPostView 
 	@Override
 	public void setEmbedUrl(String embedUrl) {
 		post.clear();
-		post.add(new MaterialVideo(embedUrl));
+		MaterialVideo video = new MaterialVideo(embedUrl);
+		video.setFullscreen(true);
+		post.add(video);
 	}
 
 	@Override
@@ -103,8 +106,12 @@ public class DisplayBlogPostUi extends Composite implements DisplayBlogPostView 
 
 	@Override
 	public void setBodyMessage(String body) {
-		// TODO Auto-generated method stub
-		
+		post.clear();
+		MaterialRow row = new MaterialRow();
+		row.setMargin(0);
+		row.setPadding(16);
+		row.getElement().setInnerHTML(body);
+		post.add(row);
 	}
 
 	@Override

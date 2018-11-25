@@ -31,6 +31,7 @@ import co.dporn.gmd.servlet.utils.steemj.SteemJInstance;
 import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.BlogEntry;
+import co.dporn.gmd.shared.BlogEntryResponse;
 import co.dporn.gmd.shared.CommentConfirmResponse;
 import co.dporn.gmd.shared.DpornCoApi;
 import co.dporn.gmd.shared.IpfsHashResponse;
@@ -314,5 +315,12 @@ public class DpornCoApiImpl implements DpornCoApi {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	@Override
+	public BlogEntryResponse blogEntry(String username, String permlink) {
+		BlogEntryResponse response = new BlogEntryResponse();
+		response.setBlogEntry(MongoDpornoCo.getEntry(username, permlink));
+		return response;
 	}
 }

@@ -17,11 +17,15 @@ import javax.ws.rs.core.MediaType;
 @Consumes(MediaType.APPLICATION_JSON)
 public interface DpornCoApi {
 
-	@Path("posts/check/{username}/{permlink}")
+	@GET
+	@Path("blog/get/{username}/{permlink}")
+	BlogEntryResponse blogEntry(@PathParam("username") String username, @PathParam("permlink") String permlink);
+
+	@Path("blog/check/{username}/{permlink}")
 	@GET
 	void check(@PathParam("username") String username, @PathParam("permlink") String permlink);
 
-	@Path("comment/confirm/{permlink}")
+	@Path("blog/add/{permlink}")
 	@POST
 	CommentConfirmResponse commentConfirm(@HeaderParam("username") String username,
 			@HeaderParam("Authorization") String authorization, @PathParam("permlink") String permlink);
@@ -48,24 +52,24 @@ public interface DpornCoApi {
 	@GET
 	Map<String, String> embed(@PathParam("authorname") String author, @PathParam("permlink") String permlink);
 
-	@Path("posts/@{username}/{startId}/{count}")
+	@Path("blog/entries/@{username}/{startId}/{count}")
 	@GET
 	PostListResponse postsFor(@PathParam("username") String username, @PathParam("startId") String startId,
 			@PathParam("count") int count);
 
-	@Path("posts/@{username}/{count}")
+	@Path("blog/entries/@{username}/{count}")
 	@GET
 	PostListResponse postsFor(@PathParam("username") String username, @PathParam("count") int count);
 
-	@Path("posts/{startId}/{count}")
+	@Path("blog/entries/{startId}/{count}")
 	@GET
 	PostListResponse posts(@PathParam("startId") String startId, @PathParam("count") int count);
 
-	@Path("posts/{count}")
+	@Path("blog/entries/{count}")
 	@GET
 	PostListResponse posts(@PathParam("count") int count);
 
-	@Path("blogs/recent")
+	@Path("blog/entries/recent")
 	@GET
 	ActiveBlogsResponse blogsRecent();
 

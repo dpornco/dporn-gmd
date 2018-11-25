@@ -13,6 +13,8 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.URL;
 
 import co.dporn.gmd.shared.ActiveBlogsResponse;
+import co.dporn.gmd.shared.BlogEntry;
+import co.dporn.gmd.shared.BlogEntryResponse;
 import co.dporn.gmd.shared.CommentConfirmResponse;
 import co.dporn.gmd.shared.DpornCoApi;
 import co.dporn.gmd.shared.PingResponse;
@@ -166,7 +168,13 @@ public class ClientRestClient {
 		GWT.log("-> embed html");
 		MethodCallbackAsFuture<Void> callback = new MethodCallbackAsFuture<>();
 		call(callback).check(username, permlink);
-		return callback.getFuture();		
+		return callback.getFuture();
 	}
 
+	public CompletableFuture<BlogEntryResponse> blogEntry(String username, String permlink) {
+		GWT.log("-> embed html");
+		MethodCallbackAsFuture<BlogEntryResponse> callback = new MethodCallbackAsFuture<>();
+		BlogEntryResponse noop = call(callback).blogEntry(username, permlink);
+		return callback.getFuture();
+	}
 }

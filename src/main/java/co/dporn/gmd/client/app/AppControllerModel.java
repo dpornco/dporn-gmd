@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture;
 
 import co.dporn.gmd.client.presenters.RoutePresenter;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
+import co.dporn.gmd.shared.BlogEntry;
 import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.PostListResponse;
 import co.dporn.gmd.shared.TagSet;
@@ -40,6 +41,8 @@ public interface AppControllerModel {
 	CompletableFuture<PostListResponse> postsFor(String username, String startId, int count);
 
 	CompletableFuture<DiscussionComment> getDiscussionComment(String username, String permlink);
+	
+	CompletableFuture<BlogEntry> getBlogEntry(String username, String permlink);
 	
 	CompletableFuture<Void> autoLogin();
 

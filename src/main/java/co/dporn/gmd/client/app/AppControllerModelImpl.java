@@ -182,6 +182,18 @@ public class AppControllerModelImpl implements AppControllerModel {
 		return SteemApi.getContent(username, permlink);
 	}
 
+	@Override
+	public CompletableFuture<BlogEntry> getBlogEntry(String username, String permlink) {
+		CompletableFuture<BlogEntry> future = new CompletableFuture<>();
+		ClientRestClient.get().blogEntry(username, permlink)//
+				.thenAccept(r -> future.complete(r.getBlogEntry()))//
+				.exceptionally(ex -> {
+					future.completeExceptionally(ex);
+					return null;
+				});
+		return future;
+	}
+
 	private void initAppModelCache() {
 		Storage localStorageIfSupported = Storage.getLocalStorageIfSupported();
 		if (localStorageIfSupported != null) {
@@ -217,13 +229,13 @@ public class AppControllerModelImpl implements AppControllerModel {
 
 	@Override
 	public CompletableFuture<PostListResponse> listPosts(int count) {
-		GWT.log("listPosts: ["+count+"]");
+		GWT.log("listPosts: [" + count + "]");
 		return ClientRestClient.get().posts(count);
 	}
 
 	@Override
 	public CompletableFuture<PostListResponse> listPosts(String startId, int count) {
-		GWT.log("listPosts: "+startId+" ["+count+"]");
+		GWT.log("listPosts: " + startId + " [" + count + "]");
 		return ClientRestClient.get().posts(startId == null ? "" : startId, count);
 	}
 
@@ -675,17 +687,17 @@ public class AppControllerModelImpl implements AppControllerModel {
 				if (tmp == null) {
 					continue;
 				}
-				for (String user: tmp) {
+				for (String user : tmp) {
 					if (!user.startsWith("@")) {
 						continue;
 					}
-					if (!user.matches("^"+USERNAME_PATTERN+"$")) {
+					if (!user.matches("^" + USERNAME_PATTERN + "$")) {
 						continue;
 					}
 					usernames.add(user);
 				}
 			}
-			for (String user: usernames) {
+			for (String user : usernames) {
 				userArray.set(userArray.size(), new JSONString(user.substring(1)));
 			}
 		}

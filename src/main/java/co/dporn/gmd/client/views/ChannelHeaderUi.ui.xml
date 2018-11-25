@@ -9,7 +9,7 @@
 		margin: 0px;
 		padding: 0px;
 		margin-top: -42px;
-		margin-right: -140px;
+		margin-right: 0px;
 		background-position: 50% 50%;
 		background-repeat: no-repeat;
 		background-size: cover;
