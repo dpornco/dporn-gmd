@@ -1,0 +1,21 @@
+{
+	"tags": [
+		"devportal",
+		"steemdev",
+		"steemitdev",
+		"steem",
+		"dev"
+	],
+	"image": [
+		"https://cdn.steemitimages.com/DQmbM4CbLwymNHEaek2TK43568PF6ZMbVqkux4R94wo2Kp9/Steemworks%20Backfill.jpg"
+	],
+	"links": [
+		"https://developers.steem.io/",
+		"https://developers.steem.io//resources/#resources-developeradvocate",
+		"https://steemit.com/devportal/@steemitblog/steemworks-update-testnet-and-devportal-improvements",
+		"https://github.com/steemit/tinman/tree/master",
+		"https://github.com/steemit/condenser"
+	],
+	"app": "steemit/0.1",
+	"format": "markdown"
+}

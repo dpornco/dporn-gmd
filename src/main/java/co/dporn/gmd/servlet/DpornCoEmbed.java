@@ -18,25 +18,41 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
-import co.dporn.gmd.shared.Post;
+import co.dporn.gmd.servlet.mongodb.MongoDpornCo;
+import co.dporn.gmd.shared.BlogEntry;
+import co.dporn.gmd.shared.BlogEntryType;
 
 @Produces(MediaType.TEXT_HTML)
 @Consumes(MediaType.TEXT_HTML)
 @Path("/")
 public class DpornCoEmbed {
-	private static String _template;
+	private static final long _30_DAYS_ms = 1000l * 60l * 60l * 24l * 30l;
+	private static final int _30_DAYS_sec = 60 * 60 * 24 * 30;
+	private static String htmlTemplateVideo;
+	private static String htmlTemplateBlog;
 
-	private static String template() {
-		if (_template == null) {
+	private static String htmlTemplateVideo() {
+		if (htmlTemplateVideo == null) {
 			try {
-				_template = IOUtils.toString(DpornCoEmbed.class.getResourceAsStream("/embed/embed-player.html"));
+				htmlTemplateVideo = IOUtils.toString(DpornCoEmbed.class.getResourceAsStream("/embed/embed-player.html"));
 			} catch (IOException e) {
 			}
 		}
-		return _template;
+		return htmlTemplateVideo;
+	}
+	
+	private static String htmlTemplateBlog() {
+		if (htmlTemplateBlog == null) {
+			try {
+				htmlTemplateBlog = IOUtils.toString(DpornCoEmbed.class.getResourceAsStream("/embed/embed-blog.html"));
+			} catch (IOException e) {
+			}
+		}
+		return htmlTemplateBlog;
 	}
 
 	@Context
@@ -45,21 +61,21 @@ public class DpornCoEmbed {
 	private HttpServletRequest request;
 	private static final long LAST_MODIFIED = System.currentTimeMillis();
 
-	private static Map<String, String> cache = Collections.synchronizedMap(new HashMap<>());
+	private static final Map<String, String> CACHE = Collections.synchronizedMap(new LRUMap<>(256));
 
 	@Produces(MediaType.TEXT_HTML)
 	@Path("@{authorname}/{permlink}")
 	@HEAD
 	public Response head(@PathParam("authorname") String author, @PathParam("permlink") String permlink,
 			@QueryParam("base-url") String baseUrl) {
-		String key = author.trim() + "|" + permlink.trim();
 		response.setCharacterEncoding("UTF-8");
 		response.setContentType(MediaType.TEXT_HTML);
 		response.addDateHeader("Last-Modified", LAST_MODIFIED);
+		response.addHeader("Cache-Control", "max-age=" + _30_DAYS_sec + ", must-revalidate");
+		response.addDateHeader("Expires", System.currentTimeMillis() + _30_DAYS_ms);
 		long ifModifiedSince = request.getDateHeader("If-Modified-Since");
 		if (ifModifiedSince >= LAST_MODIFIED) {
 			response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-			System.out.print("CLIENT CACHED IFRAME: " + key);
 			return Response.notModified().build();
 		}
 		return Response.ok().build();
@@ -80,6 +96,8 @@ public class DpornCoEmbed {
 	public String get(@PathParam("authorname") String author, @PathParam("permlink") String permlink) {
 		response.setCharacterEncoding("UTF-8");
 		response.addDateHeader("Last-Modified", LAST_MODIFIED);
+		response.addHeader("Cache-Control", "max-age=" + _30_DAYS_sec + ", must-revalidate");
+		response.addDateHeader("Expires", System.currentTimeMillis() + _30_DAYS_ms);
 		String embedHtml = getEmbedHtml(author, permlink);
 		if (embedHtml == null) {
 			response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -90,51 +108,79 @@ public class DpornCoEmbed {
 
 	public static String getEmbedHtml(String author, String permlink) {
 		String key = author.trim() + "|" + permlink.trim();
-		synchronized (cache) {
-			if (cache.containsKey(key)) {
-				return cache.get(key);
-			}
+		String cached = CACHE.get(key);
+		if (cached != null) {
+			return cached;
 		}
-		Post post = MongoDpornoCo.getPost(author, permlink);
-		if (post == null) {
+		BlogEntry entry = MongoDpornCo.getEntry(author, permlink);
+		if (entry == null) {
 			return null;
 		}
-		if (!author.equals(post.getAuthor())) {
+		if (!author.equals(entry.getUsername())) {
 			return null;
 		}
-		String posterImageIpfs = post.getCoverImageIpfs();
-		if (posterImageIpfs == null) {
+		String embedHtml = null;
+		if (BlogEntryType.VIDEO == entry.getEntryType() || entry.getVideoPath()!=null) {
+			embedHtml = getVideoEmbedHtml(entry);
+		} else {
+			embedHtml = getGenericEmbedHtml(entry);
+		}
+		
+		if (embedHtml!=null) {
+			CACHE.put(key, embedHtml);
+		}
+		return embedHtml;
+	}
+
+	private static String getGenericEmbedHtml(BlogEntry entry) {
+		String content = entry.getContent();
+		if (content==null) {
 			return null;
 		}
-		posterImageIpfs = posterImageIpfs.trim();
-		String lcPosterImageIpfs = posterImageIpfs.toLowerCase();
+		content=content.trim();
+		if (content.toLowerCase().startsWith("<html>")) {
+			content = content.substring("<html>".length());
+		}
+		if (content.toLowerCase().endsWith("</html>")) {
+			content = content.substring(0, content.length()-"</html>".length());
+		}
+		String html = htmlTemplateBlog();
+		String title = entry.getTitle();
+		html = html.replace("__TITLE__",StringEscapeUtils.escapeXml10(title==null?"":title));
+		html = html.replace("__CONTENT__",content);
+		
+		return html;
+	}
+
+	private static String getVideoEmbedHtml(BlogEntry entry) {
+		String posterImagePath = entry.getPosterImagePath();
+		if (posterImagePath == null) {
+			return null;
+		}
+		posterImagePath = posterImagePath.trim();
+		String lcPosterImageIpfs = posterImagePath.toLowerCase();
+		boolean isPath = lcPosterImageIpfs.startsWith("/ipfs/");
 		boolean isHttp = lcPosterImageIpfs.startsWith("http://");
 		boolean isHttps = lcPosterImageIpfs.startsWith("https://");
-		if (posterImageIpfs.length() != 46 && !isHttp && !isHttps) {
-			posterImageIpfs = "QmTTtAi3ZwLdGpEzy2LHpFKQHFqLUrHy61miko9LSbVp72";
+		if (!isPath && !isHttp && !isHttps) {
+			posterImagePath = "/ipfs/QmTTtAi3ZwLdGpEzy2LHpFKQHFqLUrHy61miko9LSbVp72";
 		}
-		String videoIpfs = post.getVideoIpfs();
-		if (videoIpfs == null) {
+		String videoPath = entry.getVideoPath();
+		if (videoPath == null) {
 			return null;
 		}
-		videoIpfs = videoIpfs.trim();
-		if (videoIpfs.length() != 46) {
+		videoPath = videoPath.trim();
+		if (!videoPath.startsWith("/ipfs/")) {
 			return null;
 		}
-		String embedHtml = template();
-		embedHtml = embedHtml.replace("__TITLE__", StringEscapeUtils.escapeXml10(post.getTitle()));
-		embedHtml = embedHtml.replace("__POSTERHASH__", StringEscapeUtils.escapeXml10(posterImageIpfs));
-		embedHtml = embedHtml.replace("__VIDEOHASH__", StringEscapeUtils.escapeXml10(videoIpfs));
-		// hack to deal with non IPFS poster images
+		String embedHtml = htmlTemplateVideo();
+		embedHtml = embedHtml.replace("__TITLE__", StringEscapeUtils.escapeXml10(entry.getTitle()));
+		embedHtml = embedHtml.replace("__POSTERPATH__", StringEscapeUtils.escapeXml10(posterImagePath));
+		embedHtml = embedHtml.replace("__VIDEOPATH__", StringEscapeUtils.escapeXml10(videoPath));
+		// hack to deal with non IPFS path images or videos
 		if (isHttp || isHttps) {
-			embedHtml = embedHtml.replace("https://steemitimages.com/400x400/https://ipfs.io/ipfs/" + posterImageIpfs,
-					"https://steemitimages.com/400x400/" + posterImageIpfs);
-		}
-		synchronized (cache) {
-			if (cache.size() > 1024) {
-				cache.clear();
-			}
-			cache.put(key, embedHtml);
+			embedHtml = embedHtml.replace("https://steemitimages.com/400x400/https://ipfs.io/ipfs" + posterImagePath,
+					"https://steemitimages.com/400x400/" + posterImagePath);
 		}
 		return embedHtml;
 	}

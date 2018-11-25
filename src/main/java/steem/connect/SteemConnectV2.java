@@ -3,8 +3,10 @@ package steem.connect;
 import java.util.concurrent.CompletableFuture;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.json.client.JSONArray;
 import com.google.gwt.json.client.JSONObject;
 
+import elemental2.dom.DomGlobal;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsPackage;
@@ -75,12 +77,22 @@ public class SteemConnectV2 {
 	private native void _send(String route, String method, JSONObject body, Sc2BiCallback callback);
 
 	@JsMethod(name = "broadcast")
-	private native void _broadcast(JSONObject[] operations, Sc2BiCallback callback);
+	private native void _broadcast(JavaScriptObject javaScriptObject, Sc2BiCallback callback);
 
 	@JsOverlay
-	public final CompletableFuture<JSONObject> broadcast(JSONObject[] operations) {
+	public final CompletableFuture<JSONObject> broadcast(JSONArray... operations) {
 		Sc2CallbackFuture future = new Sc2CallbackFuture();
-		_broadcast(operations, future.getCallback());
+		if (operations==null || operations.length==0) {
+			future.getFuture().completeExceptionally(new IllegalStateException("No broadcast operations supplied"));
+			return future.getFuture();
+		}
+		JSONArray tmp = new JSONArray();
+		for (int ix=0; ix<operations.length; ix++) {
+			tmp.set(ix, operations[ix]);
+		}
+		JavaScriptObject javaScriptObject = tmp.getJavaScriptObject();
+		DomGlobal.console.log(javaScriptObject);
+		_broadcast(javaScriptObject, future.getCallback());
 		return future.getFuture();
 	}
 

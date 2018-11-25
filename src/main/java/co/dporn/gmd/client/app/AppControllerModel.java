@@ -1,10 +1,16 @@
 package co.dporn.gmd.client.app;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import co.dporn.gmd.client.presenters.RoutePresenter;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
+import co.dporn.gmd.shared.BlogEntry;
+import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.PostListResponse;
+import co.dporn.gmd.shared.TagSet;
+import elemental2.dom.Blob;
+import elemental2.dom.XMLHttpRequestUpload.OnprogressFn;
 import steem.model.DiscussionComment;
 
 /**
@@ -36,6 +42,8 @@ public interface AppControllerModel {
 
 	CompletableFuture<DiscussionComment> getDiscussionComment(String username, String permlink);
 	
+	CompletableFuture<BlogEntry> getBlogEntry(String username, String permlink);
+	
 	CompletableFuture<Void> autoLogin();
 
 	boolean isLoggedIn();
@@ -49,4 +57,15 @@ public interface AppControllerModel {
 	void showAccountSettings();
 
 	void logout();
+
+	CompletableFuture<List<String>> tagsOracle(String query, int limit);
+
+	CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob, OnprogressFn onprogress);
+	
+	CompletableFuture<List<TagSet>> recentTagSets(String mustHaveTag);
+	
+	CompletableFuture<List<String>> sortTagsByNetVoteDesc(List<String> tags);
+	
+	CompletableFuture<String> postBlogEntry(BlogEntryType erotica, double width, String title, List<String> tags, String content);
+	
 }

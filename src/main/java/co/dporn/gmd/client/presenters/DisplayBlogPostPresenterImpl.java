@@ -1,10 +1,12 @@
 package co.dporn.gmd.client.presenters;
 
+import com.google.gwt.core.shared.GWT;
+
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.app.Routes;
 import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
-import gwt.material.design.client.ui.MaterialVideo;
+import co.dporn.gmd.shared.BlogEntryType;
 
 public class DisplayBlogPostPresenterImpl implements DisplayBlogPostPresenter {
 
@@ -73,21 +75,27 @@ public class DisplayBlogPostPresenterImpl implements DisplayBlogPostPresenter {
 	}
 
 	protected void loadAndDisplayPost() {
-		model.getDiscussionComment(username, permlink).thenAccept((comment) -> {
-//			view.setTitle(comment.getTitle());
-			DisplayBlogPostView channelView = (DisplayBlogPostView) view;
-			BlogHeader blogHeader = channelView.getBlogHeader();
-			blogHeader.setAbout(comment.getTitle());
-			blogHeader.setChannelRoute(Routes.channel(username));
-		}).thenRun(() -> {
-			view.showLoading(false);
+		model.getBlogEntry(username, permlink).thenAccept((entry) -> {
+			GWT.log("loadAndDisplayPost: view instanceof test = "+(view instanceof DisplayBlogPostView));
+			GWT.log("loadAndDisplayPost: view class: "+view.getClass().getSimpleName());
 			if (!(view instanceof DisplayBlogPostView)) {
 				return;
 			}
-			DisplayBlogPostView channelView = (DisplayBlogPostView) view;
-			MaterialVideo video = new MaterialVideo(Routes.embedVideo(username, permlink));
-			video.setFullscreen(true);
-			channelView.getPostView().add(video);
+			DisplayBlogPostView blogEntryView = (DisplayBlogPostView) view;
+			deferred(()->{
+				BlogHeader blogHeader = blogEntryView.getBlogHeader();
+				blogHeader.setAbout(entry.getTitle());
+				blogHeader.setChannelRoute(Routes.channel(username));
+			});
+			view.showLoading(false);
+			if (entry.getEntryType()==BlogEntryType.VIDEO) {
+				blogEntryView.setEmbedUrl(Routes.embedVideo(username, permlink));
+//				MaterialVideo video = new MaterialVideo(Routes.embedVideo(username, permlink));
+//				video.setFullscreen(true);
+//				blogEntryView.getPostView().add(video);
+			} else {
+				blogEntryView.setBodyMessage(entry.getContent());
+			}
 		});
 	}
 

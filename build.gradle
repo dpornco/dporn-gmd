@@ -89,11 +89,11 @@ gwt {
 		localWorkers = 4;
 	}
 	superDev {
-		noPrecompile = false;
+		noPrecompile = true;
 		failOnError = false;
 		bindAddress = "0.0.0.0";
 	}
-	maxHeapSize = "2048M";
+	maxHeapSize = "3128M";
 }
 
 configurations {
@@ -108,21 +108,36 @@ dependencies {
 	compile 'org.glassfish.jersey.inject:jersey-hk2:2.27'
 	compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.9.6'
 	
+	//sanitizer
+	compile 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20180219.1'
+	
 	compile 'com.github.muksihs.steem-java-api-wrapper:steemj-core:d9f07155e7'
-    compile 'com.github.tommyettinger:RegExodus:v0.1.10'
-    compile 'org.mongodb:mongodb-driver-sync:3.8.2'
+    //compile 'com.github.tommyettinger:RegExodus:v0.1.10' //not used
+    compile 'org.mongodb:mongodb-driver-sync:3.9.0'
+    
+    //simplistic server side LRU caching (read LRUMap caveats when mucking with it)
+    // https://mvnrepository.com/artifact/org.apache.commons/commons-collections4
+	compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.2'
+    
+    
+    //for IPFS adding
+    //compile 'com.github.ipfs:java-ipfs-api:v1.2.2' //switched to direct HTTP API - works better
+    
+    //for client side image manipulation
+    gwt 'com.google.elemental2:elemental2-dom:1.0.0-RC1'
     
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-jdk14
 	compile group: 'org.slf4j', name: 'slf4j-jdk14', version: '1.7.25'
 	
 	// for html5 push-state and servlet url rewrite back to index page
 	gwt 'de.knightsoft-net:gwt-pushstate:2.0.0.14'
+    compile 'org.apache.commons:commons-lang3:3.8.1'
 	gwt 'de.knightsoft-net:gwt-commons-lang3:3.8.1-0'
 	gwt group: 'com.google.gwt', name: 'gwt-elemental', version: '2.8.2'
 	compile 'org.tuckey:urlrewritefilter:4.0.3'	    
     
-	compile 'com.github.tommyettinger:blazingchain:1.4.4.2'
-	gwt group: 'com.github.tommyettinger', name: 'blazingchain', version: '1.4.4.2', classifier: 'sources'
+	//compile 'com.github.tommyettinger:blazingchain:1.4.4.2' //not used
+	//gwt group: 'com.github.tommyettinger', name: 'blazingchain', version: '1.4.4.2', classifier: 'sources' //not used
 	
 	gwt 'com.google.gwt:gwt-user:'+gwt.gwtVersion
 	providedCompile 'com.google.gwt:gwt-servlet:'+gwt.gwtVersion

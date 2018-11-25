@@ -13,8 +13,8 @@
 					height="40px" marginTop="12" marginRight="4"
 					url="https://dporn.co/imgs/dpornsitelogo.png" />
 				<m:MaterialNavBrand paddingLeft="4"
-					text="DPORNCO" />
-				<m:MaterialNavSection
+					text="DPORNCO" hideOn="HIDE_ON_SMALL_DOWN"/>
+				<m:MaterialNavSection  hideOn="NONE"
 					style="padding-right: 8px;" float="RIGHT">
 					<m:MaterialLabel hideOn="HIDE_ON_MED_DOWN"
 						ui:field="displayName" text=""
@@ -23,7 +23,7 @@
 						width="40px" height="40px" marginTop="12" marginRight="12"
 						url="https://steemitimages.com/u/null/avatar/medium"
 						backgroundColor="BLACK" />
-					<m:MaterialButton ui:field="account" text="Login"
+					<m:MaterialButton ui:field="account" text="Login" hideOn="NONE"
 						type="OUTLINED"
 						style="padding-left: 12px; padding-right: 12px; margin-right: 12px;" />
 				</m:MaterialNavSection>
@@ -61,11 +61,12 @@
 		<!-- <m:MaterialContainer ui:field="container" paddingLeft="250" -->
 		<!-- paddingRight="140" paddingTop="100"/> -->
 		<!-- FAB -->
-		<m:MaterialFAB>
-			<m:MaterialAnchorButton target="_blank"
-				href="https://github.com/muksihs/dporn-gmd" waves="DEFAULT"
-				type="FLOATING" tooltip="Get Code" tooltipPosition="LEFT"
-				iconType="CODE" size="LARGE" />
-		</m:MaterialFAB>
+<!-- 		<m:MaterialFAB> -->
+<!-- 			<m:MaterialAnchorButton target="_blank" -->
+<!-- 				href="https://github.com/muksihs/dporn-gmd" waves="DEFAULT" -->
+<!-- 				type="FLOATING" tooltip="Get Code" tooltipPosition="LEFT" -->
+<!-- 				iconType="CODE" size="LARGE" /> -->
+<!-- 		</m:MaterialFAB> -->
+		<m:MaterialFooter width="100%" style="min-height: 32px;"></m:MaterialFooter>
 	</m:MaterialPanel>
 </ui:UiBinder>

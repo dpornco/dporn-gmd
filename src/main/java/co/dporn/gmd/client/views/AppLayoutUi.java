@@ -10,14 +10,14 @@ import com.wallissoftware.pushstate.client.PushStateHistorian;
 
 import co.dporn.gmd.client.presenters.AppPresenter;
 import co.dporn.gmd.client.presenters.AppPresenter.AppLayoutView;
-import co.dporn.gmd.client.presenters.ContentPresenter;
-import co.dporn.gmd.client.presenters.ContentPresenter.ContentView;
+import co.dporn.gmd.client.presenters.AppPresenter.IsChildPresenter;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialImage;
 import gwt.material.design.client.ui.MaterialLabel;
 import gwt.material.design.client.ui.MaterialLink;
 import gwt.material.design.client.ui.MaterialPanel;
 import gwt.material.design.client.ui.MaterialSideNavPush;
+import gwt.material.design.client.ui.MaterialToast;
 
 public class AppLayoutUi extends Composite implements AppLayoutView {
 
@@ -46,7 +46,7 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 	@UiField
 	protected MaterialLink linkSettings;
 
-	private ContentView container;
+	private IsView<?> container;
 
 	private HandlerRegistration handler;
 
@@ -89,20 +89,6 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 	}
 
 	@Override
-	public void setContentPresenter(ContentPresenter childPresenter) {
-		ContentView view = childPresenter.getContentView();
-		if (view==null) {
-			throw new IllegalStateException("View must implement a non-null getContentView()");
-		}
-		if (container != null) {
-			panel.remove(container.asWidget());
-		}
-		int sidenavix = panel.getWidgetIndex(sidenav);
-		panel.insert(view.asWidget(), sidenavix + 1);
-		container = view;
-	}
-
-	@Override
 	public void setUsername(String username) {
 		if (username==null||username.trim().isEmpty()) {
 			this.account.setText("Login");
@@ -127,5 +113,25 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 		linkUploadPhotos.setEnabled(enabled);
 		linkUploadVideo.setEnabled(enabled);
 		linkSettings.setEnabled(enabled);		
+	}
+
+	@Override
+	public void setChildPresenter(IsChildPresenter<? extends IsView<?>> childPresenter) {
+		IsView<?> view = childPresenter.getContentView();
+		if (view==null) {
+			throw new IllegalStateException("View must implement a non-null getContentView()");
+		}
+		if (container != null) {
+			panel.remove(container.asWidget());
+		}
+		int sidenavix = panel.getWidgetIndex(sidenav);
+		panel.insert(view.asWidget(), sidenavix + 1);
+		container = view;
+		
+	}
+
+	@Override
+	public void toast(String message) {
+		MaterialToast.fireToast(message);
 	}
 }

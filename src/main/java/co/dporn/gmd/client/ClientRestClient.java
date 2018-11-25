@@ -10,78 +10,124 @@ import org.fusesource.restygwt.client.MethodCallback;
 import org.fusesource.restygwt.client.REST;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.http.client.URL;
 
 import co.dporn.gmd.shared.ActiveBlogsResponse;
+import co.dporn.gmd.shared.BlogEntryResponse;
+import co.dporn.gmd.shared.CommentConfirmResponse;
 import co.dporn.gmd.shared.DpornCoApi;
 import co.dporn.gmd.shared.PingResponse;
 import co.dporn.gmd.shared.PostListResponse;
+import co.dporn.gmd.shared.SuggestTagsResponse;
+import elemental2.dom.Blob;
+import elemental2.dom.XMLHttpRequest;
+import elemental2.dom.XMLHttpRequestUpload.OnprogressFn;
 
-public class RestClient {
-	
-	private static RestClient _instance;
-	public static RestClient get() {
-		return _instance==null?_instance=new RestClient():_instance;
+public class ClientRestClient {
+
+	private static ClientRestClient _instance;
+
+	public static ClientRestClient get() {
+		return _instance == null ? _instance = new ClientRestClient() : _instance;
 	}
 
-	public RestClient() {
-		String serviceRoot = "/dpornco_application/api/1.0";
+	private String serviceRoot;
+
+	public ClientRestClient() {
+		this("/dpornco_application/api/1.0");
+	}
+
+	// "/dpornco_application/api/1.0";
+	public ClientRestClient(String serviceRoot) {
+		this.serviceRoot = serviceRoot;
 		Defaults.setServiceRoot(serviceRoot);
 		rest = GWT.create(DpornCoRestApi.class);
 	}
 
 	public static interface DpornCoRestApi extends DpornCoApi, DirectRestService {
+		
 	}
 
 	private final DpornCoRestApi rest;
 	
+	public CompletableFuture<CommentConfirmResponse> commentConfirm(String username, String authorization, String permlink) {
+		MethodCallbackAsFuture<CommentConfirmResponse> callback = new MethodCallbackAsFuture<>();
+		call(callback).commentConfirm(username, authorization, permlink);
+		return callback.getFuture();
+	}
+
+
+	public CompletableFuture<String> postBlobToIpfs(String username, String authorization, String filename, Blob blob,
+			OnprogressFn onprogress) {
+		CompletableFuture<String> future = new CompletableFuture<>();
+		filename = URL.encode(filename);
+		String xhrUrl = serviceRoot + "/ipfs/put/" + filename;
+		XMLHttpRequest xhr = new XMLHttpRequest();
+		xhr.upload.onprogress = onprogress;
+		xhr.onloadend = (e) -> future.complete(xhr.responseText);
+		xhr.onerror = (e) -> future.completeExceptionally(new RuntimeException("IPFS XHR FAILED"));
+		xhr.open("PUT", xhrUrl, true);
+		xhr.setRequestHeader("Authorization", authorization);
+		xhr.setRequestHeader("username", username);
+		xhr.send(blob);
+		return future;
+	}
+
+	public CompletableFuture<SuggestTagsResponse> suggest(String prefix) {
+		GWT.log("-> suggest: " + prefix);
+		MethodCallbackAsFuture<SuggestTagsResponse> callback = new MethodCallbackAsFuture<>();
+		call(callback).suggest(prefix);
+		return callback.getFuture();
+	}
+
 	public CompletableFuture<PingResponse> ping() {
 		MethodCallbackAsFuture<PingResponse> callback = new MethodCallbackAsFuture<>();
 		call(callback).ping();
 		return callback.getFuture();
 	}
-	
+
 	public CompletableFuture<ActiveBlogsResponse> listFeatured() {
 		GWT.log("-> listFeatured");
 		MethodCallbackAsFuture<ActiveBlogsResponse> callback = new MethodCallbackAsFuture<>();
 		call(callback).blogsRecent();
 		return callback.getFuture();
 	}
-	
+
 	public CompletableFuture<ActiveBlogsResponse> blogInfo(String username) {
-		GWT.log("-> blogInfo: "+username);
+		GWT.log("-> blogInfo: " + username);
 		MethodCallbackAsFuture<ActiveBlogsResponse> callback = new MethodCallbackAsFuture<>();
 		call(callback).blogInfo(username);
 		return callback.getFuture();
 	}
-	
+
 	public CompletableFuture<PostListResponse> posts(int count) {
 		GWT.log("-> most recent posts");
 		MethodCallbackAsFuture<PostListResponse> callback = new MethodCallbackAsFuture<>();
 		call(callback).posts(count);
 		return callback.getFuture();
 	}
-	
+
 	public CompletableFuture<PostListResponse> posts(String startId, int count) {
 		GWT.log("-> posts starting at");
 		MethodCallbackAsFuture<PostListResponse> callback = new MethodCallbackAsFuture<>();
 		call(callback).posts(startId, count);
 		return callback.getFuture();
 	}
-	
+
 	public CompletableFuture<PostListResponse> postsFor(String username, int count) {
-		GWT.log("-> most recent posts for "+username);
+		GWT.log("-> most recent posts for " + username);
 		MethodCallbackAsFuture<PostListResponse> callback = new MethodCallbackAsFuture<>();
 		call(callback).postsFor(username, count);
 		return callback.getFuture();
 	}
-	
+
 	public CompletableFuture<PostListResponse> postsFor(String username, String startId, int count) {
-		GWT.log("-> most recent posts starting at for "+username);
+		GWT.log("-> most recent posts starting at for " + username);
 		MethodCallbackAsFuture<PostListResponse> callback = new MethodCallbackAsFuture<>();
 		call(callback).postsFor(username, startId, count);
 		return callback.getFuture();
 	}
-	
+
 	public CompletableFuture<Map<String, String>> embed(String username, String permlink) {
 		GWT.log("-> embed html");
 		MethodCallbackAsFuture<Map<String, String>> callback = new MethodCallbackAsFuture<>();
@@ -115,5 +161,19 @@ public class RestClient {
 				}
 			};
 		}
+	}
+
+	public CompletableFuture<Void> check(String username, String permlink) {
+		GWT.log("-> embed html");
+		MethodCallbackAsFuture<Void> callback = new MethodCallbackAsFuture<>();
+		call(callback).check(username, permlink);
+		return callback.getFuture();
+	}
+
+	public CompletableFuture<BlogEntryResponse> blogEntry(String username, String permlink) {
+		GWT.log("-> embed html");
+		MethodCallbackAsFuture<BlogEntryResponse> callback = new MethodCallbackAsFuture<>();
+		BlogEntryResponse noop = call(callback).blogEntry(username, permlink);
+		return callback.getFuture();
 	}
 }

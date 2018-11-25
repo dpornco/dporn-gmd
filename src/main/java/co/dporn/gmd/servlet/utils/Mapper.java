@@ -1,4 +1,4 @@
-package co.dporn.gmd.servlet;
+package co.dporn.gmd.servlet.utils;
 
 import com.fasterxml.jackson.core.JsonGenerator.Feature;
 import com.fasterxml.jackson.databind.DeserializationFeature;

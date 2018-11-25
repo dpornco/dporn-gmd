@@ -17,4 +17,5 @@ public interface RoutePresenter {
 	}
 	void loadRoutePresenter(String route);
 	void setUserInfo(ActiveUserInfo info);
+	void toast(String message);
 }

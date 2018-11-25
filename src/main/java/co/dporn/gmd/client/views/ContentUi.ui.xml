@@ -5,7 +5,7 @@
 	<ui:style>
 	.container {
 		padding-left: 250px;
-		padding-right: 140px;
+		padding-right: 8px;
 		padding-top: 100px;
 	}
 	
@@ -30,13 +30,13 @@
 			addStyleNames="{style.row}" />
 
 		<!-- Cards -->
-		<m:MaterialLabel text="Featured Posts"
+		<m:MaterialLabel text="Featured Videos"
 			addStyleNames="{style.label}" />
 		<m:MaterialRow ui:field="featuredPosts"
 			addStyleNames="{style.row}" />
 
 		<!-- Cards -->
-		<m:MaterialLabel text="Recent Posts"
+		<m:MaterialLabel text="Recent Videos"
 			addStyleNames="{style.label}" />
 		<m:MaterialRow ui:field="recentPosts"
 			addStyleNames="{style.row}" />

@@ -24,11 +24,12 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 	private AppControllerModel model;
 	private String username;
 
-	//TODO: Load and display full account info in banner header like dtube/busy/steem does.
+	// TODO: Load and display full account info in banner header like
+	// dtube/busy/steem does.
 	public ChannelPresenter(String username, AppControllerModel model, ContentView view) {
 		this.view = view;
 		this.model = model;
-		this.username=username;
+		this.username = username;
 	}
 
 	@Override
@@ -62,36 +63,38 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 		}
 		listPosts.thenAccept((l) -> {
 			GWT.log("Channel Recent posts: " + l.getPosts().size());
-			if (l.getPosts().size()<2 && lastRecentId!=null) {
+			if (l.getPosts().size() < 2 && lastRecentId != null) {
 				showLoading(false);
 				return;
 			}
 			int[] showDelay = { 0 };
 			Map<String, AccountInfo> infoMap = l.getInfoMap();
 			l.getPosts().forEach(p -> {
-				if (p.getId().equals(lastRecentId)) {
+				if (p.getId().getOid().equals(lastRecentId)) {
 					return;
 				}
-				lastRecentId = p.getId();
+				lastRecentId = p.getId().getOid();
 				deferred(() -> {
-					AccountInfo i = infoMap.get(p.getAuthor());
+					String entryUsername = p.getUsername();
+					AccountInfo i = infoMap.get(entryUsername);
 					if (i == null) {
 						return;
 					}
+					String entryDisplayName = i.getDisplayName();
 					VideoCardUi card = new VideoCardUi();
-					card.setDisplayName(p.getAuthor());
+					card.setDisplayName(entryUsername);
 					card.setShowDelay(showDelay[0]);
 					showDelay[0] += 150; // 75
-					String displayName = i.getDisplayName() == null ? p.getAuthor() : i.getDisplayName();
+					String displayName = entryDisplayName == null ? entryUsername : entryDisplayName;
 					card.setDisplayName(displayName);
-					card.setAvatarUrl(Routes.avatarImage(p.getAuthor()));
+					card.setAvatarUrl(Routes.avatarImage(entryUsername));
 					card.setTitle(p.getTitle());
-					String videoIpfs = p.getVideoIpfs();
-					if (videoIpfs == null || videoIpfs.trim().isEmpty() || videoIpfs.length() != 46) {
-						return;
-					}
-					card.setViewLink(Routes.post(p.getAuthor(), p.getPermlink()));
-					card.setVideoEmbedUrl(Routes.embedVideo(p.getAuthor(), p.getPermlink()));
+					String videoPath = p.getVideoPath();
+//					if (videoPath == null || !videoPath.startsWith("/ipfs/")) {
+//						return;
+//					}
+					card.setViewLink(Routes.post(entryUsername, p.getPermlink()));
+					card.setVideoEmbedUrl(Routes.embedVideo(entryUsername, p.getPermlink()));
 					getContentView().getRecentPosts().add(card);
 					if (timer[0] != null) {
 						timer[0].cancel();
@@ -99,7 +102,7 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 					timer[0] = new Timer() {
 						@Override
 						public void run() {
-							if (Document.get().getBody().getScrollHeight()<=Window.getClientHeight()) {
+							if (Document.get().getBody().getScrollHeight() <= Window.getClientHeight()) {
 								loadPostsFor();
 							} else {
 								activateScrollfire(card);
@@ -117,7 +120,7 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 		getContentView().showLoading(loading);
 	}
 
-		@Override
+	@Override
 	public ContentView getContentView() {
 		return view;
 	}
@@ -126,14 +129,14 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 	public void setModel(AppControllerModel model) {
 		this.model = model;
 	}
-	
+
 	@Override
 	public void execute() {
 		GWT.log(this.getClass().getSimpleName() + "#execute");
 		loadPostsFor();
 		model.blogInfo(username).thenAccept(this::setupHeader);
 	}
-	
+
 	void setupHeader(ActiveBlogsResponse infoMap) {
 		if (!(view instanceof ChannelView)) {
 			return;
@@ -155,15 +158,17 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 		blogHeader.setSteemitLink(username);
 	}
 
-	private int posX=0;
-	private int posY=0;
+	private int posX = 0;
+	private int posY = 0;
+
 	@Override
 	public void saveScrollPosition() {
-		posX=Window.getScrollLeft();
-		posY=Window.getScrollTop();
+		posX = Window.getScrollLeft();
+		posY = Window.getScrollTop();
 	}
 
 	@Override
 	public void restoreScrollPosition() {
 		Window.scrollTo(posX, posY);
-	}}
+	}
+}

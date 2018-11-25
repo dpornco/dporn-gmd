@@ -6,6 +6,12 @@
  "https://raw.githubusercontent.com/gwtproject/gwt/master/distro-source/core/src/gwt-module.dtd">
 <module rename-to='dpornco_application'>
 
+	<!-- routing -->
+	<inherits name="com.wallissoftware.pushstate.PushState" />
+	<inherits name="org.apache.commons.GWTCommonsLang3" />
+	<inherits name="elemental.Elemental" />
+
+
 	<!-- System.getProperties() -->
 	<define-configuration-property
 		name="version" is-multi-valued='false' />
@@ -27,8 +33,11 @@
 	<!-- https://github.com/OneGeek/GWT-CompletableFuture -->
 	<inherits name='com.ekotrope.gwt.CompletableFuture' />
 
+	<!-- client side image manipulation -->
+	<inherits name="elemental2.dom.Dom" />
+
 	<!-- compression for the cache -->
-	<inherits name='blazing.chain' />
+<!-- 	<inherits name='blazing.chain' /> -->
 
 	<!-- HTML5 -->
 	<!-- <inherits name="elemental2.dom.Dom" /> -->
@@ -72,21 +81,6 @@
 
 	<!-- steemjs -->
 	<inherits name="steem.Steem" />
-	
-	<!-- routing -->
-	<inherits name="org.apache.commons.GWTCommonsLang3" />
-	<inherits name="elemental.Elemental" />
-	<inherits name="com.wallissoftware.pushstate.PushState" />
-
-	<inherits name="com.google.gwt.logging.Logging" />
-	<set-property name="gwt.logging.logLevel" value="INFO" />
-	<set-property name="gwt.logging.enabled" value="TRUE" />
-	<set-property name="gwt.logging.consoleHandler"
-		value="DISABLED" />
-	<set-property name="gwt.logging.developmentModeHandler"
-		value="DISABLED" />
-	<set-property name="gwt.logging.systemHandler"
-		value="ENABLED" />
 
 	<set-property-fallback name="user.agent"
 		value="safari" />

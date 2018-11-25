@@ -6,6 +6,18 @@
 <urlrewrite>
 
 	<rule>
+		<note>IPFS Gateway: Redirect servlet to nginx IPFS gateway proxy for IPFS access (mainly for dev mode work)</note>
+		<from>^/vidcache/(.*)</from>
+		<to type="redirect">https://dporn.co/vidcache/$1</to>
+	</rule>
+	
+	<rule>
+		<note>IPFS Gateway: Redirect servlet to nginx IPFS gateway proxy for IPFS access (mainly for dev mode work)</note>
+		<from>^/ipfs/(.*)</from>
+		<to type="redirect">https://dporn.co/vidcache/$1</to>
+	</rule>
+
+	<rule>
 		<note>Steem Connect Auth Callback</note>
 		<from>^/auth/.*</from>
 		<to>/</to>
@@ -40,8 +52,18 @@
 		<to>/</to>
 	</rule>
 	<rule>
-		<note>Post Video</note>
+		<note>Upload Video</note>
 		<from>^/upload/video</from>
+		<to>/</to>
+	</rule>
+	<rule>
+		<note>Upload Photogallyer</note>
+		<from>^/upload/photos</from>
+		<to>/</to>
+	</rule>
+	<rule>
+		<note>Upload Erotica</note>
+		<from>^/upload/erotica</from>
 		<to>/</to>
 	</rule>
 	<rule>
