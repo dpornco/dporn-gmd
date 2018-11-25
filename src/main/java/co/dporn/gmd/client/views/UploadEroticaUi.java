@@ -434,11 +434,8 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 	}
 
 	private void valueChangeHandler(ValueChangeEvent<String> event) {
-		// always make sure there is "blank" below and above main content
-		GWT.log(" - EDITOR CHANGE");
-
 		// keep all content visible
-		editor.getEditor().find(".note-editable").css("height", "100%").css("min-height", "256px");
+		editor.getEditor().find(".note-editable").css("height", "100%");
 
 		// image fixups
 		editor.getEditor().find(".note-editable").find("img[src^='data:']")
