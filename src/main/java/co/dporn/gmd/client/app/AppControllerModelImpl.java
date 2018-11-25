@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 
@@ -18,6 +19,7 @@ import com.github.nmorel.gwtjackson.client.exception.JsonDeserializationExceptio
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
+import com.google.gwt.dom.client.Node;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.i18n.client.TimeZone;
@@ -44,6 +46,7 @@ import co.dporn.gmd.shared.PostListResponse;
 import co.dporn.gmd.shared.TagSet;
 import elemental2.dom.Blob;
 import elemental2.dom.DomGlobal;
+import elemental2.dom.HTMLAnchorElement;
 import elemental2.dom.HTMLImageElement;
 import elemental2.dom.XMLHttpRequestUpload.OnprogressFn;
 import gwt.material.design.client.ui.MaterialToast;
@@ -63,6 +66,8 @@ import steem.model.TrendingTag;
 import steem.model.Vote;
 
 public class AppControllerModelImpl implements AppControllerModel {
+	private static final String USERNAME_PATTERN = "(@[a-z0-9][a-z0-9\\-\\.]*?[a-z0-9])";
+
 	protected interface IpfsHashResponseMapper extends ObjectMapper<IpfsHashResponse> {
 		IpfsHashResponseMapper mapper = GWT.create(IpfsHashResponseMapper.class);
 	}
@@ -582,8 +587,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 			List<String> tags, String content) {
 
 		HtmlReformatter reformatter = new HtmlReformatter(width);
-		content = reformatter.reformat(content);
-		GWT.log(content);
+		content = "<html>" + reformatter.reformat(content) + "</html>";
 
 		CompletableFuture<String> future = new CompletableFuture<String>();
 
@@ -607,7 +611,6 @@ public class AppControllerModelImpl implements AppControllerModel {
 		commentData.put("body", new JSONString(content));
 
 		JSONObject commentJsonMetadata = new JSONObject();
-		commentJsonMetadata.put("app", new JSONString(DpornConsts.APP_ID_VERSION));
 		JSONArray jsonTagsArray = new JSONArray();
 		for (String tag : tags) {
 			jsonTagsArray.set(jsonTagsArray.size(), new JSONString(tag));
@@ -625,7 +628,61 @@ public class AppControllerModelImpl implements AppControllerModel {
 				}
 			}
 		}
+		JSONArray linksArray = new JSONArray();
+		if (content.toLowerCase().contains("<a")) {
+			JQueryElement anchors = JQuery.$(content).find("a");
+			if (anchors != null) {
+				// use non-async code!
+				for (int ix = 0; ix < anchors.length(); ix++) {
+					HTMLAnchorElement anchor = Js.cast(anchors.get(ix));
+					String href = anchor.href;
+					if (href != null && !href.isEmpty() && !href.startsWith("#")) {
+						jsonImageArray.set(linksArray.size(), new JSONString(href));
+					}
+				}
+			}
+		}
+		JSONArray userArray = new JSONArray();
+		if (content.contains("@")) {
+			Set<String> usernames = new TreeSet<>();
+			JQueryElement textNodes = JQuery.$(content).contents().filter((i, e) -> e.getNodeType() == Node.TEXT_NODE);
+			for (int ix = 0; ix < textNodes.length(); ix++) {
+				String text = textNodes.get(ix).getInnerText();
+				if (text == null) {
+					continue;
+				}
+				if (!text.contains("@")) {
+					continue;
+				}
+				text = text.toLowerCase();
+				if (!text.matches(".*?" + USERNAME_PATTERN + ".*?")) {
+					continue;
+				}
+				text = text.replaceAll(USERNAME_PATTERN, "\n$1\n");
+				String[] tmp = text.split("\n");
+				if (tmp == null) {
+					continue;
+				}
+				for (String user: tmp) {
+					if (!user.startsWith("@")) {
+						continue;
+					}
+					if (!user.matches("^"+USERNAME_PATTERN+"$")) {
+						continue;
+					}
+					usernames.add(user);
+				}
+			}
+			for (String user: usernames) {
+				userArray.set(userArray.size(), new JSONString(user.substring(1)));
+			}
+		}
+		commentJsonMetadata.put("app", new JSONString(DpornConsts.APP_ID_VERSION));
 		commentJsonMetadata.put("image", jsonImageArray);
+		commentJsonMetadata.put("community", new JSONString("dporn"));
+		commentJsonMetadata.put("format", new JSONString("text/html"));
+		commentJsonMetadata.put("users", userArray);
+		commentJsonMetadata.put("links", linksArray);
 		commentJsonMetadata.put("canonical", new JSONString("https://dporn.co" + Routes.post(username, permlink)));
 
 		JSONObject dpornMetadata = new JSONObject();
@@ -672,11 +729,11 @@ public class AppControllerModelImpl implements AppControllerModel {
 		extensionBeneficiaries.set(1, beneficiariesData);
 
 		sc2api.broadcast(comment, commentOptions).thenAccept(result -> {
-			String pnewToken = "@"+username+"/"+permlink;
+			String pnewToken = "@" + username + "/" + permlink;
 			String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
-			ClientRestClient.get().commentConfirm(username, authorization, permlink).thenRun(()->{
+			ClientRestClient.get().commentConfirm(username, authorization, permlink).thenRun(() -> {
 				PushStateHistorian.replaceItem(pnewToken, true);
-			}).exceptionally(ex->{
+			}).exceptionally(ex -> {
 				PushStateHistorian.replaceItem(pnewToken, true);
 				return null;
 			});
