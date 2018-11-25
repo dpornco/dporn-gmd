@@ -108,10 +108,10 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 			int[] showDelay = { 0 };
 			Map<String, AccountInfo> infoMap = l.getInfoMap();
 			l.getPosts().forEach(p -> {
-				if (p.getId().get$oid().equals(lastRecentId)) {
+				if (p.getId().getOid().equals(lastRecentId)) {
 					return;
 				}
-				lastRecentId = p.getId().get$oid();
+				lastRecentId = p.getId().getOid();
 				deferred(() -> {
 					AccountInfo i = infoMap.get(p.getUsername());
 					if (i == null) {

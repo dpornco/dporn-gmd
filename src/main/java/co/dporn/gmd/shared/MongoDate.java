@@ -2,21 +2,25 @@ package co.dporn.gmd.shared;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class MongoDate {
-	private Date $date;
+	private Date date;
 
 	public MongoDate() {
 	}
 
 	public MongoDate(Date date) {
-		this.$date = date;
+		this.date = date;
 	}
 
-	public Date get$date() {
-		return $date;
+	@JsonProperty("$date")
+	public Date getDate() {
+		return date;
 	}
 
-	public void set$date(Date $date) {
-		this.$date = $date;
+	@JsonProperty("$date")
+	public void setDate(Date $date) {
+		this.date = $date;
 	}
 }

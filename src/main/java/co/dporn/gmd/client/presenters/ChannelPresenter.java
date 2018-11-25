@@ -70,10 +70,10 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 			int[] showDelay = { 0 };
 			Map<String, AccountInfo> infoMap = l.getInfoMap();
 			l.getPosts().forEach(p -> {
-				if (p.getId().get$oid().equals(lastRecentId)) {
+				if (p.getId().getOid().equals(lastRecentId)) {
 					return;
 				}
-				lastRecentId = p.getId().get$oid();
+				lastRecentId = p.getId().getOid();
 				deferred(() -> {
 					String entryUsername = p.getUsername();
 					AccountInfo i = infoMap.get(entryUsername);
