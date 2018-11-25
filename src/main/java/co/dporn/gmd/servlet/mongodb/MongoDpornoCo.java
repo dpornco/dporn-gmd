@@ -18,10 +18,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+import org.owasp.html.CssSchema;
+import org.owasp.html.HtmlPolicyBuilder;
+import org.owasp.html.PolicyFactory;
+import org.owasp.html.Sanitizers;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.common.collect.ImmutableSet;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
@@ -88,7 +93,7 @@ public class MongoDpornoCo {
 			while (find.hasNext()) {
 				Document item = find.next();
 				try {
-					list.add(deserializeAndSanitizeEntry(item));
+					list.add(deserializeAndSanitizeContent(item));
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -99,10 +104,50 @@ public class MongoDpornoCo {
 		return list;
 	}
 
-	private static BlogEntry deserializeAndSanitizeEntry(Document item)
+	private static final ImmutableSet<String> WHITELIST = ImmutableSet.of("float", "clear", "-moz-border-radius",
+			"-moz-border-radius-bottomleft", "-moz-border-radius-bottomright", "-moz-border-radius-topleft",
+			"-moz-border-radius-topright", "-moz-box-shadow", "-moz-outline", "-moz-outline-color",
+			"-moz-outline-style", "-moz-outline-width", "-o-text-overflow", "-webkit-border-bottom-left-radius",
+			"-webkit-border-bottom-right-radius", "-webkit-border-radius", "-webkit-border-radius-bottom-left",
+			"-webkit-border-radius-bottom-right", "-webkit-border-radius-top-left", "-webkit-border-radius-top-right",
+			"-webkit-border-top-left-radius", "-webkit-border-top-right-radius", "-webkit-box-shadow", "azimuth",
+			"background", "background-attachment", "background-color", "background-image", "background-position",
+			"background-repeat", "border", "border-bottom", "border-bottom-color", "border-bottom-left-radius",
+			"border-bottom-right-radius", "border-bottom-style", "border-bottom-width", "border-collapse",
+			"border-color", "border-left", "border-left-color", "border-left-style", "border-left-width",
+			"border-radius", "border-right", "border-right-color", "border-right-style", "border-right-width",
+			"border-spacing", "border-style", "border-top", "border-top-color", "border-top-left-radius",
+			"border-top-right-radius", "border-top-style", "border-top-width", "border-width", "box-shadow",
+			"caption-side", "color", "cue", "cue-after", "cue-before", "direction", "elevation", "empty-cells", "font",
+			"font-family", "font-size", "font-stretch", "font-style", "font-variant", "font-weight", "height",
+			"image()", "letter-spacing", "line-height", "linear-gradient()", "list-style", "list-style-image",
+			"list-style-position", "list-style-type", "margin", "margin-bottom", "margin-left", "margin-right",
+			"margin-top", "max-height", "max-width", "min-height", "min-width", "outline", "outline-color",
+			"outline-style", "outline-width", "padding", "padding-bottom", "padding-left", "padding-right",
+			"padding-top", "pause", "pause-after", "pause-before", "pitch", "pitch-range", "quotes",
+			"radial-gradient()", "rect()", "repeating-linear-gradient()", "repeating-radial-gradient()", "rgb()",
+			"rgba()", "richness", "speak", "speak-header", "speak-numeral", "speak-punctuation", "speech-rate",
+			"stress", "table-layout", "text-align", "text-decoration", "text-indent", "text-overflow", "text-shadow",
+			"text-transform", "text-wrap", "unicode-bidi", "vertical-align", "voice-family", "volume", "white-space",
+			"width", "word-spacing", "word-wrap");
+
+	private static CssSchema dpornAllowedStyles() {
+		return CssSchema.withProperties(WHITELIST);
+	}
+
+	private static final PolicyFactory STYLES = new HtmlPolicyBuilder().allowStyling(dpornAllowedStyles()).toFactory();
+
+	private static PolicyFactory policy = Sanitizers.BLOCKS//
+			.and(Sanitizers.FORMATTING)//
+			.and(Sanitizers.IMAGES)//
+			.and(Sanitizers.LINKS)//
+			.and(MongoDpornoCo.STYLES)//
+			.and(Sanitizers.TABLES);
+
+	private static BlogEntry deserializeAndSanitizeContent(Document item)
 			throws IOException, JsonParseException, JsonMappingException {
 		BlogEntry entry = MongoJsonMapper.get().readValue(item.toJson(), BlogEntry.class);
-
+		entry.setContent(policy.sanitize(entry.getContent()));
 		return entry;
 	}
 
@@ -152,7 +197,7 @@ public class MongoDpornoCo {
 					return new BlogEntry();
 				}
 				try {
-					BlogEntry entry = deserializeAndSanitizeEntry(item);
+					BlogEntry entry = deserializeAndSanitizeContent(item);
 					ENTRY_CACHE.put(key, entry);
 					return entry;
 				} catch (IOException e) {
@@ -286,7 +331,7 @@ public class MongoDpornoCo {
 			while (find.hasNext()) {
 				Document item = find.next();
 				try {
-					BlogEntry entry = deserializeAndSanitizeEntry(item);
+					BlogEntry entry = deserializeAndSanitizeContent(item);
 					list.add(entry);
 				} catch (IOException e) {
 					e.printStackTrace();

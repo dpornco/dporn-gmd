@@ -108,6 +108,9 @@ dependencies {
 	compile 'org.glassfish.jersey.inject:jersey-hk2:2.27'
 	compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.9.6'
 	
+	//sanitizer
+	compile 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20180219.1'
+	
 	compile 'com.github.muksihs.steem-java-api-wrapper:steemj-core:d9f07155e7'
     //compile 'com.github.tommyettinger:RegExodus:v0.1.10' //not used
     compile 'org.mongodb:mongodb-driver-sync:3.9.0'
