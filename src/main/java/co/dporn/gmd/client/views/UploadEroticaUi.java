@@ -150,11 +150,9 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 	private final Set<String> mandatorySuggestions;
 
 	private UploadErotica presenter;
-	private final SuggestOracle suggestOracle;
 
 	public UploadEroticaUi(SuggestOracle suggestOracle, Set<String> mandatorySuggestions) {
 		initWidget(uiBinder.createAndBindUi(this));
-		this.suggestOracle = suggestOracle;
 		this.mandatorySuggestions = mandatorySuggestions;
 
 		imgUtils.setEventMessageHandler((msg) -> MaterialToast.fireToast(msg));
