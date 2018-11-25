@@ -6,11 +6,13 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
@@ -174,6 +176,35 @@ public class MongoDpornoCo {
 		} finally {
 			client.close();
 			System.out.println("getPost: " + authorname + ", " + permlink);
+		}
+	}
+	
+	private static Map<String, BlogEntry> ENTRY_CACHE = new LRUMap<>(128);
+	public static BlogEntry getEntry(String authorname, String permlink) {
+		String key = authorname+"|"+permlink;
+		BlogEntry cached = ENTRY_CACHE.get(key);
+		if (cached!=null) {
+			return cached;
+		}
+		synchronized (ENTRY_CACHE) {
+			try (MongoClient client = MongoClients.create()) {
+				MongoDatabase db = client.getDatabase("dpdb");
+				MongoCollection<Document> collection = db.getCollection(TABLE_BLOG_ENTRIES_V2);
+				Document item = collection
+						.find(Filters.and(Filters.eq("username", authorname), Filters.eq("permlink", permlink))).first();
+				if (item == null || item.isEmpty()) {
+					return new BlogEntry();
+				}
+				try {
+					BlogEntry entry = MongoJsonMapper.get().readValue(item.toJson(), BlogEntry.class);
+					ENTRY_CACHE.put(key, entry);
+					return entry;
+				} catch (IOException e) {
+				}
+			} finally {
+				System.out.println("getEntry: " + authorname + ", " + permlink);
+			}
+			return new BlogEntry();
 		}
 	}
 

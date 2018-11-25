@@ -65,7 +65,6 @@ public class DpornCoEmbed {
 		long ifModifiedSince = request.getDateHeader("If-Modified-Since");
 		if (ifModifiedSince >= LAST_MODIFIED) {
 			response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-			System.out.print("CLIENT CACHED IFRAME: " + key);
 			return Response.notModified().build();
 		}
 		return Response.ok().build();
