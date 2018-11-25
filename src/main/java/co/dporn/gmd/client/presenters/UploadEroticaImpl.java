@@ -45,42 +45,12 @@ public class UploadEroticaImpl implements UploadErotica {
 	}
 
 	@Override
-	public void selectStockCoverImage(String coverImage) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void showAvailableStockCoverImages() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void submit() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void cancel() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
 	public void reset() {
 		view.setBody(null);
 		view.setCoverImage(null);
 		view.setNoCoverWanted(false);
 		view.setTags(null);
 		view.setTitle(null);
-	}
-
-	@Override
-	public void showPreviousTags() {
-		// TODO Auto-generated method stub
-
 	}
 
 	private int posX = 0;

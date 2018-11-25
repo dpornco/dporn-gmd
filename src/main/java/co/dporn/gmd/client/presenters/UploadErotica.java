@@ -28,12 +28,7 @@ public interface UploadErotica extends IsChildPresenter<UploadEroticaView>, Sche
 		void setErrorBadTags();
 		void reset();
 	}
-	void selectStockCoverImage(String coverImage);
-	void showAvailableStockCoverImages();
-	void submit();
-	void cancel();
 	void reset();
-	void showPreviousTags();
 	/**
 	 * Posts the binary blob to IPFS and returns with the IPFS folder wrap hash and filename.
 	 * @param blob
