@@ -73,6 +73,23 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 			return;
 		}
 		
+		//content creator controls display toggle
+		if (route.startsWith("@") && !route.contains("/")) {
+			deferred(() -> {
+				String channelUsername = route.substring(1);
+				if (username!=null && !username.trim().isEmpty()) {
+					GWT.log("Content Creator Roles Enable: "+channelUsername.equals(username));
+					view.enableContentCreatorRoles(channelUsername.equals(username));
+				} else {
+					view.enableContentCreatorRoles(false);
+					GWT.log("Content Creator Roles Enable: "+false);
+				}
+			});
+		} else {
+			view.enableContentCreatorRoles(false);
+			GWT.log("Content Creator Roles Enable: "+false);
+		}
+		
 		if (presenters.containsKey(route)) {
 			deferred(() -> {
 				if (activeChildPresenter != presenters.get(route)) {
@@ -103,7 +120,8 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 			if (route.startsWith("@") && !route.contains("/") && route.length()>1) {
 				GWT.log("Route: Channel");
 				deferred(() -> {
-					ChannelPresenter childPresenter = new ChannelPresenter(route.substring(1), model, new ChannelUi());
+					String channelUsername = route.substring(1);
+					ChannelPresenter childPresenter = new ChannelPresenter(channelUsername, model, new ChannelUi());
 					presenters.put(route, childPresenter);
 					activeChildPresenter = childPresenter;
 					view.setChildPresenter(childPresenter);
@@ -218,17 +236,19 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 		this.model.setRoutePresenter(this);
 	}
 
+	private String username;
 	@Override
 	public void setUserInfo(ActiveUserInfo info) {
 		if (info==null) {
 			GWT.log("setUserInfo: not logged in");
+			username="";
 			view.setAvatar(Routes.avatarImageNotLoggedIn());
 			view.setDisplayname("Not Logged In");
 			view.setUsername(null);
 			view.enableContentCreatorRoles(false);
 			return;
 		}
-		String username = info.getUsername();
+		username = info.getUsername();
 		String displayname = info.getDisplayname();
 		if (displayname==null||displayname.trim().isEmpty()) {
 			displayname=username;
@@ -237,7 +257,6 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 		view.setAvatar(Routes.avatarImage(username));
 		view.setDisplayname(displayname);
 		view.setUsername(username);
-		view.enableContentCreatorRoles(true);
 		String hostName = Location.getHostName();
 		if (hostName.startsWith("localhost") || hostName.startsWith("dev")) {
 			view.enableUnimplementedFeatures(true);
