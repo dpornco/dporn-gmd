@@ -72,6 +72,9 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 			e.preventDefault();
 			new PushStateHistorian().newItem("/", true);
 		});
+		linkMyChannel.setVisible(false);
+		linkMyChannel.setEnabled(false);
+		enableContentCreatorRoles(false);
 	}
 
 	@Override
