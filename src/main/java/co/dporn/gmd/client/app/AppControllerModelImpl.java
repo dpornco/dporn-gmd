@@ -114,7 +114,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 	@Override
 	public CompletableFuture<PostListResponse> featuredPosts(int count) {
 		CompletableFuture<PostListResponse> finalFuture = new CompletableFuture<>();
-		listPosts(FEATURED_POST_POOL_MULTIPLIER_SIZE * count).thenAccept((response) -> {
+		listPosts(BlogEntryType.VIDEO, FEATURED_POST_POOL_MULTIPLIER_SIZE * count).thenAccept((response) -> {
 			List<CompletableFuture<List<Vote>>> voteFutures = new ArrayList<>();
 			List<BlogEntry> list = new ArrayList<>();
 			double mul = 1.0d;
@@ -227,16 +227,15 @@ public class AppControllerModelImpl implements AppControllerModel {
 		return ClientRestClient.get().listFeatured();
 	}
 
-	@Override
-	public CompletableFuture<PostListResponse> listPosts(int count) {
-		GWT.log("listPosts: [" + count + "]");
-		return ClientRestClient.get().posts(count);
-	}
+//	@Override
+//	public CompletableFuture<PostListResponse> listPosts(int count) {
+//		return listPosts(BlogEntryType.ANY, count);
+//	}
 
 	@Override
-	public CompletableFuture<PostListResponse> listPosts(String startId, int count) {
+	public CompletableFuture<PostListResponse> listPosts(BlogEntryType entryType, String startId, int count) {
 		GWT.log("listPosts: " + startId + " [" + count + "]");
-		return ClientRestClient.get().posts(startId == null ? "" : startId, count);
+		return ClientRestClient.get().posts(entryType, startId == null ? "" : startId, count);
 	}
 
 	@Override
@@ -775,4 +774,9 @@ public class AppControllerModelImpl implements AppControllerModel {
 		return future;
 	}
 
+	@Override
+	public CompletableFuture<PostListResponse> listPosts(BlogEntryType entryType, int count) {
+		GWT.log("listPosts: [" + count + "]");
+		return ClientRestClient.get().posts(entryType, count);
+	}
 }

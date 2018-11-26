@@ -14,6 +14,7 @@ import com.google.gwt.http.client.URL;
 
 import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.BlogEntryResponse;
+import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.CommentConfirmResponse;
 import co.dporn.gmd.shared.DpornCoApi;
 import co.dporn.gmd.shared.PingResponse;
@@ -100,17 +101,17 @@ public class ClientRestClient {
 		return callback.getFuture();
 	}
 
-	public CompletableFuture<PostListResponse> posts(int count) {
+	public CompletableFuture<PostListResponse> posts(BlogEntryType entryType, int count) {
 		GWT.log("-> most recent posts");
 		MethodCallbackAsFuture<PostListResponse> callback = new MethodCallbackAsFuture<>();
-		call(callback).posts(count);
+		call(callback).posts(entryType, count);
 		return callback.getFuture();
 	}
 
-	public CompletableFuture<PostListResponse> posts(String startId, int count) {
-		GWT.log("-> posts starting at");
+	public CompletableFuture<PostListResponse> posts(BlogEntryType entryType, String startId, int count) {
+		GWT.log("-> posts starting at: "+startId);
 		MethodCallbackAsFuture<PostListResponse> callback = new MethodCallbackAsFuture<>();
-		call(callback).posts(startId, count);
+		call(callback).posts(entryType, startId, count);
 		return callback.getFuture();
 	}
 
