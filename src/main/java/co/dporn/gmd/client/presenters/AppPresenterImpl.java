@@ -80,13 +80,16 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 				if (username!=null && !username.trim().isEmpty()) {
 					GWT.log("Content Creator Roles Enable: "+channelUsername.equals(username));
 					view.enableContentCreatorRoles(channelUsername.equals(username));
+					disableUnimplementedFeatures();
 				} else {
 					view.enableContentCreatorRoles(false);
+					disableUnimplementedFeatures();
 					GWT.log("Content Creator Roles Enable: "+false);
 				}
 			});
 		} else {
 			view.enableContentCreatorRoles(false);
+			disableUnimplementedFeatures();
 			GWT.log("Content Creator Roles Enable: "+false);
 		}
 		
@@ -201,6 +204,10 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 		setRootDisplay(rootDisplay);
 		setModel(model);
 		setView(appLayoutView);
+		disableUnimplementedFeatures();
+	}
+
+	private void disableUnimplementedFeatures() {
 		String hostName = Location.getHostName();
 		if (hostName.startsWith("localhost") || hostName.startsWith("dev")) {
 			view.enableUnimplementedFeatures(true);
@@ -257,12 +264,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 		view.setAvatar(Routes.avatarImage(username));
 		view.setDisplayname(displayname);
 		view.setUsername(username);
-		String hostName = Location.getHostName();
-		if (hostName.startsWith("localhost") || hostName.startsWith("dev")) {
-			view.enableUnimplementedFeatures(true);
-		} else {
-			view.enableUnimplementedFeatures(false);
-		}
+		disableUnimplementedFeatures();
 	}
 
 	private int posX = 0;
