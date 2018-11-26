@@ -150,7 +150,11 @@ public class DpornCoApiImpl implements DpornCoApi {
 			response.setInfoMap(new HashMap<>());
 			return response;
 		}
-		response.setInfoMap(SteemJInstance.get().getBlogDetails(Arrays.asList(username)));
+		try {
+			response.setInfoMap(SteemJInstance.get().getBlogDetails(Arrays.asList(username)));
+		} catch (Exception e) {
+			return response;
+		}
 		response.setAuthors(new ArrayList<>(response.getInfoMap().keySet()));
 		return response;
 	}

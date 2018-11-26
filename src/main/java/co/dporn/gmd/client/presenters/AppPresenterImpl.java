@@ -30,6 +30,7 @@ import co.dporn.gmd.shared.DpornConsts;
 public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePresenter {
 	private AppLayoutView view;
 	private HasWidgets rootDisplay;
+
 	public void setRootDisplay(HasWidgets rootDisplay) {
 		this.rootDisplay = rootDisplay;
 	}
@@ -38,7 +39,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 
 	public AppPresenterImpl() {
 	}
-	
+
 	@Override
 	public void account() {
 		if (model.isLoggedIn()) {
@@ -50,29 +51,35 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 
 	private final Map<String, IsChildPresenter<? extends IsView<?>>> presenters = new HashMap<>();
 	private IsChildPresenter<? extends IsView<?>> activeChildPresenter;
-	private SuggestOracle tagOracle=new SuggestOracle() {
+	private SuggestOracle tagOracle = new SuggestOracle() {
 		@Override
 		public void requestSuggestions(Request request, Callback callback) {
 			CompletableFuture<List<String>> ftags = model.tagsOracle(request.getQuery(), request.getLimit());
-			ftags.thenAccept(tags->{
-				List<TagSuggestion> suggestions=new ArrayList<>();
-				for (String tag: tags) {
+			ftags.thenAccept(tags -> {
+				List<TagSuggestion> suggestions = new ArrayList<>();
+				for (String tag : tags) {
 					suggestions.add(new TagSuggestion(tag));
 				}
-				Response response=new Response(suggestions);
+				Response response = new Response(suggestions);
 				callback.onSuggestionsReady(request, response);
 			});
 		}
 	};
 
+	private String route = "";
+
 	@Override
 	public void loadRoutePresenter(String route) {
+		this.route = route;
 		GWT.log("=== routeEvent: " + route);
-		//auth is a special non-display route
+		// auth is a special non-display route
 		if (route.startsWith("auth/")) {
 			return;
 		}
-		
+
+		// content creator controls display toggle
+		toggleMyChannelLinks(route);
+
 		if (presenters.containsKey(route)) {
 			deferred(() -> {
 				if (activeChildPresenter != presenters.get(route)) {
@@ -82,7 +89,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 					activeChildPresenter = presenters.get(route);
 					view.setChildPresenter(presenters.get(route));
 					deferred(() -> activeChildPresenter.restoreScrollPosition());
-				} 
+				}
 			});
 		} else {
 			if (activeChildPresenter != null) {
@@ -100,10 +107,11 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 				});
 				return;
 			}
-			if (route.startsWith("@") && !route.contains("/") && route.length()>1) {
+			if (route.startsWith("@") && !route.contains("/") && route.length() > 1) {
 				GWT.log("Route: Channel");
 				deferred(() -> {
-					ChannelPresenter childPresenter = new ChannelPresenter(route.substring(1), model, new ChannelUi());
+					String channelUsername = route.substring(1);
+					ChannelPresenter childPresenter = new ChannelPresenter(channelUsername, model, new ChannelUi());
 					presenters.put(route, childPresenter);
 					activeChildPresenter = childPresenter;
 					view.setChildPresenter(childPresenter);
@@ -118,13 +126,14 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 			}
 			if (route.startsWith("@") && route.contains("/")) {
 				GWT.log("Route: Display Post");
-				//DisplayBlogPostPresenter
+				// DisplayBlogPostPresenter
 				deferred(() -> {
 					String username = StringUtils.substringBefore(route, "/").substring(1);
 					String permlink = StringUtils.substringAfter(route, "/");
-					GWT.log(" - username: "+username);
-					GWT.log(" - permlink: "+permlink);
-					DisplayBlogPostPresenter childPresenter = new DisplayBlogPostPresenterImpl(username, permlink, model, new DisplayBlogPostUi());
+					GWT.log(" - username: " + username);
+					GWT.log(" - permlink: " + permlink);
+					DisplayBlogPostPresenter childPresenter = new DisplayBlogPostPresenterImpl(username, permlink,
+							model, new DisplayBlogPostUi());
 					GWT.log("presenters.put(route, childPresenter);");
 					presenters.put(route, childPresenter);
 					GWT.log("activeChildPresenter = childPresenter;");
@@ -153,7 +162,8 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 			if (route.equals("upload/erotica")) {
 				GWT.log("Upload: Erotica");
 				deferred(() -> {
-					UploadEroticaView childView=new UploadEroticaUi(tagOracle,new TreeSet<>(DpornConsts.MANDATORY_EROTICA_TAGS));
+					UploadEroticaView childView = new UploadEroticaUi(tagOracle,
+							new TreeSet<>(DpornConsts.MANDATORY_EROTICA_TAGS));
 					UploadErotica childPresenter = new UploadEroticaImpl(model, childView);
 					presenters.put(route, childPresenter);
 					GWT.log("activeChildPresenter = childPresenter;");
@@ -174,15 +184,39 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 		}
 	}
 
+	private void toggleMyChannelLinks(String route) {
+		deferred(() -> {
+			if (route.startsWith("@") && !route.contains("/")) {
+				String channelUsername = route.substring(1);
+				if (username != null && !username.trim().isEmpty()) {
+					GWT.log("Content Creator Roles Enable: " + channelUsername.equals(username));
+					view.enableContentCreatorRoles(channelUsername.equals(username));
+					disableUnimplementedFeatures();
+				} else {
+					view.enableContentCreatorRoles(false);
+					disableUnimplementedFeatures();
+					GWT.log("Content Creator Roles Enable: " + false);
+				}
+			} else {
+				view.enableContentCreatorRoles(false);
+				disableUnimplementedFeatures();
+				GWT.log("Content Creator Roles Enable: " + false);
+			}
+		});
+	}
+
 	private void resetScrollPosition() {
 		Window.scrollTo(0, 0);
 	}
 
-	public AppPresenterImpl(AppControllerModel model, HasWidgets rootDisplay,
-			AppLayoutView appLayoutView) {
+	public AppPresenterImpl(AppControllerModel model, HasWidgets rootDisplay, AppLayoutView appLayoutView) {
 		setRootDisplay(rootDisplay);
 		setModel(model);
 		setView(appLayoutView);
+		disableUnimplementedFeatures();
+	}
+
+	private void disableUnimplementedFeatures() {
 		String hostName = Location.getHostName();
 		if (hostName.startsWith("localhost") || hostName.startsWith("dev")) {
 			view.enableUnimplementedFeatures(true);
@@ -190,7 +224,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 			view.enableUnimplementedFeatures(false);
 		}
 	}
-	
+
 	@Override
 	public void setView(AppLayoutView view) {
 		this.view = view;
@@ -218,28 +252,29 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 		this.model.setRoutePresenter(this);
 	}
 
+	private String username;
+
 	@Override
 	public void setUserInfo(ActiveUserInfo info) {
-		if (info==null) {
+		if (info == null) {
 			GWT.log("setUserInfo: not logged in");
+			username = "";
 			view.setAvatar(Routes.avatarImageNotLoggedIn());
 			view.setDisplayname("Not Logged In");
 			view.setUsername(null);
 			view.enableContentCreatorRoles(false);
 			return;
 		}
-		GWT.log("setUserInfo: "+info.getUsername()+" => "+info.getDisplayname());
-		view.setAvatar(Routes.avatarImage(info.getUsername()));
-		view.setDisplayname(info.getDisplayname());
-		//TODO: FUTURE: view.setUsername("@"+info.getUsername());
-		view.setUsername("Logout");
-		view.enableContentCreatorRoles(true);
-		String hostName = Location.getHostName();
-		if (hostName.startsWith("localhost") || hostName.startsWith("dev")) {
-			view.enableUnimplementedFeatures(true);
-		} else {
-			view.enableUnimplementedFeatures(false);
+		username = info.getUsername();
+		String displayname = info.getDisplayname();
+		if (displayname == null || displayname.trim().isEmpty()) {
+			displayname = username;
 		}
+		GWT.log("setUserInfo: " + username + " => " + displayname);
+		view.setAvatar(Routes.avatarImage(username));
+		view.setDisplayname(displayname);
+		view.setUsername(username);
+		toggleMyChannelLinks(route);
 	}
 
 	private int posX = 0;
