@@ -32,6 +32,7 @@ import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.BlogEntry;
 import co.dporn.gmd.shared.BlogEntryResponse;
+import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.CommentConfirmResponse;
 import co.dporn.gmd.shared.DpornCoApi;
 import co.dporn.gmd.shared.IpfsHashResponse;
@@ -59,14 +60,14 @@ public class DpornCoApiImpl implements DpornCoApi {
 	}
 
 	@Override
-	public PostListResponse posts(String startId, int count) {
+	public PostListResponse posts(BlogEntryType entryType, String startId, int count) {
 		if (count < 1) {
 			count = 1;
 		}
 		if (count > 50) {
 			count = 50;
 		}
-		List<BlogEntry> posts = MongoDpornCo.listEntries(startId, count);
+		List<BlogEntry> posts = MongoDpornCo.listEntries(entryType, startId, count);
 		Set<String> accountNameList = new HashSet<>();
 		Set<String> blacklist = new HashSet<>(SteemJInstance.get().getBlacklist());
 		posts.forEach(p -> {
@@ -88,8 +89,8 @@ public class DpornCoApiImpl implements DpornCoApi {
 	}
 
 	@Override
-	public PostListResponse posts(int count) {
-		return posts("", count);
+	public PostListResponse posts(BlogEntryType entryType, int count) {
+		return posts(entryType, "", count);
 	}
 
 	@Override

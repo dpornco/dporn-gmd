@@ -37,6 +37,7 @@ import com.mongodb.client.model.Sorts;
 
 import co.dporn.gmd.servlet.utils.Mapper;
 import co.dporn.gmd.shared.BlogEntry;
+import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.MongoDate;
 import co.dporn.gmd.shared.MongoId;
 
@@ -68,7 +69,7 @@ public class MongoDpornCo {
 		mongoLogger.setLevel(Level.WARNING);
 	}
 
-	protected static synchronized List<BlogEntry> _listEntries(String startId, int count) {
+	protected static synchronized List<BlogEntry> _listEntries(BlogEntryType entryType, String startId, int count) {
 		migrationCheck();
 		if (count < 1) {
 			count = 1;
@@ -81,8 +82,15 @@ public class MongoDpornCo {
 			MongoDatabase db = client.getDatabase("dpdb");
 			MongoCollection<Document> collection = db.getCollection(TABLE_BLOG_ENTRIES_V2);
 			MongoCursor<Document> find;
+			List<Bson> andFilters = new ArrayList<>();
+			if (entryType!=null && entryType!=BlogEntryType.ANY) {
+				andFilters.add(Filters.eq("entryType", entryType.name()));
+			}
 			if (startId != null && !startId.trim().isEmpty()) {
-				find = collection.find(Filters.lte("_id", new ObjectId(startId)))//
+				andFilters.add(Filters.lte("_id", new ObjectId(startId)));
+			}
+			if (!andFilters.isEmpty()) {
+				find = collection.find(Filters.and(andFilters.toArray(new Bson[0])))//
 						.sort(Sorts.descending("_id"))//
 						.limit(count).iterator();
 			} else {
@@ -234,7 +242,7 @@ public class MongoDpornCo {
 
 	private static synchronized void initCachedTags() {
 		CACHED_TAGS.clear();
-		_listEntries("", 250).forEach(p -> {
+		_listEntries(BlogEntryType.ANY, "", 250).forEach(p -> {
 			CACHED_TAGS.addAll(p.getCommunityTags());
 		});
 		CACHED_TAGS.removeAll(Arrays.asList(NO_TAG_SUGGEST));
@@ -293,14 +301,14 @@ public class MongoDpornCo {
 		return true;
 	}
 
-	public static synchronized List<BlogEntry> listEntries(String startId, int count) {
+	public static synchronized List<BlogEntry> listEntries(BlogEntryType entryType, String startId, int count) {
 		if (count < 1) {
 			count = 1;
 		}
 		if (count > 50) {
 			count = 50;
 		}
-		return _listEntries(startId, count);
+		return _listEntries(entryType, startId, count);
 	}
 
 	public static synchronized List<BlogEntry> listEntriesFor(String username, String startId, int count) {

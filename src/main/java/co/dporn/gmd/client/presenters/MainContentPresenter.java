@@ -106,10 +106,10 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 		Timer[] timer = { null };
 		CompletableFuture<PostListResponse> listPosts;
 		if (lastRecentId == null) {
-			listPosts = model.listPosts(count);
+			listPosts = model.listPosts(BlogEntryType.VIDEO, count);
 			getContentView().getRecentPosts().clear();
 		} else {
-			listPosts = model.listPosts(lastRecentId, count+1);
+			listPosts = model.listPosts(BlogEntryType.VIDEO, lastRecentId, count+1);
 		}
 		listPosts.thenAccept((l) -> {
 			GWT.log("Recent posts: " + l.getPosts().size());
@@ -127,7 +127,7 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 				}
 				newLastRecentId = next.getId().getOid();
 				if (BlogEntryType.VIDEO != next.getEntryType()) {
-					GWT.log("SKIPPING RECENT POST: "+next.getUsername()+" | "+next.getPermlink());
+					GWT.log("SKIPPING RECENT POST: "+next.getUsername()+" | "+next.getPermlink()+" | "+next.getEntryType());
 					ilist.remove();
 					continue;
 				}

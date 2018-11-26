@@ -61,13 +61,14 @@ public interface DpornCoApi {
 	@GET
 	PostListResponse postsFor(@PathParam("username") String username, @PathParam("count") int count);
 
-	@Path("blog/entries/{startId}/{count}")
+	@Path("blog/entries/{entryType}/{startId}/{count}")
 	@GET
-	PostListResponse posts(@PathParam("startId") String startId, @PathParam("count") int count);
+	PostListResponse posts(@PathParam("entryType") BlogEntryType entryType, @PathParam("startId") String startId,
+			@PathParam("count") int count);
 
-	@Path("blog/entries/{count}")
+	@Path("blog/entries/{entryType}/{count}")
 	@GET
-	PostListResponse posts(@PathParam("count") int count);
+	PostListResponse posts(@PathParam("entryType") BlogEntryType entryType, @PathParam("count") int count);
 
 	@Path("blog/entries/recent")
 	@GET
