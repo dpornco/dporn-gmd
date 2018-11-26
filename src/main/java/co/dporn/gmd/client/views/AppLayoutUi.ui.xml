@@ -35,6 +35,8 @@
 			m:id="sidenav" width="250" withHeader="true" top="70">
 			<d:DpornLink ui:field="linkHome" text="Home"
 				iconType="HOME" href="/" />
+			<d:DpornLink ui:field="linkMyChannel" text="My Channel"
+				iconType="ACCOUNT_BOX" href="/" />
 			<d:DpornLink ui:field="linkSearch" text="Search"
 				iconType="SEARCH" href="/search" />
 			<d:DpornLink ui:field="linkVerified" href="/verified"

@@ -1,5 +1,7 @@
 package co.dporn.gmd.client.presenters;
 
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -134,7 +136,20 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 	public void execute() {
 		GWT.log(this.getClass().getSimpleName() + "#execute");
 		loadPostsFor();
-		model.blogInfo(username).thenAccept(this::setupHeader);
+		model.blogInfo(username).thenAccept(this::setupHeader).exceptionally(ex->{
+			ActiveBlogsResponse response = new ActiveBlogsResponse();
+			response.setAuthors(Arrays.asList("User Not Found"));
+			Map<String, AccountInfo> infoMap=new HashMap<>();
+			AccountInfo accountInfo=new AccountInfo();
+			accountInfo.setAbout("User Not Found");
+			accountInfo.setCoverImage(null);
+			accountInfo.setDisplayName("This user does not exist");
+			accountInfo.setProfileImage(null);
+			infoMap.put("User Not Found", accountInfo);
+			response.setInfoMap(infoMap);
+			setupHeader(response);
+			return null;
+		});
 	}
 
 	void setupHeader(ActiveBlogsResponse infoMap) {

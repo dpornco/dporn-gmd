@@ -22,6 +22,9 @@ import gwt.material.design.client.ui.MaterialToast;
 public class AppLayoutUi extends Composite implements AppLayoutView {
 
 	@UiField
+	protected MaterialLink linkMyChannel;
+	
+	@UiField
 	protected MaterialLink linkHome;
 	
 	@UiField
@@ -98,9 +101,14 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 	public void setUsername(String username) {
 		if (username==null||username.trim().isEmpty()) {
 			this.account.setText("Login");
+			linkMyChannel.setVisible(false);
+			linkMyChannel.setEnabled(false);
 			return;
 		}
-		this.account.setText(username);
+		this.account.setText("Logout");
+		linkMyChannel.setHref("/@"+username);
+		linkMyChannel.setVisible(true);
+		linkMyChannel.setEnabled(true);
 	}
 
 	@Override
@@ -115,10 +123,15 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 
 	@Override
 	public void enableContentCreatorRoles(boolean enabled) {
+		linkPostErotica.setVisible(enabled);
+		linkUploadPhotos.setVisible(enabled);
+		linkUploadVideo.setVisible(enabled);
+		linkSettings.setVisible(enabled);
+		
 		linkPostErotica.setEnabled(enabled);
 		linkUploadPhotos.setEnabled(enabled);
 		linkUploadVideo.setEnabled(enabled);
-		linkSettings.setEnabled(enabled);		
+		linkSettings.setEnabled(enabled);	
 	}
 
 	@Override

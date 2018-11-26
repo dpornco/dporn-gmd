@@ -228,11 +228,15 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 			view.enableContentCreatorRoles(false);
 			return;
 		}
-		GWT.log("setUserInfo: "+info.getUsername()+" => "+info.getDisplayname());
-		view.setAvatar(Routes.avatarImage(info.getUsername()));
-		view.setDisplayname(info.getDisplayname());
-		//TODO: FUTURE: view.setUsername("@"+info.getUsername());
-		view.setUsername("Logout");
+		String username = info.getUsername();
+		String displayname = info.getDisplayname();
+		if (displayname==null||displayname.trim().isEmpty()) {
+			displayname=username;
+		}
+		GWT.log("setUserInfo: "+username+" => "+displayname);
+		view.setAvatar(Routes.avatarImage(username));
+		view.setDisplayname(displayname);
+		view.setUsername(username);
 		view.enableContentCreatorRoles(true);
 		String hostName = Location.getHostName();
 		if (hostName.startsWith("localhost") || hostName.startsWith("dev")) {

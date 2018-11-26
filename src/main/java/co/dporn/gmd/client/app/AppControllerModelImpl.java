@@ -73,7 +73,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 	}
 
 	private static final int CHANNEL_POSTS_INITIAL_SIZE = 8;
-	private static final int FEATURED_POST_POOL_MULTIPLIER_SIZE = 6;
+	private static final int FEATURED_POST_POOL_MULTIPLIER_SIZE = 3;
 	private static final String STEEM_USERNAME_KEY = "steem-username";
 	private static final String STEEMCONNECT_KEY = "steemconnectv2";
 	private static final int TAGSETS_MAX_SIZE = 6;
