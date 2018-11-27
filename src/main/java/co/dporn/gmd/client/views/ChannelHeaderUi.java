@@ -148,4 +148,19 @@ public class ChannelHeaderUi extends Composite implements BlogCardView, BlogHead
 		steemitLink.setTarget("_blank");
 		steemitLink.setVisible(true);
 	}
+
+	@Override
+	public void setChannelLink(String linkUrl) {
+		//NOOP
+	}
+
+	@Override
+	public void setChannelLinkVisible(boolean visible) {
+		//NOOP
+	}
+
+	@Override
+	public void setViewLinkVisible(boolean visible) {
+		//NOOP		
+	}
 }

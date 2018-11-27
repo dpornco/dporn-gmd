@@ -14,7 +14,6 @@ import co.dporn.gmd.client.presenters.AppPresenter.IsChildPresenter;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialImage;
 import gwt.material.design.client.ui.MaterialLabel;
-import gwt.material.design.client.ui.MaterialLink;
 import gwt.material.design.client.ui.MaterialPanel;
 import gwt.material.design.client.ui.MaterialSideNavPush;
 import gwt.material.design.client.ui.MaterialToast;
@@ -22,16 +21,16 @@ import gwt.material.design.client.ui.MaterialToast;
 public class AppLayoutUi extends Composite implements AppLayoutView {
 
 	@UiField
-	protected MaterialLink linkMyChannel;
+	protected DpornLink linkMyChannel;
 	
 	@UiField
-	protected MaterialLink linkHome;
+	protected DpornLink linkHome;
 	
 	@UiField
-	protected MaterialLink linkSearch;
+	protected DpornLink linkSearch;
 	
 	@UiField
-	protected MaterialLink linkVerified;
+	protected DpornLink linkVerified;
 
 	@UiField
 	protected MaterialSideNavPush sidenav;
@@ -47,13 +46,13 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 	protected MaterialImage avatar;
 	
 	@UiField
-	protected MaterialLink linkPostErotica;
+	protected DpornLink linkPostErotica;
 	@UiField
-	protected MaterialLink linkUploadPhotos;
+	protected DpornLink linkUploadPhotos;
 	@UiField
-	protected MaterialLink linkUploadVideo;
+	protected DpornLink linkUploadVideo;
 	@UiField
-	protected MaterialLink linkSettings;
+	protected DpornLink linkSettings;
 
 	private IsView<?> container;
 
