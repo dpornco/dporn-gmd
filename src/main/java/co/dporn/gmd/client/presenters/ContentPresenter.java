@@ -42,12 +42,18 @@ public interface ContentPresenter extends IsChildPresenter<ContentView> {
 		void setAvatarUrl(String url);
 
 		void setDisplayName(String name);
+		
+		void setChannelLink(String linkUrl);
 
 		void setTitle(String title);
 
 		void setShowDelay(int showDelay);
 
 		void setViewLink(String linkUrl);
+
+		void setChannelLinkVisible(boolean visible);
+
+		void setViewLinkVisible(boolean visible);
 	}
 
 	interface VideoCardView extends BlogCardView {

@@ -84,6 +84,7 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 					}
 					String entryDisplayName = i.getDisplayName();
 					VideoCardUi card = new VideoCardUi();
+					card.setChannelLink(Routes.channel(entryUsername));
 					card.setDisplayName(entryUsername);
 					card.setShowDelay(showDelay[0]);
 					showDelay[0] += 150; // 75
