@@ -46,9 +46,6 @@ public class BlogEntry {
 	public String getEmbed() {
 		return embed;
 	}
-	public BlogEntryType getEntryType() {
-		return entryType;
-	}
 	public List<String> getGalleryImagePaths() {
 		return galleryImagePaths;
 	}
@@ -104,9 +101,6 @@ public class BlogEntry {
 	public void setEmbed(String embed) {
 		this.embed = embed;
 	}
-	public void setEntryType(BlogEntryType entryType) {
-		this.entryType = entryType;
-	}
 	public void setGalleryImagePaths(List<String> galleryImagePaths) {
 		this.galleryImagePaths = galleryImagePaths;
 	}
@@ -139,5 +133,11 @@ public class BlogEntry {
 	}
 	public void setVideoPath(String videoPath) {
 		this.videoPath = videoPath;
+	}
+	public BlogEntryType getEntryType() {
+		return entryType;
+	}
+	public void setEntryType(BlogEntryType entryType) {
+		this.entryType = entryType;
 	}
 }

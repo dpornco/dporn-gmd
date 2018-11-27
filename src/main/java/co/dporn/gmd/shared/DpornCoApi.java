@@ -18,14 +18,14 @@ import javax.ws.rs.core.MediaType;
 public interface DpornCoApi {
 
 	@GET
-	@Path("blog/get/{username}/{permlink}")
-	BlogEntryResponse blogEntry(@PathParam("username") String username, @PathParam("permlink") String permlink);
+	@Path("blog/entry/{username}/{permlink}")
+	BlogEntryResponse getBlogEntry(@PathParam("username") String username, @PathParam("permlink") String permlink);
 
 	@Path("blog/check/{username}/{permlink}")
 	@GET
 	void check(@PathParam("username") String username, @PathParam("permlink") String permlink);
 
-	@Path("blog/add/{permlink}")
+	@Path("blog/confirm/{permlink}")
 	@POST
 	CommentConfirmResponse commentConfirm(@HeaderParam("username") String username,
 			@HeaderParam("Authorization") String authorization, @PathParam("permlink") String permlink);
@@ -54,23 +54,23 @@ public interface DpornCoApi {
 
 	@Path("blog/entries/@{username}/{startId}/{count}")
 	@GET
-	PostListResponse postsFor(@PathParam("username") String username, @PathParam("startId") String startId,
+	BlogEntryListResponse blogEntriesFor(@PathParam("username") String username, @PathParam("startId") String startId,
 			@PathParam("count") int count);
 
 	@Path("blog/entries/@{username}/{count}")
 	@GET
-	PostListResponse postsFor(@PathParam("username") String username, @PathParam("count") int count);
+	BlogEntryListResponse blogEntriesFor(@PathParam("username") String username, @PathParam("count") int count);
 
 	@Path("blog/entries/{entryType}/{startId}/{count}")
 	@GET
-	PostListResponse posts(@PathParam("entryType") BlogEntryType entryType, @PathParam("startId") String startId,
+	BlogEntryListResponse blogEntries(@PathParam("entryType") BlogEntryType entryType, @PathParam("startId") String startId,
 			@PathParam("count") int count);
 
 	@Path("blog/entries/{entryType}/{count}")
 	@GET
-	PostListResponse posts(@PathParam("entryType") BlogEntryType entryType, @PathParam("count") int count);
+	BlogEntryListResponse blogEntries(@PathParam("entryType") BlogEntryType entryType, @PathParam("count") int count);
 
-	@Path("blog/entries/recent")
+	@Path("blogs/recent")
 	@GET
 	ActiveBlogsResponse blogsRecent();
 

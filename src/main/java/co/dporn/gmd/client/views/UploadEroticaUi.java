@@ -22,17 +22,15 @@ import com.google.gwt.user.client.ui.Widget;
 
 import co.dporn.gmd.client.img.ImgUtils;
 import co.dporn.gmd.client.presenters.UploadErotica;
+import co.dporn.gmd.client.utils.ChipProvider;
 import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.TagSet;
 import elemental2.dom.HTMLImageElement;
 import elemental2.dom.ProgressEvent;
 import elemental2.dom.XMLHttpRequest.OnprogressFn;
 import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete;
-import gwt.material.design.addins.client.autocomplete.MaterialAutoComplete.DefaultMaterialChipProvider;
 import gwt.material.design.addins.client.richeditor.MaterialRichEditor;
 import gwt.material.design.addins.client.richeditor.base.constants.ToolbarButton;
-import gwt.material.design.client.constants.ChipType;
-import gwt.material.design.client.constants.IconType;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialChip;
 import gwt.material.design.client.ui.MaterialContainer;
@@ -48,71 +46,6 @@ import jsinterop.base.Js;
 public class UploadEroticaUi extends Composite implements UploadErotica.UploadEroticaView {
 
 	private static final int MAX_TAGS = 14;
-
-	private class ChipProvider extends DefaultMaterialChipProvider {
-		public MaterialChip getChip(String text) {
-			Suggestion suggestion = new Suggestion() {
-				@Override
-				public String getDisplayString() {
-					return text;
-				}
-
-				@Override
-				public String getReplacementString() {
-					return text;
-				}
-			};
-			return getChip(suggestion);
-		}
-
-		@Override
-		public MaterialChip getChip(Suggestion suggestion) {
-			if (suggestion.getDisplayString() == null || suggestion.getDisplayString().trim().isEmpty()) {
-				return new MaterialChip() {
-					@Override
-					protected void onLoad() {
-						super.onLoad();
-						this.removeFromParent();
-					}
-				};
-			}
-			final MaterialChip chip = new MaterialChip();
-
-			String imageChip = suggestion.getDisplayString();
-			String textChip = imageChip;
-
-			String s = "<img src=\"";
-			if (imageChip.contains(s)) {
-				int ix = imageChip.indexOf(s) + s.length();
-				imageChip = imageChip.substring(ix, imageChip.indexOf("\"", ix + 1));
-				chip.setUrl(imageChip);
-				textChip = textChip.replaceAll("[<](/)?img[^>]*[>]", "");
-			}
-			chip.setText(textChip);
-			if (isChipRemovable(suggestion)) {
-				chip.setIconType(IconType.CLOSE);
-			}
-			chip.setType(ChipType.OUTLINED);
-			chip.setMarginRight(8);
-			chip.setMarginLeft(-8);
-			return chip;
-		}
-
-		@Override
-		public boolean isChipRemovable(Suggestion suggestion) {
-			if (mandatorySuggestions == null) {
-				return true;
-			}
-			if (mandatorySuggestions.contains(suggestion.getDisplayString())) {
-				return false;
-			}
-			if (mandatorySuggestions.contains(suggestion.getReplacementString())) {
-				return false;
-			}
-			return super.isChipRemovable(suggestion);
-		}
-
-	}
 
 	interface ThisUiBinder extends UiBinder<Widget, UploadEroticaUi> {
 	}
@@ -185,7 +118,7 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 			title.clearErrorText();
 			editor.clearErrorText();
 			ac.clearErrorText();
-			presenter.doPostBlogEntry( //
+			presenter.createNewBlogEntry( //
 					BlogEntryType.EROTICA, //
 					(double) editor.getEditor().width(), //
 					title.getValue(), //
@@ -195,7 +128,7 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 		});
 		ac.setSuggestions(suggestOracle);
 		Scheduler.get().scheduleDeferred(() -> {
-			ac.setChipProvider(new ChipProvider());
+			ac.setChipProvider(new ChipProvider(mandatorySuggestions));
 			ac.setAllowBlank(false);
 			ac.setAutoValidate(true);
 			ac.setLimit(MAX_TAGS);
@@ -398,11 +331,7 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 		btnClose.addClickHandler((e) -> dialog.close());
 		footer.add(btnClose);
 		dialog.add(footer);
-		ChipProvider chips = new ChipProvider() {
-			public boolean isChipRemovable(Suggestion suggestion) {
-				return false;
-			}
-		};
+		ChipProvider chips = new ChipProvider(new HashSet<>());
 		for (TagSet set : sets) {
 			MaterialRow row = new MaterialRow();
 			MaterialButton btnAdd = new MaterialButton("ADD TAG SET");

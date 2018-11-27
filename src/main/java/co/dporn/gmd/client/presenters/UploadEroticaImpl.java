@@ -95,7 +95,7 @@ public class UploadEroticaImpl implements UploadErotica {
 	}
 
 	@Override
-	public void doPostBlogEntry(BlogEntryType erotica, double width, String title, List<? extends Suggestion> tags,
+	public void createNewBlogEntry(BlogEntryType erotica, double width, String title, List<? extends Suggestion> tags,
 			String content) {
 		if (tags == null || tags.isEmpty()) {
 			view.setErrorBadTags();
@@ -115,12 +115,12 @@ public class UploadEroticaImpl implements UploadErotica {
 			_tags.add(tag.getReplacementString());
 		}
 		model.sortTagsByNetVoteDesc(new ArrayList<>(_tags)).thenAccept(t->{
-			model.postBlogEntry(erotica, width, title, t, content).thenAccept(permlink->{
+			model.newBlogEntry(erotica, width, title, t, content).thenAccept(permlink->{
 				view.reset();
 			});
 		}).exceptionally(ex->{
 			GWT.log(ex.getMessage(), ex);
-			model.postBlogEntry(erotica, width, title, new ArrayList<>(_tags), content).thenAccept(permlink->{
+			model.newBlogEntry(erotica, width, title, new ArrayList<>(_tags), content).thenAccept(permlink->{
 				view.reset();
 			});
 			return null;

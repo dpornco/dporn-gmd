@@ -17,7 +17,7 @@ import co.dporn.gmd.client.app.Routes;
 import co.dporn.gmd.client.views.VideoCardUi;
 import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
-import co.dporn.gmd.shared.PostListResponse;
+import co.dporn.gmd.shared.BlogEntryListResponse;
 import gwt.material.design.addins.client.scrollfire.MaterialScrollfire;
 
 public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
@@ -44,7 +44,7 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 		MaterialScrollfire scrollfire = new MaterialScrollfire();
 		scrollfire.setCallback(() -> {
 			GWT.log("activateScrollfire#callback");
-			loadPostsFor();
+			loadBlogEntriesFor();
 		});
 		scrollfire.setOffset(0);
 		scrollfire.setElement(widget.asWidget().getElement());
@@ -53,25 +53,24 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 
 	private String lastRecentId = null;
 
-	private void loadPostsFor() {
+	private void loadBlogEntriesFor() {
 		showLoading(true);
 		Timer[] timer = { null };
-		CompletableFuture<PostListResponse> listPosts;
+		CompletableFuture<BlogEntryListResponse> listBlogEntries;
 		if (lastRecentId == null) {
-			listPosts = model.postsFor(username);
+			listBlogEntries = model.listBlogEntriesFor(username);
 			getContentView().getRecentPosts().clear();
 		} else {
-			listPosts = model.postsFor(username, lastRecentId, 9);
+			listBlogEntries = model.listBlogEntriesFor(username, lastRecentId, 9);
 		}
-		listPosts.thenAccept((l) -> {
-			GWT.log("Channel Recent posts: " + l.getPosts().size());
-			if (l.getPosts().size() < 2 && lastRecentId != null) {
+		listBlogEntries.thenAccept((l) -> {
+			if (l.getBlogEntries().size() < 2 && lastRecentId != null) {
 				showLoading(false);
 				return;
 			}
 			int[] showDelay = { 0 };
 			Map<String, AccountInfo> infoMap = l.getInfoMap();
-			l.getPosts().forEach(p -> {
+			l.getBlogEntries().forEach(p -> {
 				if (p.getId().getOid().equals(lastRecentId)) {
 					return;
 				}
@@ -96,7 +95,7 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 //					if (videoPath == null || !videoPath.startsWith("/ipfs/")) {
 //						return;
 //					}
-					card.setViewLink(Routes.post(entryUsername, p.getPermlink()));
+					card.setViewLink(Routes.blogEntry(entryUsername, p.getPermlink()));
 					card.setVideoEmbedUrl(Routes.embedVideo(entryUsername, p.getPermlink()));
 					getContentView().getRecentPosts().add(card);
 					if (timer[0] != null) {
@@ -106,7 +105,7 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 						@Override
 						public void run() {
 							if (Document.get().getBody().getScrollHeight() <= Window.getClientHeight()) {
-								loadPostsFor();
+								loadBlogEntriesFor();
 							} else {
 								activateScrollfire(card);
 								showLoading(false);
@@ -136,8 +135,8 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 	@Override
 	public void execute() {
 		GWT.log(this.getClass().getSimpleName() + "#execute");
-		loadPostsFor();
-		model.blogInfo(username).thenAccept(this::setupHeader).exceptionally(ex->{
+		loadBlogEntriesFor();
+		model.getBlogInfo(username).thenAccept(this::setupHeader).exceptionally(ex->{
 			ActiveBlogsResponse response = new ActiveBlogsResponse();
 			response.setAuthors(Arrays.asList("User Not Found"));
 			Map<String, AccountInfo> infoMap=new HashMap<>();

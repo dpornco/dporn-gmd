@@ -6,8 +6,8 @@ import com.google.gwt.user.client.ui.IsWidget;
 
 import co.dporn.gmd.client.views.IsView;
 
-public interface DisplayBlogPostPresenter extends ContentPresenter, ScheduledCommand {
-	interface DisplayBlogPostView extends ContentView {
+public interface DisplayBlogEntryPresenter extends ContentPresenter, ScheduledCommand {
+	interface DisplayBlogEntryView extends ContentView {
 		IsWidget getContainer();
 		void showLoading(boolean loading);
 		void setEmbedUrl(String embedUrl);
@@ -19,7 +19,7 @@ public interface DisplayBlogPostPresenter extends ContentPresenter, ScheduledCom
 		BlogHeader getBlogHeader();
 		HasWidgets getPostView();
 	}
-	interface CommentRepliesView extends IsView<DisplayBlogPostPresenter> {}
+	interface CommentRepliesView extends IsView<DisplayBlogEntryPresenter> {}
 	interface PostDetails {}
 	void upvote(int percent);
 	void downvote(int percent);

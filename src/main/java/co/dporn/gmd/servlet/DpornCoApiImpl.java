@@ -31,6 +31,7 @@ import co.dporn.gmd.servlet.utils.steemj.SteemJInstance;
 import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.BlogEntry;
+import co.dporn.gmd.shared.BlogEntryListResponse;
 import co.dporn.gmd.shared.BlogEntryResponse;
 import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.CommentConfirmResponse;
@@ -38,7 +39,6 @@ import co.dporn.gmd.shared.DpornCoApi;
 import co.dporn.gmd.shared.IpfsHashResponse;
 import co.dporn.gmd.shared.MongoDate;
 import co.dporn.gmd.shared.PingResponse;
-import co.dporn.gmd.shared.PostListResponse;
 import co.dporn.gmd.shared.SuggestTagsResponse;
 import eu.bittrade.libs.steemj.apis.database.models.state.Discussion;
 
@@ -60,17 +60,17 @@ public class DpornCoApiImpl implements DpornCoApi {
 	}
 
 	@Override
-	public PostListResponse posts(BlogEntryType entryType, String startId, int count) {
+	public BlogEntryListResponse blogEntries(BlogEntryType entryType, String startId, int count) {
 		if (count < 1) {
 			count = 1;
 		}
 		if (count > 50) {
 			count = 50;
 		}
-		List<BlogEntry> posts = MongoDpornCo.listEntries(entryType, startId, count);
+		List<BlogEntry> entries = MongoDpornCo.listBlogEntries(entryType, startId, count);
 		Set<String> accountNameList = new HashSet<>();
 		Set<String> blacklist = new HashSet<>(SteemJInstance.get().getBlacklist());
-		posts.forEach(p -> {
+		entries.forEach(p -> {
 			if (blacklist.contains(p.getUsername())) {
 				p.setPosterImagePath(null);
 				p.setPosterImagePath(null);
@@ -80,17 +80,17 @@ public class DpornCoApiImpl implements DpornCoApi {
 				p.setVideoPath(null);
 			}
 		});
-		posts.forEach(p -> accountNameList.add(p.getUsername()));
+		entries.forEach(p -> accountNameList.add(p.getUsername()));
 		Map<String, AccountInfo> infoMap = SteemJInstance.get().getBlogDetails(accountNameList);
-		PostListResponse response = new PostListResponse();
-		response.setPosts(posts);
+		BlogEntryListResponse response = new BlogEntryListResponse();
+		response.setBlogEntries(entries);
 		response.setInfoMap(infoMap);
 		return response;
 	}
 
 	@Override
-	public PostListResponse posts(BlogEntryType entryType, int count) {
-		return posts(entryType, "", count);
+	public BlogEntryListResponse blogEntries(BlogEntryType entryType, int count) {
+		return blogEntries(entryType, "", count);
 	}
 
 	@Override
@@ -103,33 +103,32 @@ public class DpornCoApiImpl implements DpornCoApi {
 	}
 
 	@Override
-	public PostListResponse postsFor(String username, String startId, int count) {
-		PostListResponse response = new PostListResponse();
+	public BlogEntryListResponse blogEntriesFor(String username, String startId, int count) {
+		BlogEntryListResponse response = new BlogEntryListResponse();
 		Set<String> blacklist = new HashSet<>(SteemJInstance.get().getBlacklist());
 		if (blacklist.contains(username)) {
 			response.setInfoMap(new HashMap<>());
-			response.setPosts(new ArrayList<>());
+			response.setBlogEntries(new ArrayList<>());
 			return response;
 		}
-		System.out.println("=== postFor: " + username);
 		if (count < 1) {
 			count = 1;
 		}
 		if (count > 50) {
 			count = 50;
 		}
-		List<BlogEntry> posts = MongoDpornCo.listEntriesFor(username, startId, count);
+		List<BlogEntry> entries = MongoDpornCo.listBlogEntriesFor(username, startId, count);
 		Set<String> accountNameList = new HashSet<>();
-		posts.forEach(p -> accountNameList.add(p.getUsername()));
+		entries.forEach(p -> accountNameList.add(p.getUsername()));
 		Map<String, AccountInfo> infoMap = SteemJInstance.get().getBlogDetails(accountNameList);
-		response.setPosts(posts);
+		response.setBlogEntries(entries);
 		response.setInfoMap(infoMap);
 		return response;
 	}
 
 	@Override
-	public PostListResponse postsFor(String username, int count) {
-		return postsFor(username, "", count);
+	public BlogEntryListResponse blogEntriesFor(String username, int count) {
+		return blogEntriesFor(username, "", count);
 	}
 
 	@Override
@@ -141,8 +140,6 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 	@Override
 	public ActiveBlogsResponse blogInfo(String username) {
-		System.out.println("=== blogInfo: " + username);
-
 		ActiveBlogsResponse response = new ActiveBlogsResponse();
 		Set<String> blacklist = new HashSet<>(SteemJInstance.get().getBlacklist());
 		if (blacklist.contains(username)) {
@@ -283,7 +280,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		entry.setCommentJsonMetadata(content.getJsonMetadata());
 		entry.setCreated(new MongoDate(content.getCreated().getDateTimeAsDate()));
 		entry.setModified(entry.getCreated());
-		entry.setEntryType(dpornMetadata.getBlogEntryType());
+		entry.setEntryType(dpornMetadata.getEntryType());
 		entry.setGalleryImageThumbPaths(dpornMetadata.getPhotoGalleryImagePaths());
 		entry.setMigrated(false);
 		entry.setApp(dpornMetadata.getApp());
@@ -307,7 +304,6 @@ public class DpornCoApiImpl implements DpornCoApi {
 			return;
 		}
 		synchronized (DpornCoApiImpl.class) {
-			System.out.println("=== CHECK: " + username + " | " + permlink);
 			Discussion content;
 			try {
 				content = SteemJInstance.get().getContent(username, permlink);
@@ -323,7 +319,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 	}
 
 	@Override
-	public BlogEntryResponse blogEntry(String username, String permlink) {
+	public BlogEntryResponse getBlogEntry(String username, String permlink) {
 		BlogEntryResponse response = new BlogEntryResponse();
 		response.setBlogEntry(MongoDpornCo.getEntry(username, permlink));
 		return response;

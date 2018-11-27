@@ -22,7 +22,7 @@ public class Routes {
 		return "/@" + username;
 	}
 
-	public static String post(String username, String permlink) {
+	public static String blogEntry(String username, String permlink) {
 		return "/@" + username + "/" + permlink;
 	}
 

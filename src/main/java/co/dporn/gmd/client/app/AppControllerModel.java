@@ -6,8 +6,8 @@ import java.util.concurrent.CompletableFuture;
 import co.dporn.gmd.client.presenters.RoutePresenter;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.BlogEntry;
+import co.dporn.gmd.shared.BlogEntryListResponse;
 import co.dporn.gmd.shared.BlogEntryType;
-import co.dporn.gmd.shared.PostListResponse;
 import co.dporn.gmd.shared.TagSet;
 import elemental2.dom.Blob;
 import elemental2.dom.XMLHttpRequestUpload.OnprogressFn;
@@ -24,23 +24,19 @@ import steem.model.DiscussionComment;
  */
 public interface AppControllerModel {
 
-	//CompletableFuture<PostListResponse> listPosts(int count);
-	CompletableFuture<PostListResponse> listPosts(BlogEntryType entryType, int count);
+	CompletableFuture<BlogEntryListResponse> listBlogEntries(BlogEntryType blogEntryType, int count);
+	CompletableFuture<BlogEntryListResponse> listBlogEntries(BlogEntryType blogEntryType, String startId, int count);
+	CompletableFuture<ActiveBlogsResponse> listFeaturedBlogs();
+	CompletableFuture<ActiveBlogsResponse> getBlogInfo(String username);
 	
-	//CompletableFuture<PostListResponse> listPosts(String startId, int count);
-	CompletableFuture<PostListResponse> listPosts(BlogEntryType entryType, String startId, int count);
-
-	CompletableFuture<ActiveBlogsResponse> listFeatured();
-	CompletableFuture<ActiveBlogsResponse> blogInfo(String username);
-	
-	CompletableFuture<PostListResponse> featuredPosts(int count);
-	default CompletableFuture<PostListResponse> featuredPosts() {
-		return featuredPosts(4);
+	CompletableFuture<BlogEntryListResponse> listFeaturedBlogEntries(int count);
+	default CompletableFuture<BlogEntryListResponse> listFeaturedBlogEntries() {
+		return listFeaturedBlogEntries(4);
 	}
 
-	CompletableFuture<PostListResponse> postsFor(String username);
+	CompletableFuture<BlogEntryListResponse> listBlogEntriesFor(String username);
 
-	CompletableFuture<PostListResponse> postsFor(String username, String startId, int count);
+	CompletableFuture<BlogEntryListResponse> listBlogEntriesFor(String username, String startId, int count);
 
 	CompletableFuture<DiscussionComment> getDiscussionComment(String username, String permlink);
 	
@@ -68,6 +64,6 @@ public interface AppControllerModel {
 	
 	CompletableFuture<List<String>> sortTagsByNetVoteDesc(List<String> tags);
 	
-	CompletableFuture<String> postBlogEntry(BlogEntryType erotica, double width, String title, List<String> tags, String content);
+	CompletableFuture<String> newBlogEntry(BlogEntryType blogEntryType, double width, String title, List<String> tags, String content);
 	
 }

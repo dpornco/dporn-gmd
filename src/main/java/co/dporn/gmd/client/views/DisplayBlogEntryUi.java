@@ -12,9 +12,9 @@ import com.google.gwt.user.client.ui.Widget;
 
 import co.dporn.gmd.client.presenters.ContentPresenter;
 import co.dporn.gmd.client.presenters.ContentPresenter.BlogHeader;
-import co.dporn.gmd.client.presenters.DisplayBlogPostPresenter.CommentRepliesView;
-import co.dporn.gmd.client.presenters.DisplayBlogPostPresenter.DisplayBlogPostView;
-import co.dporn.gmd.client.presenters.DisplayBlogPostPresenter.PostDetails;
+import co.dporn.gmd.client.presenters.DisplayBlogEntryPresenter.CommentRepliesView;
+import co.dporn.gmd.client.presenters.DisplayBlogEntryPresenter.DisplayBlogEntryView;
+import co.dporn.gmd.client.presenters.DisplayBlogEntryPresenter.PostDetails;
 import gwt.material.design.client.constants.TextAlign;
 import gwt.material.design.client.ui.MaterialContainer;
 import gwt.material.design.client.ui.MaterialHeader;
@@ -23,7 +23,7 @@ import gwt.material.design.client.ui.MaterialProgress;
 import gwt.material.design.client.ui.MaterialRow;
 import gwt.material.design.client.ui.MaterialVideo;
 
-public class DisplayBlogPostUi extends Composite implements DisplayBlogPostView {
+public class DisplayBlogEntryUi extends Composite implements DisplayBlogEntryView {
 	
 	@UiField 
 	protected MaterialProgress progress;
@@ -50,10 +50,10 @@ public class DisplayBlogPostUi extends Composite implements DisplayBlogPostView 
 
 	private static ChannelUiBinder uiBinder = GWT.create(ChannelUiBinder.class);
 
-	interface ChannelUiBinder extends UiBinder<Widget, DisplayBlogPostUi> {
+	interface ChannelUiBinder extends UiBinder<Widget, DisplayBlogEntryUi> {
 	}
 
-	public DisplayBlogPostUi() {
+	public DisplayBlogEntryUi() {
 		initWidget(uiBinder.createAndBindUi(this));
 	}
 

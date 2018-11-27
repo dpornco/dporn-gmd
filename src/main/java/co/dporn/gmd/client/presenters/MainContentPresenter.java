@@ -19,8 +19,8 @@ import co.dporn.gmd.client.views.BlogCardUi;
 import co.dporn.gmd.client.views.VideoCardUi;
 import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.BlogEntry;
+import co.dporn.gmd.shared.BlogEntryListResponse;
 import co.dporn.gmd.shared.BlogEntryType;
-import co.dporn.gmd.shared.PostListResponse;
 import gwt.material.design.addins.client.scrollfire.MaterialScrollfire;
 
 public class MainContentPresenter implements ContentPresenter, ScheduledCommand {
@@ -45,12 +45,11 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 	 */
 
 	protected void loadFeaturedVideos() {
-		model.featuredPosts(FEATURED_VIDEO_COUNT).thenAccept(posts -> {
-			GWT.log("HAVE "+posts.getPosts().size()+" FEATURED VIDEOS");
+		model.listFeaturedBlogEntries(FEATURED_VIDEO_COUNT).thenAccept(entries -> {
 			getContentView().getFeaturedPosts().clear();
 			int[] showDelay = { 0 };
-			Map<String, AccountInfo> infoMap = posts.getInfoMap();
-			posts.getPosts().forEach(p -> {
+			Map<String, AccountInfo> infoMap = entries.getInfoMap();
+			entries.getBlogEntries().forEach(p -> {
 				String videoPath = p.getVideoPath();
 				if (videoPath == null || !videoPath.startsWith("/ipfs/")) {
 					return;
@@ -71,7 +70,7 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 				card.setAvatarUrl(Routes.avatarImage(username));
 				card.setTitle(p.getTitle());
 				card.setVideoEmbedUrl(Routes.embedVideo(username, p.getPermlink()));
-				card.setViewLink(Routes.post(username, p.getPermlink()));
+				card.setViewLink(Routes.blogEntry(username, p.getPermlink()));
 				getContentView().getFeaturedPosts().add(card);
 			});
 		}).exceptionally(ex->{
@@ -106,20 +105,19 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 	private void loadRecentVideos(int count) {
 		showLoading(true);
 		Timer[] timer = { null };
-		CompletableFuture<PostListResponse> listPosts;
+		CompletableFuture<BlogEntryListResponse> listEntries;
 		if (lastRecentId == null) {
-			listPosts = model.listPosts(BlogEntryType.VIDEO, count);
+			listEntries = model.listBlogEntries(BlogEntryType.VIDEO, count);
 			getContentView().getRecentPosts().clear();
 		} else {
-			listPosts = model.listPosts(BlogEntryType.VIDEO, lastRecentId, count+1);
+			listEntries = model.listBlogEntries(BlogEntryType.VIDEO, lastRecentId, count+1);
 		}
-		listPosts.thenAccept((l) -> {
-			GWT.log("Recent posts: " + l.getPosts().size());
-			if (l.getPosts().size()<2 && lastRecentId!=null) {
+		listEntries.thenAccept((l) -> {
+			if (l.getBlogEntries().size()<2 && lastRecentId!=null) {
 				showLoading(false);
 				return;
 			}
-			Iterator<BlogEntry> ilist = l.getPosts().iterator();
+			Iterator<BlogEntry> ilist = l.getBlogEntries().iterator();
 			String newLastRecentId = lastRecentId;
 			while (ilist.hasNext()) {
 				BlogEntry next = ilist.next();
@@ -136,7 +134,7 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 			}
 			int[] showDelay = { 0 };
 			Map<String, AccountInfo> infoMap = l.getInfoMap();
-			l.getPosts().forEach(p -> {
+			l.getBlogEntries().forEach(p -> {
 				if (p.getId().getOid().equals(lastRecentId)) {
 					return;
 				}
@@ -160,7 +158,7 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 					card.setDisplayName(displayName);
 					card.setAvatarUrl(Routes.avatarImage(username));
 					card.setTitle(p.getTitle());
-					card.setViewLink(Routes.post(username, p.getPermlink()));
+					card.setViewLink(Routes.blogEntry(username, p.getPermlink()));
 					card.setVideoEmbedUrl(Routes.embedVideo(username, p.getPermlink()));
 					getContentView().getRecentPosts().add(card);
 					if (timer[0] != null) {
@@ -194,7 +192,7 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 	}
 
 	private void loadFeaturedBlogs() {
-		model.listFeatured().thenAccept((f) -> {
+		model.listFeaturedBlogs().thenAccept((f) -> {
 			GWT.log("Featured channels.");
 			getContentView().getFeaturedChannels().clear();
 			List<BlogCardUi> cards = new ArrayList<>();

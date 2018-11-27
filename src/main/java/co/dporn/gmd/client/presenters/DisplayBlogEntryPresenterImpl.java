@@ -1,26 +1,24 @@
 package co.dporn.gmd.client.presenters;
 
-import com.google.gwt.core.shared.GWT;
-
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.app.Routes;
 import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.BlogEntryType;
 
-public class DisplayBlogPostPresenterImpl implements DisplayBlogPostPresenter {
+public class DisplayBlogEntryPresenterImpl implements DisplayBlogEntryPresenter {
 
 	private String username;
 	private String permlink;
 	private AppControllerModel model;
-	private DisplayBlogPostView view;
+	private DisplayBlogEntryView view;
 
-	public DisplayBlogPostPresenterImpl(String username, String permlink, AppControllerModel model,
-			DisplayBlogPostView displayBlogPostView) {
+	public DisplayBlogEntryPresenterImpl(String username, String permlink, AppControllerModel model,
+			DisplayBlogEntryView displayBlogEntryView) {
 		this.username = username;
 		this.permlink = permlink;
 		this.model = model;
-		this.view = displayBlogPostView;
+		this.view = displayBlogEntryView;
 	}
 
 	@Override
@@ -54,14 +52,14 @@ public class DisplayBlogPostPresenterImpl implements DisplayBlogPostPresenter {
 
 	@Override
 	public void execute() {
-		model.blogInfo(username).thenAccept(this::setupHeader).thenRun(() -> loadAndDisplayPost());
+		model.getBlogInfo(username).thenAccept(this::setupHeader).thenRun(() -> loadAndDisplayBlogEntry());
 	}
 
 	void setupHeader(ActiveBlogsResponse infoMap) {
-		if (!(view instanceof DisplayBlogPostView)) {
+		if (!(view instanceof DisplayBlogEntryView)) {
 			return;
 		}
-		DisplayBlogPostView channelView = (DisplayBlogPostView) view;
+		DisplayBlogEntryView channelView = (DisplayBlogEntryView) view;
 		if (!infoMap.getInfoMap().containsKey(username)) {
 			channelView.showUserNotFound(username);
 			return;
@@ -74,14 +72,12 @@ public class DisplayBlogPostPresenterImpl implements DisplayBlogPostPresenter {
 		blogHeader.setImageUrl(coverImage);
 	}
 
-	protected void loadAndDisplayPost() {
+	protected void loadAndDisplayBlogEntry() {
 		model.getBlogEntry(username, permlink).thenAccept((entry) -> {
-			GWT.log("loadAndDisplayPost: view instanceof test = "+(view instanceof DisplayBlogPostView));
-			GWT.log("loadAndDisplayPost: view class: "+view.getClass().getSimpleName());
-			if (!(view instanceof DisplayBlogPostView)) {
+			if (!(view instanceof DisplayBlogEntryView)) {
 				return;
 			}
-			DisplayBlogPostView blogEntryView = (DisplayBlogPostView) view;
+			DisplayBlogEntryView blogEntryView = (DisplayBlogEntryView) view;
 			deferred(()->{
 				BlogHeader blogHeader = blogEntryView.getBlogHeader();
 				blogHeader.setAbout(entry.getTitle());
@@ -90,9 +86,6 @@ public class DisplayBlogPostPresenterImpl implements DisplayBlogPostPresenter {
 			view.showLoading(false);
 			if (entry.getEntryType()==BlogEntryType.VIDEO) {
 				blogEntryView.setEmbedUrl(Routes.embedVideo(username, permlink));
-//				MaterialVideo video = new MaterialVideo(Routes.embedVideo(username, permlink));
-//				video.setFullscreen(true);
-//				blogEntryView.getPostView().add(video);
 			} else {
 				blogEntryView.setBodyMessage(entry.getContent());
 			}

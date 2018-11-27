@@ -18,6 +18,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
+import org.owasp.html.AttributePolicy;
 import org.owasp.html.CssSchema;
 import org.owasp.html.HtmlPolicyBuilder;
 import org.owasp.html.PolicyFactory;
@@ -69,7 +70,7 @@ public class MongoDpornCo {
 		mongoLogger.setLevel(Level.WARNING);
 	}
 
-	protected static synchronized List<BlogEntry> _listEntries(BlogEntryType entryType, String startId, int count) {
+	protected static synchronized List<BlogEntry> _listBlogEntries(BlogEntryType entryType, String startId, int count) {
 		migrationCheck();
 		if (count < 1) {
 			count = 1;
@@ -83,7 +84,7 @@ public class MongoDpornCo {
 			MongoCollection<Document> collection = db.getCollection(TABLE_BLOG_ENTRIES_V2);
 			MongoCursor<Document> find;
 			List<Bson> andFilters = new ArrayList<>();
-			if (entryType!=null && entryType!=BlogEntryType.ANY) {
+			if (entryType != null && entryType != BlogEntryType.ANY) {
 				andFilters.add(Filters.eq("entryType", entryType.name()));
 			}
 			if (startId != null && !startId.trim().isEmpty()) {
@@ -108,7 +109,6 @@ public class MongoDpornCo {
 			}
 			find.close();
 		}
-		System.out.println("_listEntries: " + startId + ", " + count + ", " + list.size());
 		return list;
 	}
 
@@ -145,9 +145,39 @@ public class MongoDpornCo {
 
 	private static final PolicyFactory STYLES = new HtmlPolicyBuilder().allowStyling(dpornAllowedStyles()).toFactory();
 
+	private static final AttributePolicy INTEGER = new AttributePolicy() {
+		public String apply(String elementName, String attributeName, String value) {
+			int n = value.length();
+			if (n == 0) {
+				return null;
+			}
+			for (int i = 0; i < n; ++i) {
+				char ch = value.charAt(i);
+				if (ch == '.') {
+					if (i == 0) {
+						return null;
+					}
+					return value.substring(0, i); // truncate to integer.
+				} else if (!('0' <= ch && ch <= '9')) {
+					return null;
+				}
+			}
+			return value;
+		}
+	};
+
+	/**
+	 * Allows {@code <img>} elements from HTTP, HTTPS, and relative sources.
+	 */
+	public static final PolicyFactory IMAGES = new HtmlPolicyBuilder().allowUrlProtocols("http", "https")
+			.allowElements("img").allowAttributes("alt", "src").onElements("img") //
+			.allowAttributes("border", "height", "width").matching(INTEGER).onElements("img") //
+			//.allowAttributes("srcset").onElements("img")// sanitizer mangles srcset urls
+			.toFactory();
+
 	private static PolicyFactory policy = Sanitizers.BLOCKS//
 			.and(Sanitizers.FORMATTING)//
-			.and(Sanitizers.IMAGES)//
+			.and(MongoDpornCo.IMAGES)//
 			.and(Sanitizers.LINKS)//
 			.and(MongoDpornCo.STYLES)//
 			.and(Sanitizers.TABLES);
@@ -155,7 +185,8 @@ public class MongoDpornCo {
 	private static BlogEntry deserializeAndSanitizeContent(Document item)
 			throws IOException, JsonParseException, JsonMappingException {
 		BlogEntry entry = MongoJsonMapper.get().readValue(item.toJson(), BlogEntry.class);
-		entry.setContent(policy.sanitize(entry.getContent()));
+		String sanitized = policy.sanitize(entry.getContent());
+		entry.setContent(sanitized);
 		return entry;
 	}
 
@@ -242,7 +273,7 @@ public class MongoDpornCo {
 
 	private static synchronized void initCachedTags() {
 		CACHED_TAGS.clear();
-		_listEntries(BlogEntryType.ANY, "", 250).forEach(p -> {
+		_listBlogEntries(BlogEntryType.ANY, "", 250).forEach(p -> {
 			CACHED_TAGS.addAll(p.getCommunityTags());
 		});
 		CACHED_TAGS.removeAll(Arrays.asList(NO_TAG_SUGGEST));
@@ -301,17 +332,17 @@ public class MongoDpornCo {
 		return true;
 	}
 
-	public static synchronized List<BlogEntry> listEntries(BlogEntryType entryType, String startId, int count) {
+	public static synchronized List<BlogEntry> listBlogEntries(BlogEntryType entryType, String startId, int count) {
 		if (count < 1) {
 			count = 1;
 		}
 		if (count > 50) {
 			count = 50;
 		}
-		return _listEntries(entryType, startId, count);
+		return _listBlogEntries(entryType, startId, count);
 	}
 
-	public static synchronized List<BlogEntry> listEntriesFor(String username, String startId, int count) {
+	public static synchronized List<BlogEntry> listBlogEntriesFor(String username, String startId, int count) {
 		migrationCheck();
 		if (count < 1) {
 			count = 1;
@@ -347,7 +378,6 @@ public class MongoDpornCo {
 			}
 			find.close();
 		}
-		System.out.println("listEntriesFor: " + username + ", " + startId + ", " + count + ", " + list.size());
 		return list;
 	}
 

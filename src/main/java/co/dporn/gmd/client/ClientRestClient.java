@@ -13,12 +13,12 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.http.client.URL;
 
 import co.dporn.gmd.shared.ActiveBlogsResponse;
+import co.dporn.gmd.shared.BlogEntryListResponse;
 import co.dporn.gmd.shared.BlogEntryResponse;
 import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.CommentConfirmResponse;
 import co.dporn.gmd.shared.DpornCoApi;
 import co.dporn.gmd.shared.PingResponse;
-import co.dporn.gmd.shared.PostListResponse;
 import co.dporn.gmd.shared.SuggestTagsResponse;
 import elemental2.dom.Blob;
 import elemental2.dom.XMLHttpRequest;
@@ -101,31 +101,27 @@ public class ClientRestClient {
 		return callback.getFuture();
 	}
 
-	public CompletableFuture<PostListResponse> posts(BlogEntryType entryType, int count) {
-		GWT.log("-> most recent posts");
-		MethodCallbackAsFuture<PostListResponse> callback = new MethodCallbackAsFuture<>();
-		call(callback).posts(entryType, count);
+	public CompletableFuture<BlogEntryListResponse> listBlogEntries(BlogEntryType entryType, int count) {
+		MethodCallbackAsFuture<BlogEntryListResponse> callback = new MethodCallbackAsFuture<>();
+		call(callback).blogEntries(entryType, count);
 		return callback.getFuture();
 	}
 
-	public CompletableFuture<PostListResponse> posts(BlogEntryType entryType, String startId, int count) {
-		GWT.log("-> posts starting at: "+startId);
-		MethodCallbackAsFuture<PostListResponse> callback = new MethodCallbackAsFuture<>();
-		call(callback).posts(entryType, startId, count);
+	public CompletableFuture<BlogEntryListResponse> listBlogEntries(BlogEntryType entryType, String startId, int count) {
+		MethodCallbackAsFuture<BlogEntryListResponse> callback = new MethodCallbackAsFuture<>();
+		call(callback).blogEntries(entryType, startId, count);
 		return callback.getFuture();
 	}
 
-	public CompletableFuture<PostListResponse> postsFor(String username, int count) {
-		GWT.log("-> most recent posts for " + username);
-		MethodCallbackAsFuture<PostListResponse> callback = new MethodCallbackAsFuture<>();
-		call(callback).postsFor(username, count);
+	public CompletableFuture<BlogEntryListResponse> listBlogEntriesFor(String username, int count) {
+		MethodCallbackAsFuture<BlogEntryListResponse> callback = new MethodCallbackAsFuture<>();
+		call(callback).blogEntriesFor(username, count);
 		return callback.getFuture();
 	}
 
-	public CompletableFuture<PostListResponse> postsFor(String username, String startId, int count) {
-		GWT.log("-> most recent posts starting at for " + username);
-		MethodCallbackAsFuture<PostListResponse> callback = new MethodCallbackAsFuture<>();
-		call(callback).postsFor(username, startId, count);
+	public CompletableFuture<BlogEntryListResponse> listBlogEntriesFor(String username, String startId, int count) {
+		MethodCallbackAsFuture<BlogEntryListResponse> callback = new MethodCallbackAsFuture<>();
+		call(callback).blogEntriesFor(username, startId, count);
 		return callback.getFuture();
 	}
 
@@ -171,10 +167,10 @@ public class ClientRestClient {
 		return callback.getFuture();
 	}
 
-	public CompletableFuture<BlogEntryResponse> blogEntry(String username, String permlink) {
+	public CompletableFuture<BlogEntryResponse> getBlogEntry(String username, String permlink) {
 		GWT.log("-> embed html");
 		MethodCallbackAsFuture<BlogEntryResponse> callback = new MethodCallbackAsFuture<>();
-		BlogEntryResponse noop = call(callback).blogEntry(username, permlink);
+		call(callback).getBlogEntry(username, permlink);
 		return callback.getFuture();
 	}
 }

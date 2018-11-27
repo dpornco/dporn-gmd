@@ -22,7 +22,7 @@ import co.dporn.gmd.client.app.TagSuggestion;
 import co.dporn.gmd.client.presenters.UploadErotica.UploadEroticaView;
 import co.dporn.gmd.client.views.ChannelUi;
 import co.dporn.gmd.client.views.ContentUi;
-import co.dporn.gmd.client.views.DisplayBlogPostUi;
+import co.dporn.gmd.client.views.DisplayBlogEntryUi;
 import co.dporn.gmd.client.views.IsView;
 import co.dporn.gmd.client.views.UploadEroticaUi;
 import co.dporn.gmd.shared.DpornConsts;
@@ -126,14 +126,14 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 			}
 			if (route.startsWith("@") && route.contains("/")) {
 				GWT.log("Route: Display Post");
-				// DisplayBlogPostPresenter
+				// DisplayBlogEntryPresenter
 				deferred(() -> {
 					String username = StringUtils.substringBefore(route, "/").substring(1);
 					String permlink = StringUtils.substringAfter(route, "/");
 					GWT.log(" - username: " + username);
 					GWT.log(" - permlink: " + permlink);
-					DisplayBlogPostPresenter childPresenter = new DisplayBlogPostPresenterImpl(username, permlink,
-							model, new DisplayBlogPostUi());
+					DisplayBlogEntryPresenter childPresenter = new DisplayBlogEntryPresenterImpl(username, permlink,
+							model, new DisplayBlogEntryUi());
 					GWT.log("presenters.put(route, childPresenter);");
 					presenters.put(route, childPresenter);
 					GWT.log("activeChildPresenter = childPresenter;");

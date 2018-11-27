@@ -39,10 +39,10 @@ import co.dporn.gmd.client.presenters.RoutePresenter.ActiveUserInfo;
 import co.dporn.gmd.client.utils.HtmlReformatter;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.BlogEntry;
+import co.dporn.gmd.shared.BlogEntryListResponse;
 import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.DpornConsts;
 import co.dporn.gmd.shared.IpfsHashResponse;
-import co.dporn.gmd.shared.PostListResponse;
 import co.dporn.gmd.shared.TagSet;
 import elemental2.dom.Blob;
 import elemental2.dom.DomGlobal;
@@ -66,14 +66,14 @@ import steem.model.TrendingTag;
 import steem.model.Vote;
 
 public class AppControllerModelImpl implements AppControllerModel {
-	private static final String USERNAME_PATTERN = "(@[a-z0-9][a-z0-9\\-\\.]*?[a-z0-9])";
+	private static final String USERNAME_PATTERN = "(@[a-z0-9][a-z0-9\\-\\.]*[a-z0-9])";
 
 	protected interface IpfsHashResponseMapper extends ObjectMapper<IpfsHashResponse> {
 		IpfsHashResponseMapper mapper = GWT.create(IpfsHashResponseMapper.class);
 	}
 
-	private static final int CHANNEL_POSTS_INITIAL_SIZE = 8;
-	private static final int FEATURED_POST_POOL_MULTIPLIER_SIZE = 3;
+	private static final int CHANNEL_ENTRIES_INITIAL_SIZE = 8;
+	private static final int FEATURED_ENTRIES_POOL_MULTIPLIER_SIZE = 3;
 	private static final String STEEM_USERNAME_KEY = "steem-username";
 	private static final String STEEMCONNECT_KEY = "steemconnectv2";
 	private static final int TAGSETS_MAX_SIZE = 6;
@@ -100,7 +100,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 	}
 
 	@Override
-	public CompletableFuture<ActiveBlogsResponse> blogInfo(String username) {
+	public CompletableFuture<ActiveBlogsResponse> getBlogInfo(String username) {
 		return ClientRestClient.get().blogInfo(username);
 	}
 
@@ -112,34 +112,34 @@ public class AppControllerModelImpl implements AppControllerModel {
 	 * TODO: Move this into the servlet and cache for at least 30 minutes.
 	 */
 	@Override
-	public CompletableFuture<PostListResponse> featuredPosts(int count) {
-		CompletableFuture<PostListResponse> finalFuture = new CompletableFuture<>();
-		listPosts(BlogEntryType.VIDEO, FEATURED_POST_POOL_MULTIPLIER_SIZE * count).thenAccept((response) -> {
+	public CompletableFuture<BlogEntryListResponse> listFeaturedBlogEntries(int count) {
+		CompletableFuture<BlogEntryListResponse> finalFuture = new CompletableFuture<>();
+		listBlogEntries(BlogEntryType.VIDEO, FEATURED_ENTRIES_POOL_MULTIPLIER_SIZE * count).thenAccept((response) -> {
 			List<CompletableFuture<List<Vote>>> voteFutures = new ArrayList<>();
 			List<BlogEntry> list = new ArrayList<>();
 			double mul = 1.0d;
-			List<BlogEntry> entries = response.getPosts();
-			Iterator<BlogEntry> iEntries = entries.iterator();
-			while (iEntries.hasNext()) {
-				BlogEntry next = iEntries.next();
+			List<BlogEntry> entries = response.getBlogEntries();
+			Iterator<BlogEntry> iter = entries.iterator();
+			while (iter.hasNext()) {
+				BlogEntry next = iter.next();
 				if (BlogEntryType.VIDEO != next.getEntryType()) {
-					iEntries.remove();
+					iter.remove();
 					continue;
 				}
 			}
 			for (int ix = 0; ix < entries.size(); ix++) {
 				mul = mul * .9d;
 				final double weight = mul;
-				BlogEntry post = entries.get(ix);
-				CompletableFuture<List<Vote>> voteFuture = SteemApi.getActiveVotes(post.getUsername(),
-						post.getPermlink());
+				BlogEntry blogEntry = entries.get(ix);
+				CompletableFuture<List<Vote>> voteFuture = SteemApi.getActiveVotes(blogEntry.getUsername(),
+						blogEntry.getPermlink());
 				voteFuture.thenAccept((v) -> {
-					post.setScore((double) v.size() * weight);
+					blogEntry.setScore((double) v.size() * weight);
 					synchronized (list) {
-						list.add(post);
+						list.add(blogEntry);
 					}
 				}).exceptionally(ex -> {
-					ClientRestClient.get().check(post.getUsername(), post.getPermlink());
+					ClientRestClient.get().check(blogEntry.getUsername(), blogEntry.getPermlink());
 					GWT.log(ex.getMessage(), ex);
 					return null;
 				});
@@ -185,7 +185,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 	@Override
 	public CompletableFuture<BlogEntry> getBlogEntry(String username, String permlink) {
 		CompletableFuture<BlogEntry> future = new CompletableFuture<>();
-		ClientRestClient.get().blogEntry(username, permlink)//
+		ClientRestClient.get().getBlogEntry(username, permlink)//
 				.thenAccept(r -> future.complete(r.getBlogEntry()))//
 				.exceptionally(ex -> {
 					future.completeExceptionally(ex);
@@ -223,19 +223,13 @@ public class AppControllerModelImpl implements AppControllerModel {
 	}
 
 	@Override
-	public CompletableFuture<ActiveBlogsResponse> listFeatured() {
+	public CompletableFuture<ActiveBlogsResponse> listFeaturedBlogs() {
 		return ClientRestClient.get().listFeatured();
 	}
 
-//	@Override
-//	public CompletableFuture<PostListResponse> listPosts(int count) {
-//		return listPosts(BlogEntryType.ANY, count);
-//	}
-
 	@Override
-	public CompletableFuture<PostListResponse> listPosts(BlogEntryType entryType, String startId, int count) {
-		GWT.log("listPosts: " + startId + " [" + count + "]");
-		return ClientRestClient.get().posts(entryType, startId == null ? "" : startId, count);
+	public CompletableFuture<BlogEntryListResponse> listBlogEntries(BlogEntryType entryType, String startId, int count) {
+		return ClientRestClient.get().listBlogEntries(entryType, startId == null ? "" : startId, count);
 	}
 
 	@Override
@@ -326,13 +320,13 @@ public class AppControllerModelImpl implements AppControllerModel {
 	}
 
 	@Override
-	public CompletableFuture<PostListResponse> postsFor(String username) {
-		return ClientRestClient.get().postsFor(username, CHANNEL_POSTS_INITIAL_SIZE);
+	public CompletableFuture<BlogEntryListResponse> listBlogEntriesFor(String username) {
+		return ClientRestClient.get().listBlogEntriesFor(username, CHANNEL_ENTRIES_INITIAL_SIZE);
 	}
 
 	@Override
-	public CompletableFuture<PostListResponse> postsFor(String username, String startId, int count) {
-		return ClientRestClient.get().postsFor(username, startId, count);
+	public CompletableFuture<BlogEntryListResponse> listBlogEntriesFor(String username, String startId, int count) {
+		return ClientRestClient.get().listBlogEntriesFor(username, startId, count);
 	}
 
 	private void processMeResponse(JSONObject jsonObject) {
@@ -606,7 +600,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 	}
 
 	@Override
-	public CompletableFuture<String> postBlogEntry(BlogEntryType blogEntryType, double width, String title,
+	public CompletableFuture<String> newBlogEntry(BlogEntryType blogEntryType, double width, String title,
 			List<String> tags, String content) {
 
 		HtmlReformatter reformatter = new HtmlReformatter(width);
@@ -706,12 +700,12 @@ public class AppControllerModelImpl implements AppControllerModel {
 		commentJsonMetadata.put("format", new JSONString("text/html"));
 		commentJsonMetadata.put("users", userArray);
 		commentJsonMetadata.put("links", linksArray);
-		commentJsonMetadata.put("canonical", new JSONString("https://dporn.co" + Routes.post(username, permlink)));
+		commentJsonMetadata.put("canonical", new JSONString("https://dporn.co" + Routes.blogEntry(username, permlink)));
 
 		JSONObject dpornMetadata = new JSONObject();
 		dpornMetadata.put("app", new JSONString(DpornConsts.APP_ID_VERSION));
 		dpornMetadata.put("embed", new JSONString(Routes.embedVideo(username, permlink)));
-		dpornMetadata.put("blogEntryType", new JSONString(blogEntryType.name()));
+		dpornMetadata.put("entryType", new JSONString(blogEntryType.name()));
 		dpornMetadata.put("videoPath", null);
 		dpornMetadata.put("posterImagePath", null);
 		dpornMetadata.put("photoGalleryImagePaths", new JSONArray());
@@ -775,8 +769,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 	}
 
 	@Override
-	public CompletableFuture<PostListResponse> listPosts(BlogEntryType entryType, int count) {
-		GWT.log("listPosts: [" + count + "]");
-		return ClientRestClient.get().posts(entryType, count);
+	public CompletableFuture<BlogEntryListResponse> listBlogEntries(BlogEntryType entryType, int count) {
+		return ClientRestClient.get().listBlogEntries(entryType, count);
 	}
 }

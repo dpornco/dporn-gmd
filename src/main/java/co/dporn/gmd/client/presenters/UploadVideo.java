@@ -37,6 +37,6 @@ public interface UploadVideo extends IsChildPresenter<UploadVideoView>, Schedule
 	CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob);
 	Void viewRecentTagSets(String mustHaveTag);
 	void showPostBodyPreview(Double editorWidth, String html);
-	void doPostBlogEntry(BlogEntryType erotica, double width, String value, List<? extends Suggestion> tags,
+	void createNewBlogEntry(BlogEntryType entryType, double width, String value, List<? extends Suggestion> tags,
 			String value3);
 }
