@@ -5,14 +5,12 @@ import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
-import com.wallissoftware.pushstate.client.PushStateHistorian;
 
 import co.dporn.gmd.client.presenters.ContentPresenter;
 import co.dporn.gmd.client.presenters.ContentPresenter.BlogCardView;
 import gwt.material.design.client.ui.MaterialCard;
 import gwt.material.design.client.ui.MaterialImage;
 import gwt.material.design.client.ui.MaterialLabel;
-import gwt.material.design.client.ui.MaterialLink;
 import gwt.material.design.client.ui.animate.MaterialAnimation;
 import gwt.material.design.client.ui.animate.Transition;
 
@@ -28,7 +26,9 @@ public class BlogCardUi extends Composite implements BlogCardView {
 	@UiField
 	protected MaterialCard card;
 	@UiField
-	protected MaterialLink viewLink;
+	protected DpornLink viewLink;
+	@UiField
+	protected DpornLink viewChannel;
 
 	private int showDelay;
 
@@ -91,9 +91,10 @@ public class BlogCardUi extends Composite implements BlogCardView {
 	@Override
 	public void setViewLink(String linkUrl) {
 		this.viewLink.setHref(linkUrl);
-		this.viewLink.addClickHandler((e) -> {
-			e.preventDefault();
-			new PushStateHistorian().newItem(linkUrl, true);
-		});
+	}
+
+	@Override
+	public void setChannelLink(String linkUrl) {
+		this.viewChannel.setHref(linkUrl);
 	}
 }

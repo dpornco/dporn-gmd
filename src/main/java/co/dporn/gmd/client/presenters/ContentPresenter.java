@@ -42,6 +42,8 @@ public interface ContentPresenter extends IsChildPresenter<ContentView> {
 		void setAvatarUrl(String url);
 
 		void setDisplayName(String name);
+		
+		void setChannelLink(String linkUrl);
 
 		void setTitle(String title);
 
