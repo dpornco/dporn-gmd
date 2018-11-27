@@ -14,7 +14,6 @@ import co.dporn.gmd.client.presenters.AppPresenter.IsChildPresenter;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialImage;
 import gwt.material.design.client.ui.MaterialLabel;
-import gwt.material.design.client.ui.MaterialLink;
 import gwt.material.design.client.ui.MaterialPanel;
 import gwt.material.design.client.ui.MaterialSideNavPush;
 import gwt.material.design.client.ui.MaterialToast;

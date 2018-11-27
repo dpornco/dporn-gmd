@@ -56,20 +56,22 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 					return;
 				}
 				showDelay[0] += 500;
-				AccountInfo i = infoMap.get(p.getUsername());
+				String username = p.getUsername();
+				AccountInfo i = infoMap.get(username);
 				if (i == null) {
 					GWT.log("NO AUTHOR FOR FEATURED POST!");
 					return;
 				}
 				VideoCardUi card = new VideoCardUi();
-				card.setDisplayName(p.getUsername());
+				card.setChannelLink(Routes.channel(username));
+				card.setDisplayName(username);
 				card.setShowDelay(showDelay[0]);
-				String displayName = i.getDisplayName() == null ? p.getUsername() : i.getDisplayName();
+				String displayName = i.getDisplayName() == null ? username : i.getDisplayName();
 				card.setDisplayName(displayName);
-				card.setAvatarUrl(Routes.avatarImage(p.getUsername()));
+				card.setAvatarUrl(Routes.avatarImage(username));
 				card.setTitle(p.getTitle());
-				card.setVideoEmbedUrl(Routes.embedVideo(p.getUsername(), p.getPermlink()));
-				card.setViewLink(Routes.post(p.getUsername(), p.getPermlink()));
+				card.setVideoEmbedUrl(Routes.embedVideo(username, p.getPermlink()));
+				card.setViewLink(Routes.post(username, p.getPermlink()));
 				getContentView().getFeaturedPosts().add(card);
 			});
 		}).exceptionally(ex->{
@@ -144,20 +146,22 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 				}
 				incRecentVideoCount();
 				deferred(() -> {
-					AccountInfo i = infoMap.get(p.getUsername());
+					String username = p.getUsername();
+					AccountInfo i = infoMap.get(username);
 					if (i == null) {
 						return;
 					}
 					VideoCardUi card = new VideoCardUi();
-					card.setDisplayName(p.getUsername());
+					card.setDisplayName(username);
+					card.setChannelLink(Routes.channel(username));
 					card.setShowDelay(showDelay[0]);
 					showDelay[0] += 150; // 75
-					String displayName = i.getDisplayName() == null ? p.getUsername() : i.getDisplayName();
+					String displayName = i.getDisplayName() == null ? username : i.getDisplayName();
 					card.setDisplayName(displayName);
-					card.setAvatarUrl(Routes.avatarImage(p.getUsername()));
+					card.setAvatarUrl(Routes.avatarImage(username));
 					card.setTitle(p.getTitle());
-					card.setViewLink(Routes.post(p.getUsername(), p.getPermlink()));
-					card.setVideoEmbedUrl(Routes.embedVideo(p.getUsername(), p.getPermlink()));
+					card.setViewLink(Routes.post(username, p.getPermlink()));
+					card.setVideoEmbedUrl(Routes.embedVideo(username, p.getPermlink()));
 					getContentView().getRecentPosts().add(card);
 					if (timer[0] != null) {
 						timer[0].cancel();
@@ -197,7 +201,9 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 			int[] showDelay = { 0 };
 			f.getAuthors().forEach((username) -> {
 				BlogCardUi card = new BlogCardUi();
+				card.setViewLink(Routes.channel(username));
 				card.setDisplayName(username);
+				card.setChannelLinkVisible(false);
 				card.setShowDelay(showDelay[0]);
 				showDelay[0] += 75;
 				AccountInfo i = f.getInfoMap().get(username);
@@ -219,7 +225,6 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 					}
 				}
 				card.setImageUrl(coverImage);
-				card.setViewLink(Routes.channel(username));
 				cards.add(card);
 			});
 			cards.subList(0, Math.min(4, cards.size())).forEach((w) -> {

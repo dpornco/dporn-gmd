@@ -50,6 +50,10 @@ public interface ContentPresenter extends IsChildPresenter<ContentView> {
 		void setShowDelay(int showDelay);
 
 		void setViewLink(String linkUrl);
+
+		void setChannelLinkVisible(boolean visible);
+
+		void setViewLinkVisible(boolean visible);
 	}
 
 	interface VideoCardView extends BlogCardView {

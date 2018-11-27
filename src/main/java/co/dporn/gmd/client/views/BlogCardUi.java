@@ -97,4 +97,14 @@ public class BlogCardUi extends Composite implements BlogCardView {
 	public void setChannelLink(String linkUrl) {
 		this.viewChannel.setHref(linkUrl);
 	}
+
+	@Override
+	public void setChannelLinkVisible(boolean visible) {
+		this.viewChannel.setVisible(visible);
+	}
+	
+	@Override
+	public void setViewLinkVisible(boolean visible) {
+		this.viewLink.setVisible(visible);
+	}
 }

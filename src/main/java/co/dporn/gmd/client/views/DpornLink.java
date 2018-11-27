@@ -22,21 +22,5 @@ public class DpornLink extends MaterialLink {
 			e.preventDefault();
 			new PushStateHistorian().newItem(href, true);
 		});
-		enabledCheck();
-	}
-
-	private void enabledCheck() {
-		String href = getHref();
-		if (href == null || href.trim().isEmpty()) {
-			setEnabled(false);
-		} else {
-			setEnabled(true);
-		}
-	}
-
-	@Override
-	public void setHref(String href) {
-		super.setHref(href);
-		enabledCheck();
 	}
 }

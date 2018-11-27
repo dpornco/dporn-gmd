@@ -153,4 +153,14 @@ public class ChannelHeaderUi extends Composite implements BlogCardView, BlogHead
 	public void setChannelLink(String linkUrl) {
 		//NOOP
 	}
+
+	@Override
+	public void setChannelLinkVisible(boolean visible) {
+		//NOOP
+	}
+
+	@Override
+	public void setViewLinkVisible(boolean visible) {
+		//NOOP		
+	}
 }
