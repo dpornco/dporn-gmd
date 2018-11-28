@@ -20,11 +20,13 @@ import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.app.Routes;
 import co.dporn.gmd.client.app.TagSuggestion;
 import co.dporn.gmd.client.presenters.UploadErotica.UploadEroticaView;
+import co.dporn.gmd.client.presenters.UploadVideo.UploadVideoView;
 import co.dporn.gmd.client.views.ChannelUi;
 import co.dporn.gmd.client.views.ContentUi;
 import co.dporn.gmd.client.views.DisplayBlogEntryUi;
 import co.dporn.gmd.client.views.IsView;
 import co.dporn.gmd.client.views.UploadEroticaUi;
+import co.dporn.gmd.client.views.UploadVideoUi;
 import co.dporn.gmd.shared.DpornConsts;
 
 public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePresenter {
@@ -153,6 +155,20 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 			}
 			if (route.equals("upload/video")) {
 				GWT.log("Upload: Video");
+				deferred(() -> {
+					UploadVideoView childView = new UploadVideoUi(tagOracle,
+							new TreeSet<>(DpornConsts.MANDATORY_VIDEO_TAGS));
+					UploadVideo childPresenter = new UploadVideoImpl(model, childView);
+					presenters.put(route, childPresenter);
+					GWT.log("activeChildPresenter = childPresenter;");
+					activeChildPresenter = childPresenter;
+					GWT.log("view.setContentPresenter(childPresenter);");
+					view.setChildPresenter(childPresenter);
+					GWT.log("resetScrollPosition();");
+					resetScrollPosition();
+					GWT.log("deferred(childPresenter);");
+					deferred(childPresenter);
+				});
 				return;
 			}
 			if (route.equals("upload/photos")) {

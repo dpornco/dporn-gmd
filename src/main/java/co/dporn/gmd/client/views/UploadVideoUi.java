@@ -15,6 +15,7 @@ import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.Widget;
 
 import co.dporn.gmd.client.presenters.UploadErotica;
+import co.dporn.gmd.client.presenters.UploadVideo;
 import co.dporn.gmd.client.utils.DpornChipProvider;
 import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.TagSet;
@@ -26,17 +27,24 @@ import gwt.material.design.client.ui.MaterialContainer;
 import gwt.material.design.client.ui.MaterialDialog;
 import gwt.material.design.client.ui.MaterialDialogContent;
 import gwt.material.design.client.ui.MaterialDialogFooter;
+import gwt.material.design.client.ui.MaterialProgress;
 import gwt.material.design.client.ui.MaterialRow;
 import gwt.material.design.client.ui.MaterialTextBox;
 import gwt.material.design.client.ui.MaterialToast;
 
-public class UploadEroticaUi extends Composite implements UploadErotica.UploadEroticaView {
+public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoView {
 
-	interface ThisUiBinder extends UiBinder<Widget, UploadEroticaUi> {
+	interface ThisUiBinder extends UiBinder<Widget, UploadVideoUi> {
 	}
 
 	private static ThisUiBinder uiBinder = GWT.create(ThisUiBinder.class);
 
+	@UiField
+	protected MaterialProgress videoUploadProgress;
+	
+	@UiField
+	protected MaterialProgress posterUploadProgress;
+	
 	@UiField
 	protected TagAutoComplete ac;
 	@UiField
@@ -54,11 +62,11 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 	@UiField
 	protected MaterialContainer mainContent;
 
-	private UploadErotica presenter;
+	private UploadVideo presenter;
 
-	public UploadEroticaUi(SuggestOracle suggestOracle, Set<String> mandatorySuggestions) {
+	public UploadVideoUi(SuggestOracle suggestOracle, Set<String> mandatorySuggestions) {
 		initWidget(uiBinder.createAndBindUi(this));
-		btnTagSets.addClickHandler(e -> presenter.viewRecentTagSets("erotica"));
+		btnTagSets.addClickHandler(e -> presenter.viewRecentTagSets("dporncovideo"));
 		btnClear.addClickHandler((e) -> reset());
 		btnPreview.addClickHandler(e -> {
 			presenter.showPostBodyPreview((double) editor.getEditor().width(), editor.getValue());
@@ -68,7 +76,7 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 			editor.clearErrorText();
 			ac.clearErrorText();
 			presenter.createNewBlogEntry( //
-					BlogEntryType.EROTICA, //
+					BlogEntryType.VIDEO, //
 					(double) editor.getEditor().width(), //
 					title.getValue(), //
 					ac.getValue(), //
@@ -80,7 +88,7 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 	}
 
 	@Override
-	public void bindPresenter(UploadErotica presenter) {
+	public void bindPresenter(UploadVideo presenter) {
 		this.presenter = presenter;
 		editor.bindIpfsApi(presenter);
 	}

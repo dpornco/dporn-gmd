@@ -9,6 +9,7 @@ import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import co.dporn.gmd.client.presenters.AppPresenter.IsChildPresenter;
 import co.dporn.gmd.client.presenters.UploadVideo.UploadVideoView;
 import co.dporn.gmd.client.views.CommonUploadViewFeatures;
+import co.dporn.gmd.client.views.DpornRichEditor.IpfsApi;
 import co.dporn.gmd.client.views.IsView;
 import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.TagSet;
@@ -16,7 +17,7 @@ import elemental2.dom.Blob;
 import elemental2.dom.ProgressEvent;
 import elemental2.dom.XMLHttpRequest.OnprogressFn;
 
-public interface UploadVideo extends IsChildPresenter<UploadVideoView>, ScheduledCommand {
+public interface UploadVideo extends IsChildPresenter<UploadVideoView>, ScheduledCommand, IpfsApi {
 	interface UploadVideoView extends IsView<UploadVideo>, CommonUploadViewFeatures {
 		void onprogressFn(ProgressEvent p0);
 		OnprogressFn getOnprogressFn(String filename);

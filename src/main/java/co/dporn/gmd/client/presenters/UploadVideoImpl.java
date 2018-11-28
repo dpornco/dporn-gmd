@@ -16,16 +16,22 @@ import co.dporn.gmd.client.views.IsView;
 import co.dporn.gmd.shared.BlogEntryType;
 import elemental2.dom.Blob;
 import elemental2.dom.XMLHttpRequest.OnprogressFn;
-import gwt.material.design.client.ui.MaterialToast;
 
-public class UploadEroticaImpl implements UploadErotica {
+public class UploadVideoImpl implements UploadVideo {
 
 	private AppControllerModel model;
-	private UploadEroticaView view;
-	
-	public UploadEroticaImpl(AppControllerModel model, UploadEroticaView view) {
+	private UploadVideoView view;
+	private int posX;
+	private int posY;
+
+	public UploadVideoImpl(AppControllerModel model, UploadVideoView childView) {
 		setModel(model);
-		setView(view);
+		setView(childView);
+	}
+
+	@Override
+	public IsView<?> getContentView() {
+		return view;
 	}
 
 	@Override
@@ -34,24 +40,10 @@ public class UploadEroticaImpl implements UploadErotica {
 	}
 
 	@Override
-	public void setView(UploadEroticaView view) {
+	public void setView(UploadVideoView view) {
 		this.view=view;
 		view.bindPresenter(this);
 	}
-
-	@Override
-	public void execute() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void reset() {
-		view.reset();
-	}
-
-	private int posX = 0;
-	private int posY = 0;
 
 	@Override
 	public void saveScrollPosition() {
@@ -65,8 +57,14 @@ public class UploadEroticaImpl implements UploadErotica {
 	}
 
 	@Override
-	public IsView<?> getContentView() {
-		return view;
+	public void execute() {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void reset() {
+		view.reset();
 	}
 
 	@Override
@@ -89,19 +87,11 @@ public class UploadEroticaImpl implements UploadErotica {
 		String newHtml = reformatter.reformat(html);
 		view.showPreview(newHtml);
 		GWT.log(newHtml);
-//		model.getHtmlSanitized(newHtml).thenAccept(response->{
-//			String sanitizedHtml = response.getSanitizedHtml();
-//			GWT.log(html);
-//			GWT.log(sanitizedHtml);
-//			view.showPreview(sanitizedHtml);
-//		}).exceptionally((ex)->{
-//			MaterialToast.fireToast(ex.getMessage());
-//			return null;
-//		});
 	}
 
 	@Override
-	public void createNewBlogEntry(BlogEntryType entryType, double width, String title, List<? extends Suggestion> tags,
+	public void createNewBlogEntry(BlogEntryType entryType, double width, String title,
+			List<? extends Suggestion> tags,
 			String content) {
 		if (tags == null || tags.isEmpty()) {
 			view.setErrorBadTags();
@@ -132,4 +122,5 @@ public class UploadEroticaImpl implements UploadErotica {
 			return null;
 		});
 	}
+
 }
