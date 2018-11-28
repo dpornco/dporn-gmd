@@ -1,5 +1,6 @@
 package co.dporn.gmd.client.utils;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
@@ -9,18 +10,25 @@ import gwt.material.design.client.constants.ChipType;
 import gwt.material.design.client.constants.IconType;
 import gwt.material.design.client.ui.MaterialChip;
 
-public class ChipProvider extends DefaultMaterialChipProvider {
+public class DpornChipProvider extends DefaultMaterialChipProvider {
 	private Set<String> mandatoryTags;
 
 	public Set<String> getMandatoryTags() {
 		return mandatoryTags;
 	}
+
 	public void setMandatoryTags(Set<String> mandatoryTags) {
 		this.mandatoryTags = mandatoryTags;
 	}
-	public ChipProvider(Set<String> mandatoryTags) {
-		this.mandatoryTags=mandatoryTags;
+
+	public DpornChipProvider() {
+		this.mandatoryTags = new HashSet<>();
 	}
+
+	public DpornChipProvider(Set<String> mandatoryTags) {
+		this.mandatoryTags = mandatoryTags;
+	}
+
 	public MaterialChip getChip(String text) {
 		Suggestion suggestion = new Suggestion() {
 			@Override
