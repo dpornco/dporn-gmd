@@ -39,10 +39,8 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 
 	@UiField
 	protected TagAutoComplete ac;
-
 	@UiField
 	protected MaterialButton btnTagSets;
-
 	@UiField
 	protected MaterialButton btnClear;
 	@UiField
@@ -53,17 +51,13 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 	protected DpornRichEditor editor;
 	@UiField
 	protected MaterialTextBox title;
-
 	@UiField
 	protected MaterialContainer mainContent;
-
-	private final Set<String> mandatorySuggestions;
 
 	private UploadErotica presenter;
 
 	public UploadEroticaUi(SuggestOracle suggestOracle, Set<String> mandatorySuggestions) {
 		initWidget(uiBinder.createAndBindUi(this));
-		this.mandatorySuggestions = mandatorySuggestions;
 		btnTagSets.addClickHandler(e -> presenter.viewRecentTagSets("erotica"));
 		btnClear.addClickHandler((e) -> reset());
 		btnPreview.addClickHandler(e -> {
@@ -85,8 +79,6 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 		ac.setMandatoryTags(mandatorySuggestions);
 	}
 
-	
-
 	@Override
 	public void bindPresenter(UploadErotica presenter) {
 		this.presenter = presenter;
@@ -99,40 +91,22 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 	};
 
 	@Override
-	public String getCoverImage() {
-		// TODO Auto-generated method stub
-		return null;
-	};
-
-	@Override
 	public OnprogressFn getOnprogressFn(String filename) {
 		return new OnprogressFn() {
-			int percent = -1;
+			long start = 0;
 
 			@Override
 			public void onInvoke(ProgressEvent p0) {
 				if (!p0.lengthComputable) {
 					return;
 				}
-				int newPercent = 10 * (int) (Math.ceil(p0.loaded * 100 / p0.total) / 10);
-				if (newPercent != percent) {
-					percent = newPercent;
+				if (System.currentTimeMillis() - start > 10000l) {
+					start = System.currentTimeMillis();
+					int percent = (int) Math.ceil((double) p0.loaded * 100d / (double) p0.total);
 					MaterialToast.fireToast("Posting to IPFS: " + filename + " " + percent + "%");
 				}
 			}
 		};
-	}
-
-	@Override
-	public List<String> getTags() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean isNoCoverWanted() {
-		// TODO Auto-generated method stub
-		return false;
 	}
 
 	@Override
@@ -152,42 +126,6 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 
 	@Override
 	public void setAlwaysTags(List<String> alwaysTags) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void setBody(String body) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void setCoverImage(String coverImage) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void setNoCoverWanted(boolean noCoverWanted) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void setTags(List<String> tags) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void showPreviousTags(List<String> tags) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void showStockCoverImages(List<String> imageUrls) {
 		// TODO Auto-generated method stub
 
 	}
@@ -288,9 +226,9 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 
 	@Override
 	public void reset() {
-		ac.setItemValues(new ArrayList<>(this.mandatorySuggestions), true);
-		title.clear();
+		ac.reset();
+		title.reset();
 		editor.reset();
-		title.setFocus(true);		
+		title.setFocus(true);
 	}
 }

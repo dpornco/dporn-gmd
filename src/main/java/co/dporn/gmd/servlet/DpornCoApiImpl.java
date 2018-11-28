@@ -21,6 +21,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
 import co.dporn.gmd.servlet.mongodb.MongoDpornCo;
+import co.dporn.gmd.servlet.utils.HtmlSanitizer;
 import co.dporn.gmd.servlet.utils.Mapper;
 import co.dporn.gmd.servlet.utils.ResponseWithHeaders;
 import co.dporn.gmd.servlet.utils.ServerRestClient;
@@ -36,6 +37,7 @@ import co.dporn.gmd.shared.BlogEntryResponse;
 import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.CommentConfirmResponse;
 import co.dporn.gmd.shared.DpornCoApi;
+import co.dporn.gmd.shared.HtmlSanitizedResponse;
 import co.dporn.gmd.shared.IpfsHashResponse;
 import co.dporn.gmd.shared.MongoDate;
 import co.dporn.gmd.shared.PingResponse;
@@ -322,6 +324,20 @@ public class DpornCoApiImpl implements DpornCoApi {
 	public BlogEntryResponse getBlogEntry(String username, String permlink) {
 		BlogEntryResponse response = new BlogEntryResponse();
 		response.setBlogEntry(MongoDpornCo.getEntry(username, permlink));
+		return response;
+	}
+
+	@Override
+	public HtmlSanitizedResponse getHtmlSanitized(String username, String authorization, String html) {
+		if (!isAuthorized(username, authorization)) {
+			setResponseAsUnauthorized();
+			return null;
+		}
+		if (html==null) {
+			html="";
+		}
+		HtmlSanitizedResponse response = new HtmlSanitizedResponse();
+		response.setSanitizedHtml(HtmlSanitizer.get().sanitize(html));
 		return response;
 	}
 }

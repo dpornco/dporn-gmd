@@ -24,6 +24,16 @@ public class TagAutoComplete extends MaterialAutoComplete {
 	public void setMaxTags(int maxTags) {
 		this.maxTags = maxTags;
 	}
+	
+	@Override
+	public void reset() {
+		super.reset();
+		MaterialChipProvider chipProvider = getChipProvider();
+		if (chipProvider!=null && chipProvider instanceof DpornChipProvider) {
+			Set<String> mandatoryTags = ((DpornChipProvider)chipProvider).getMandatoryTags();
+			setItemValues(new ArrayList<>(mandatoryTags), true);
+		}
+	}
 
 	protected void validateTags(ValueChangeEvent<List<? extends Suggestion>> event) {
 		GWT.log("validate tags");
@@ -42,11 +52,6 @@ public class TagAutoComplete extends MaterialAutoComplete {
 			already.add(tag.getReplacementString());
 		}
 	}
-	
-//	@Override
-//    public void setErrorText(String errorText) {
-//        getStatusTextMixin().setErrorText(errorText);
-//    }
 	
 	public TagAutoComplete() {
 		super(AutocompleteType.CHIP);

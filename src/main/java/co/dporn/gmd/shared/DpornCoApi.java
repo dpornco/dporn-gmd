@@ -16,6 +16,11 @@ import javax.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public interface DpornCoApi {
+	
+	@POST
+	@Path("html/sanitized")
+	HtmlSanitizedResponse getHtmlSanitized(@HeaderParam("username") String username,
+			@HeaderParam("Authorization") String authorization, String html);
 
 	@GET
 	@Path("blog/entry/{username}/{permlink}")

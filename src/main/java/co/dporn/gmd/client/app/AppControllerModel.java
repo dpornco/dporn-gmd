@@ -8,6 +8,7 @@ import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.BlogEntry;
 import co.dporn.gmd.shared.BlogEntryListResponse;
 import co.dporn.gmd.shared.BlogEntryType;
+import co.dporn.gmd.shared.HtmlSanitizedResponse;
 import co.dporn.gmd.shared.TagSet;
 import elemental2.dom.Blob;
 import elemental2.dom.XMLHttpRequestUpload.OnprogressFn;
@@ -28,6 +29,7 @@ public interface AppControllerModel {
 	CompletableFuture<BlogEntryListResponse> listBlogEntries(BlogEntryType blogEntryType, String startId, int count);
 	CompletableFuture<ActiveBlogsResponse> listFeaturedBlogs();
 	CompletableFuture<ActiveBlogsResponse> getBlogInfo(String username);
+	CompletableFuture<HtmlSanitizedResponse> getHtmlSanitized(String html);
 	
 	CompletableFuture<BlogEntryListResponse> listFeaturedBlogEntries(int count);
 	default CompletableFuture<BlogEntryListResponse> listFeaturedBlogEntries() {

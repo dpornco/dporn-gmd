@@ -192,6 +192,22 @@ public class HtmlReformatter {
 				style: while (iStyles.hasNext()) {
 					String next = iStyles.next();
 					GWT.log("STYLE: '" + next + "'");
+					if (next.equals("text-align: justify")) {
+						JQuery.$(element).wrap("<div class='text-justify'>");
+						continue style;
+					}
+					if (next.equals("text-align: right")) {
+						JQuery.$(element).wrap("<div class='text-right'>");
+						continue style;
+					}
+					if (next.equals("text-align: right")) {
+						JQuery.$(element).wrap("<div class='text-right'>");
+						continue style;
+					}
+//					if (next.equals("text-align: center")) {
+//						JQuery.$(element).wrap("<div class='text-center'>");
+//						continue style;
+//					}
 					if (next.equals("text-align: center")) {
 						JQuery.$(element).wrap("<center>");
 						continue style;

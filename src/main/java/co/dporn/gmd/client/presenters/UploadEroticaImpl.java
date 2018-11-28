@@ -16,6 +16,7 @@ import co.dporn.gmd.client.views.IsView;
 import co.dporn.gmd.shared.BlogEntryType;
 import elemental2.dom.Blob;
 import elemental2.dom.XMLHttpRequest.OnprogressFn;
+import gwt.material.design.client.ui.MaterialToast;
 
 public class UploadEroticaImpl implements UploadErotica {
 
@@ -46,10 +47,6 @@ public class UploadEroticaImpl implements UploadErotica {
 
 	@Override
 	public void reset() {
-		view.setBody(null);
-		view.setCoverImage(null);
-		view.setNoCoverWanted(false);
-		view.setTags(null);
 		view.setTitle(null);
 	}
 
@@ -90,8 +87,17 @@ public class UploadEroticaImpl implements UploadErotica {
 		GWT.log("SCALE: "+imgScaleWidth);
 		HtmlReformatter reformatter = new HtmlReformatter(imgScaleWidth);
 		String newHtml = reformatter.reformat(html);
+		view.showPreview(newHtml);
 		GWT.log(newHtml);
-		view.showPreview(html);
+//		model.getHtmlSanitized(newHtml).thenAccept(response->{
+//			String sanitizedHtml = response.getSanitizedHtml();
+//			GWT.log(html);
+//			GWT.log(sanitizedHtml);
+//			view.showPreview(sanitizedHtml);
+//		}).exceptionally((ex)->{
+//			MaterialToast.fireToast(ex.getMessage());
+//			return null;
+//		});
 	}
 
 	@Override

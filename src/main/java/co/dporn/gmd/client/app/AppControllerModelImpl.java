@@ -42,6 +42,7 @@ import co.dporn.gmd.shared.BlogEntry;
 import co.dporn.gmd.shared.BlogEntryListResponse;
 import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.DpornConsts;
+import co.dporn.gmd.shared.HtmlSanitizedResponse;
 import co.dporn.gmd.shared.IpfsHashResponse;
 import co.dporn.gmd.shared.TagSet;
 import elemental2.dom.Blob;
@@ -771,5 +772,12 @@ public class AppControllerModelImpl implements AppControllerModel {
 	@Override
 	public CompletableFuture<BlogEntryListResponse> listBlogEntries(BlogEntryType entryType, int count) {
 		return ClientRestClient.get().listBlogEntries(entryType, count);
+	}
+
+	@Override
+	public CompletableFuture<HtmlSanitizedResponse> getHtmlSanitized(String html) {
+		String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
+		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
+		return ClientRestClient.get().getHtmlSanitized(username, authorization, html);
 	}
 }

@@ -18,6 +18,7 @@ import co.dporn.gmd.shared.BlogEntryResponse;
 import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.CommentConfirmResponse;
 import co.dporn.gmd.shared.DpornCoApi;
+import co.dporn.gmd.shared.HtmlSanitizedResponse;
 import co.dporn.gmd.shared.PingResponse;
 import co.dporn.gmd.shared.SuggestTagsResponse;
 import elemental2.dom.Blob;
@@ -50,6 +51,12 @@ public class ClientRestClient {
 	}
 
 	private final DpornCoRestApi rest;
+	
+	public CompletableFuture<HtmlSanitizedResponse> getHtmlSanitized(String username, String authorization, String html) {
+		MethodCallbackAsFuture<HtmlSanitizedResponse> callback = new MethodCallbackAsFuture<>();
+		call(callback).getHtmlSanitized(username, authorization, html);
+		return callback.getFuture();
+	}
 	
 	public CompletableFuture<CommentConfirmResponse> commentConfirm(String username, String authorization, String permlink) {
 		MethodCallbackAsFuture<CommentConfirmResponse> callback = new MethodCallbackAsFuture<>();
