@@ -41,6 +41,9 @@ public class HtmlReformatter {
 			"tr", "td", "thead", "center", "strong", //
 			"b", "em", "i", "strike", "u", "cite", //
 			"blockquote", "pre", "br", "hr"));
+	
+	private static final Set<String> TAG_ZAPLIST = new HashSet<>(Arrays.asList( //
+			"script", "style"));
 
 	private static final String ATTR_STYLE = "style";
 
@@ -159,13 +162,18 @@ public class HtmlReformatter {
 		}
 		String tag = String.valueOf(element.tagName).toLowerCase();
 		GWT.log("tag: " + tag);
+		if (TAG_ZAPLIST.contains(tag)) {
+			GWT.log("REMOVE: " + tag);
+			JQuery.$(element).remove();
+			return;
+		}
 		if (!TAG_WHITELIST.contains(tag)) {
 			GWT.log("UNWRAPPED CHILDREN OF: " + tag);
 			JQuery.$(element).contents().unwrap();
 			return;
 		}
 
-		// walk list in reverse to simplify deletes
+		// walk list in depth first to simplify deletes and unwraps
 		String[] attributes = element.getAttributeNames();
 		attrs: for (String aname : attributes) {
 			aname = aname.toLowerCase();
@@ -193,15 +201,15 @@ public class HtmlReformatter {
 					String next = iStyles.next();
 					GWT.log("STYLE: '" + next + "'");
 					if (next.equals("text-align: justify")) {
-						JQuery.$(element).wrap("<div class='text-justify'>");
+						JQuery.$(element).wrap("<div class='text-justify' style='text-align: justify;'>");
 						continue style;
 					}
 					if (next.equals("text-align: right")) {
-						JQuery.$(element).wrap("<div class='text-right'>");
+						JQuery.$(element).wrap("<div class='text-right' style='text-align: right;'>");
 						continue style;
 					}
-					if (next.equals("text-align: right")) {
-						JQuery.$(element).wrap("<div class='text-right'>");
+					if (next.equals("text-align: left")) {
+						JQuery.$(element).wrap("<div class='text-left' style='text-align: left;>");
 						continue style;
 					}
 //					if (next.equals("text-align: center")) {
