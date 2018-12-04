@@ -14,7 +14,6 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.Widget;
 
-import co.dporn.gmd.client.presenters.UploadErotica;
 import co.dporn.gmd.client.presenters.UploadVideo;
 import co.dporn.gmd.client.utils.DpornChipProvider;
 import co.dporn.gmd.shared.BlogEntryType;
@@ -27,10 +26,12 @@ import gwt.material.design.client.ui.MaterialContainer;
 import gwt.material.design.client.ui.MaterialDialog;
 import gwt.material.design.client.ui.MaterialDialogContent;
 import gwt.material.design.client.ui.MaterialDialogFooter;
+import gwt.material.design.client.ui.MaterialImage;
 import gwt.material.design.client.ui.MaterialProgress;
 import gwt.material.design.client.ui.MaterialRow;
 import gwt.material.design.client.ui.MaterialTextBox;
 import gwt.material.design.client.ui.MaterialToast;
+import gwt.material.design.client.ui.MaterialVideo;
 
 public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoView {
 
@@ -41,9 +42,20 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 
 	@UiField
 	protected MaterialProgress videoUploadProgress;
-	
 	@UiField
 	protected MaterialProgress posterUploadProgress;
+	@UiField
+	protected MaterialImage posterImage;
+	@UiField
+	protected MaterialVideo video;
+	@UiField
+	protected MaterialButton btnUploadVideo;
+	@UiField
+	protected MaterialButton btnUploadImage;
+	@UiField
+	protected HiddenFileUpload fileUploadImage;
+	@UiField
+	protected HiddenFileUpload fileUploadVideo;
 	
 	@UiField
 	protected TagAutoComplete ac;
@@ -85,8 +97,10 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		});
 		ac.setSuggestions(suggestOracle);
 		ac.setMandatoryTags(mandatorySuggestions);
+		btnUploadImage.addClickHandler((e)->fileUploadImage.click());
+		btnUploadVideo.addClickHandler((e)->fileUploadVideo.click());
 	}
-
+	
 	@Override
 	public void bindPresenter(UploadVideo presenter) {
 		this.presenter = presenter;
