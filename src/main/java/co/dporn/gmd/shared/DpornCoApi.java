@@ -40,6 +40,12 @@ public interface DpornCoApi {
 	@PUT
 	IpfsHashResponse ipfsPut(InputStream is, @HeaderParam("username") String username,
 			@HeaderParam("Authorization") String authorization, @PathParam("filename") String filename);
+	
+	@Consumes(MediaType.WILDCARD)
+	@Path("ipfs/video/put/{filename}")
+	@PUT
+	IpfsHashResponse ipfsPutVideo(InputStream is, @HeaderParam("username") String username,
+			@HeaderParam("Authorization") String authorization, @PathParam("filename") String filename);
 
 	@Path("suggest/{tag}")
 	@GET

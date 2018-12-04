@@ -232,12 +232,37 @@ public class DpornCoApiImpl implements DpornCoApi {
 		response.setFilename(filename);
 		if (!ipfsHashes.isEmpty()) {
 			response.setIpfsHash(ipfsHashes.get(ipfsHashes.size() - 1));
+			System.out.println("ipfsPut => ipfs-hash: "+ipfsHashes.toString());
+		}
+		if (!locations.isEmpty()) {
+			response.setLocation(locations.get(locations.size() - 1));
+			System.out.println("ipfsPut => location: "+locations.toString());
+		}
+		return response;
+	}
+	
+	@Override
+	public IpfsHashResponse ipfsPutVideo(InputStream is, String username, String authorization, String filename) {
+		if (!isAuthorized(username, authorization)) {
+			setResponseAsUnauthorized();
+			return null;
+		}
+		filename = safeFilename(filename);
+		ResponseWithHeaders putResponse = ServerRestClient.putStream(IPFS_GATEWAY + IPFS_EMPTY_DIR + "/" + filename, is,
+				null);
+		List<String> ipfsHashes = putResponse.getHeaders().get("ipfs-hash");
+		List<String> locations = putResponse.getHeaders().get("location");
+		IpfsHashResponse response = new IpfsHashResponse();
+		response.setFilename(filename);
+		if (!ipfsHashes.isEmpty()) {
+			response.setIpfsHash(ipfsHashes.get(ipfsHashes.size() - 1));
 		}
 		if (!locations.isEmpty()) {
 			response.setLocation(locations.get(locations.size() - 1));
 		}
 		return response;
 	}
+
 
 	@Override
 	public CommentConfirmResponse commentConfirm(String username, String authorization, String permlink) {
@@ -340,4 +365,5 @@ public class DpornCoApiImpl implements DpornCoApi {
 		response.setSanitizedHtml(HtmlSanitizer.get().sanitize(html));
 		return response;
 	}
+
 }
