@@ -110,7 +110,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		ac.setMandatoryTags(mandatorySuggestions);
 		btnUploadImage.addClickHandler((e) -> fileUploadImage.click());
 		btnUploadVideo.addClickHandler((e) -> fileUploadVideo.click());
-		fileUploadImage.setAccept(".jpg,.jpeg,.png,.gif,.svg");
+		fileUploadImage.setAccept(".jpg,.jpeg,.png,.gif");
 		fileUploadVideo.setAccept("video/*");
 		fileUploadImage.addChangeHandler(this::loadImageAndResize);
 		fileUploadVideo.addChangeHandler(this::uploadVideo);
@@ -140,7 +140,6 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 					return;
 				}
 				if (p0.loaded == p0.total) {
-					log("Copy complete");
 					posterUploadProgress.setType(ProgressType.INDETERMINATE);
 					return;
 				}
@@ -156,20 +155,14 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		reader.onabort = (e) -> loadImageError();
 		reader.onerror = (e) -> loadImageError();
 		reader.onloadend = (e) -> {
-			GWT.log("FileReader: onloadend");
 			String asString = reader.result.asString();
 			HTMLImageElement tmpImage = Js.cast(DomGlobal.document.createElement("img"));
 			tmpImage.onabort = (f) -> loadImageError();
 			tmpImage.onerror = (f) -> loadImageError();
 			tmpImage.onload = (f) -> {
-				GWT.log("imgUtils: resizeInplace");
 				imgUtils.resizeInplace(tmpImage, 1280, 720, true).thenAccept(resized -> {
-					GWT.log("imgUtils: resized");
-					GWT.log("imgUtils: toBlob");
 					imgUtils.toBlob(resized).thenAccept(blob -> {
-						GWT.log("presenter: postBlobToIpfsFile");
 						presenter.postBlobToIpfsFile(file.name, blob, imageOnprogressFn).thenAccept(location -> {
-							log("IMAGE LOCATION: " + location);
 							posterUploadProgress.setType(ProgressType.DETERMINATE);
 							posterUploadProgress.setPercent(100d);
 							posterImage.setMaxHeight("240px");
@@ -199,7 +192,6 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			posterImage.setUrl(asString);
 			return e;
 		};
-		GWT.log("FileReader: readAsDataURL");
 		reader.readAsDataURL(file.slice());
 	}
 
@@ -261,7 +253,6 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 
 	@Override
 	public void showTagSets(List<TagSet> sets) {
-		GWT.log("Tag sets: " + sets.size());
 		if (sets.isEmpty()) {
 			MaterialToast.fireToast("No recent tag sets available.");
 			return;
