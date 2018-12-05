@@ -26,10 +26,18 @@ public class HiddenFileUpload extends FileUpload {
 	}
 
 	public void setAccept(String accepts) {
-
+		if (accepts==null || accepts.trim().isEmpty()) {
+			getElement().removeAttribute("accept");
+			return;
+		}
+		getElement().setAttribute("accept", accepts);
 	}
 
 	public void setMultiple(boolean multipleUploads) {
-
+		if (!multipleUploads) {
+			getElement().removeAttribute("multiple");
+			return;
+		} 
+		getElement().setAttribute("multiple", "multiple");
 	}
 }

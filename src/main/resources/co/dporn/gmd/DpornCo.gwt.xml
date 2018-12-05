@@ -6,6 +6,8 @@
  "https://raw.githubusercontent.com/gwtproject/gwt/master/distro-source/core/src/gwt-module.dtd">
 <module rename-to='dpornco_application'>
 
+	<collapse-all-properties/>
+
 	<!-- routing -->
 	<inherits name="com.wallissoftware.pushstate.PushState" />
 	<inherits name="org.apache.commons.GWTCommonsLang3" />

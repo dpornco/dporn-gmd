@@ -20,6 +20,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.lang3.StringUtils;
+
 import co.dporn.gmd.servlet.mongodb.MongoDpornCo;
 import co.dporn.gmd.servlet.utils.HtmlSanitizer;
 import co.dporn.gmd.servlet.utils.Mapper;
@@ -182,12 +184,18 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 	protected String safeFilename(String filename) {
 		filename = filename.trim();
-		filename = filename.replace(" ", "-");
 		filename = filename.toLowerCase();
-		filename = filename.replaceAll("[^a-z0-9\\.-_]", "");
+		filename = filename.replaceAll("[^a-z0-9\\.-_]", "-");
 		filename = filename.replaceAll("-+", "-");
-		if (filename.trim().isEmpty()) {
+		filename = StringUtils.strip(filename, "-");
+		if (filename.isEmpty()) {
 			filename = String.valueOf(nextCounter());
+		}
+		if (filename.startsWith(".")) {
+			filename = String.valueOf(nextCounter()) + filename;
+		}
+		if (filename.length()<5) {
+			filename = String.valueOf(nextCounter()) + "-" + filename;
 		}
 		return filename;
 	}

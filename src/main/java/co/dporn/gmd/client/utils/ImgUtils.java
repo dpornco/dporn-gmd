@@ -1,4 +1,4 @@
-package co.dporn.gmd.client.img;
+package co.dporn.gmd.client.utils;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -35,14 +35,15 @@ public class ImgUtils {
 	}
 
 	private void message(String message) {
+		DomGlobal.console.log(this.getClass().getSimpleName(), message);
 		if (handler == null) {
 			return;
 		}
 		handler.onEventMessage(message);
 	}
 
-	public CompletableFuture<HTMLImageElement> resizeInplace(HTMLImageElement image, double maxWidth,
-			double maxHeight) {
+	public CompletableFuture<HTMLImageElement> resizeInplace(HTMLImageElement image, double maxWidth, double maxHeight,
+			boolean maxpect) {
 		CompletableFuture<HTMLImageElement> future = new CompletableFuture<>();
 		if (image == null) {
 			future.completeExceptionally(new NullPointerException("Image element must not be null"));
@@ -55,7 +56,7 @@ public class ImgUtils {
 				@Override
 				public void handleEvent(Event evt) {
 					image.removeEventListener("onload", _self);
-					resizeInplace(image, maxWidth, maxHeight).thenAccept(value -> {
+					resizeInplace(image, maxWidth, maxHeight, maxpect).thenAccept(value -> {
 						future.complete(value);
 					}).exceptionally(ex -> {
 						future.completeExceptionally(ex);
@@ -72,14 +73,10 @@ public class ImgUtils {
 		final double w = image.naturalWidth;
 		final double h = image.naturalHeight;
 		/*
-		 * scale image down
+		 * scale image calculations
 		 */
-		if (w > maxWidth) {
-			scaleWidth = maxWidth / w;
-		}
-		if (h > maxHeight) {
-			scaleHeight = maxHeight / h;
-		}
+		scaleWidth = maxWidth / w;
+		scaleHeight = maxHeight / h;
 		if (scaleWidth < scaleHeight) {
 			scale = scaleWidth;
 		} else {
@@ -87,15 +84,17 @@ public class ImgUtils {
 		}
 
 		// don't canvas resize webp or gif - animations are lost
+		boolean skip = false;
 		switch (guessExtension(image.src)) {
 		case "webp":
 		case "gif":
 			scale = 1.0d;
+			skip = true;
 			break;
 		default:
 		}
 
-		if (scale < 1) {
+		if (!skip && (scale < 1 || maxpect)) {
 			int newWidth = (int) (w * scale);
 			int newHeight = (int) (h * scale);
 			message("Resizing: " + newWidth + " x " + newHeight);
@@ -116,7 +115,7 @@ public class ImgUtils {
 	public CompletableFuture<HTMLImageElement> resizeInplace(Element image, int maxWidth, int maxHeight) {
 		try {
 			HTMLImageElement cast = Js.cast(image);
-			return resizeInplace(cast, maxWidth, maxHeight);
+			return resizeInplace(cast, maxWidth, maxHeight, false);
 		} catch (Exception e) {
 			CompletableFuture<HTMLImageElement> future = new CompletableFuture<>();
 			future.completeExceptionally(e);
@@ -129,7 +128,7 @@ public class ImgUtils {
 	}
 
 	public CompletableFuture<HTMLImageElement> resizeInplace(HTMLImageElement image) {
-		return resizeInplace(image, DEFAULT_MAX_IMAGE_WIDTH, DEFAULT_MAX_IMAGE_HEIGHT);
+		return resizeInplace(image, DEFAULT_MAX_IMAGE_WIDTH, DEFAULT_MAX_IMAGE_HEIGHT, false);
 	}
 
 	public String guessMime(String dataUrl) {
@@ -206,7 +205,8 @@ public class ImgUtils {
 		}
 		String srcset = e.getAttribute("srcset");
 		if (srcset != null && srcset.contains("://steemitimages.com/")) {
-			String newsrcset = srcset.replaceAll("https://steemitimages.com/\\d+x\\d+/", "https://steemitimages.com/" + j.width() + "x0/");
+			String newsrcset = srcset.replaceAll("https://steemitimages.com/\\d+x\\d+/",
+					"https://steemitimages.com/" + j.width() + "x0/");
 			if (!newsrcset.equals(srcset)) {
 				e.setAttribute("srcset", newsrcset);
 			}

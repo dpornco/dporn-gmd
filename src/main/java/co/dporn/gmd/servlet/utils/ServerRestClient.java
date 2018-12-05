@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -12,8 +13,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.io.IOUtils;
 
 public class ServerRestClient {
 
@@ -51,7 +50,7 @@ public class ServerRestClient {
 			urlConnection.setRequestProperty("User-Agent", "dpornco.app/2.0");
 			urlConnection.setDoInput(true);
 			urlConnection.setDoOutput(true);
-			IOUtils.copy(is, urlConnection.getOutputStream());
+			copyLargeSync(is, urlConnection.getOutputStream());
 			try (InputStream inputStream = urlConnection.getInputStream()) {
 				response.setBody(getString(inputStream));
 				Map<String, List<String>> headerFields = urlConnection.getHeaderFields();
@@ -81,7 +80,7 @@ public class ServerRestClient {
 			urlConnection.setRequestProperty("User-Agent", "dpornco.app/2.0");
 			urlConnection.setDoInput(true);
 			urlConnection.setDoOutput(true);
-			IOUtils.copy(is, urlConnection.getOutputStream());
+			copyLargeSync(is, urlConnection.getOutputStream());
 			try (InputStream inputStream = urlConnection.getInputStream()) {
 				response.setBody(getString(inputStream));
 				response.getHeaders().putAll(urlConnection.getHeaderFields());
@@ -173,4 +172,34 @@ public class ServerRestClient {
 		}
 		return buf.toString(StandardCharsets.UTF_8.name());
 	}
+	
+	/**
+	     * Copies bytes from a large (over 2GB) <code>InputStream</code> to an
+	     * <code>OutputStream</code>.
+	     * <p>
+	     * This method uses the provided buffer, so there is no need to use a
+	     * <code>BufferedInputStream</code>.
+	     * <p>
+	     *
+	     * @param input the <code>InputStream</code> to read from
+	     * @param output the <code>OutputStream</code> to write to
+	     * @param buffer the buffer to use for the copy
+	     * @return the number of bytes copied
+	     * @throws NullPointerException if the input or output is null
+	     * @throws IOException          if an I/O error occurs
+	     * @since 2.2
+	     */
+	    public static long copyLargeSync(final InputStream input, final OutputStream output)
+	            throws IOException {
+	    	byte[] buffer = new byte[4096];
+	        long count = 0;
+	        int n;
+	        while (EOF != (n = input.read(buffer))) {
+	            output.write(buffer, 0, n);
+	            output.flush();
+	            count += n;
+	        }
+	        return count;
+	    }
+	    public static final int EOF = -1;
 }

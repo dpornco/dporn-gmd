@@ -16,7 +16,6 @@ import co.dporn.gmd.client.views.IsView;
 import co.dporn.gmd.shared.BlogEntryType;
 import elemental2.dom.Blob;
 import elemental2.dom.XMLHttpRequest.OnprogressFn;
-import gwt.material.design.client.ui.MaterialToast;
 
 public class UploadEroticaImpl implements UploadErotica {
 
@@ -131,5 +130,10 @@ public class UploadEroticaImpl implements UploadErotica {
 			});
 			return null;
 		});
+	}
+
+	@Override
+	public CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob, OnprogressFn onprogressFn) {
+		return model.postBlobToIpfsFile(filename, blob, (e)->onprogressFn.onInvoke(e));
 	}
 }

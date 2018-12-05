@@ -72,6 +72,11 @@ public class UploadVideoImpl implements UploadVideo {
 		OnprogressFn onprogressfn = view.getOnprogressFn(filename);
 		return model.postBlobToIpfsFile(filename, blob, (e)->onprogressfn.onInvoke(e));
 	}
+	
+	@Override
+	public CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob, OnprogressFn onprogressFn) {
+		return model.postBlobToIpfsFile(filename, blob, (e)->onprogressFn.onInvoke(e));
+	}
 
 	@Override
 	public Void viewRecentTagSets(String mustHaveTag) {

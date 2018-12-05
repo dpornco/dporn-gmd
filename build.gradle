@@ -118,6 +118,9 @@ dependencies {
     //simplistic server side LRU caching (read LRUMap caveats when mucking with it)
     // https://mvnrepository.com/artifact/org.apache.commons/commons-collections4
 	compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.2'
+	// https://mvnrepository.com/artifact/commons-io/commons-io
+	compile group: 'commons-io', name: 'commons-io', version: '2.6'
+	
     
     
     //for IPFS adding

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
@@ -16,22 +17,30 @@ import com.google.gwt.user.client.ui.Widget;
 
 import co.dporn.gmd.client.presenters.UploadVideo;
 import co.dporn.gmd.client.utils.DpornChipProvider;
+import co.dporn.gmd.client.utils.ImgUtils;
 import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.TagSet;
+import elemental2.dom.DomGlobal;
+import elemental2.dom.File;
+import elemental2.dom.FileReader;
+import elemental2.dom.HTMLImageElement;
+import elemental2.dom.HTMLInputElement;
 import elemental2.dom.ProgressEvent;
 import elemental2.dom.XMLHttpRequest.OnprogressFn;
+import gwt.material.design.client.constants.ProgressType;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialChip;
 import gwt.material.design.client.ui.MaterialContainer;
 import gwt.material.design.client.ui.MaterialDialog;
 import gwt.material.design.client.ui.MaterialDialogContent;
 import gwt.material.design.client.ui.MaterialDialogFooter;
-import gwt.material.design.client.ui.MaterialImage;
+import gwt.material.design.client.ui.MaterialLink;
 import gwt.material.design.client.ui.MaterialProgress;
 import gwt.material.design.client.ui.MaterialRow;
 import gwt.material.design.client.ui.MaterialTextBox;
 import gwt.material.design.client.ui.MaterialToast;
 import gwt.material.design.client.ui.MaterialVideo;
+import jsinterop.base.Js;
 
 public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoView {
 
@@ -45,7 +54,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 	@UiField
 	protected MaterialProgress posterUploadProgress;
 	@UiField
-	protected MaterialImage posterImage;
+	protected MaterialSteemitImage posterImage;
 	@UiField
 	protected MaterialVideo video;
 	@UiField
@@ -56,7 +65,9 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 	protected HiddenFileUpload fileUploadImage;
 	@UiField
 	protected HiddenFileUpload fileUploadVideo;
-	
+	@UiField
+	protected MaterialLink lnkCoverImage;
+
 	@UiField
 	protected TagAutoComplete ac;
 	@UiField
@@ -97,10 +108,101 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		});
 		ac.setSuggestions(suggestOracle);
 		ac.setMandatoryTags(mandatorySuggestions);
-		btnUploadImage.addClickHandler((e)->fileUploadImage.click());
-		btnUploadVideo.addClickHandler((e)->fileUploadVideo.click());
+		btnUploadImage.addClickHandler((e) -> fileUploadImage.click());
+		btnUploadVideo.addClickHandler((e) -> fileUploadVideo.click());
+		fileUploadImage.setAccept(".jpg,.jpeg,.png,.gif");
+		fileUploadVideo.setAccept("video/*");
+		fileUploadImage.addChangeHandler(this::loadImageAndResize);
+		fileUploadVideo.addChangeHandler(this::uploadVideo);
 	}
-	
+
+	protected void log(Object object) {
+		DomGlobal.console.log(object);
+	}
+
+	protected void loadImageAndResize(ChangeEvent event) {
+		event.preventDefault();
+		event.stopPropagation();
+		posterImage.setUrl(null);
+		lnkCoverImage.setHref("");
+		lnkCoverImage.setText("");
+		HTMLInputElement input = Js.cast(fileUploadImage.getElement());
+		if (input.files == null || input.files.length == 0) {
+			return;
+		}
+		OnprogressFn imageOnprogressFn = new OnprogressFn() {
+			@Override
+			public void onInvoke(ProgressEvent p0) {
+				log("ProgressEvent [type]: " + p0.type);
+				log("ProgressEvent [phase]: " + p0.eventPhase);
+				if (!p0.lengthComputable) {
+					log("Not Computable");
+					posterUploadProgress.setType(ProgressType.INDETERMINATE);
+					return;
+				}
+				if (p0.loaded == p0.total) {
+					log("Copy complete");
+					posterUploadProgress.setType(ProgressType.INDETERMINATE);
+					return;
+				}
+				double percent = Math.ceil(100d * p0.loaded / p0.total);
+				log("Percent: " + percent);
+				posterUploadProgress.setType(ProgressType.DETERMINATE);
+				posterUploadProgress.setPercent(percent);
+			}
+		};
+		ImgUtils imgUtils = new ImgUtils();
+		btnUploadImage.setEnabled(false);
+		File file = input.files.getAt(0);
+		FileReader reader = new FileReader();
+		reader.onabort = (e) -> loadImageError(e);
+		reader.onerror = (e) -> loadImageError(e);
+		reader.onloadend = (e) -> {
+			HTMLImageElement image = Js.cast(DomGlobal.document.createElement("img"));
+			image.onload=(f)->{
+				imgUtils.resizeInplace(image, 1280, 720, true).thenAccept(resized->{
+					imgUtils.toBlob(resized).thenAccept(blob->{
+						presenter.postBlobToIpfsFile(file.name, blob, imageOnprogressFn).thenAccept(location -> {
+							log("IMAGE LOCATION: " + location);
+							posterUploadProgress.setType(ProgressType.DETERMINATE);
+							posterUploadProgress.setPercent(100d);
+							posterImage.setMaxHeight("240px");
+							posterImage.setUrl("https://ipfs.io" + location);
+							lnkCoverImage.setText(location);
+							lnkCoverImage.setHref("https://ipfs.io" + location);
+							lnkCoverImage.setTarget("_blank");
+						}).exceptionally(ex->{
+							MaterialToast.fireToast(ex.getMessage());
+							return null;
+						}).thenRun(()->btnUploadImage.setEnabled(true));;
+					}).exceptionally(ex->{
+						MaterialToast.fireToast(ex.getMessage());
+						return null;
+					}).thenRun(()->btnUploadImage.setEnabled(true));
+				}).exceptionally(ex->{
+					MaterialToast.fireToast(ex.getMessage());
+					return null;
+				}).thenRun(()->btnUploadImage.setEnabled(true));
+				return f;
+			};
+			image.src=reader.result.asString();
+			
+			return e;
+		};
+		reader.readAsDataURL(file.slice());
+	}
+
+	protected ProgressEvent loadImageError(ProgressEvent e) {
+		btnUploadImage.setEnabled(true);
+		MaterialToast.fireToast("Failed to read file from disk.");
+		return e;
+	}
+
+	protected void uploadVideo(ChangeEvent event) {
+		event.preventDefault();
+		event.stopPropagation();
+	}
+
 	@Override
 	public void bindPresenter(UploadVideo presenter) {
 		this.presenter = presenter;

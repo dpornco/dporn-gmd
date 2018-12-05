@@ -8,9 +8,10 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 
-import co.dporn.gmd.client.img.ImgUtils;
+import co.dporn.gmd.client.utils.ImgUtils;
 import elemental2.dom.Blob;
 import elemental2.dom.HTMLImageElement;
+import elemental2.dom.XMLHttpRequest.OnprogressFn;
 import gwt.material.design.addins.client.richeditor.MaterialRichEditor;
 import gwt.material.design.addins.client.richeditor.base.constants.ToolbarButton;
 import gwt.material.design.client.ui.MaterialLoader;
@@ -26,6 +27,7 @@ public class DpornRichEditor extends MaterialRichEditor {
 
 	public static interface IpfsApi {
 		CompletableFuture<String> postBlobToIpfsFile(String ipfsFilename, Blob blob);
+		CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob, OnprogressFn onprogressFn);
 	}
 
 	public DpornRichEditor() {
