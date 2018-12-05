@@ -26,6 +26,7 @@ public class MaterialSteemitImage extends MaterialImage {
 		HTMLImageElement img = Js.cast(getElement());
 		img.src = url;
 		if (!url.startsWith("http://") && !url.startsWith("https://")) {
+			img.srcset="";
 			return;
 		}
 		img.srcset = "";
