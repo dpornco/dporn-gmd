@@ -90,6 +90,7 @@ public class ImgUtils {
 		case "gif":
 			scale = 1.0d;
 			skip = true;
+			message("SKIP RESCALE: " + guessExtension(image.src));
 			break;
 		default:
 		}
@@ -99,6 +100,8 @@ public class ImgUtils {
 			return future;
 		}
 
+		message("MAXPECT: " + maxpect);
+		message("SCALE: " + scale);
 		if (scale < 1 || maxpect) {
 			int newWidth = (int) (w * scale);
 			int newHeight = (int) (h * scale);
