@@ -146,7 +146,7 @@ public class ImgUtils {
 		if (dataUrl.contains(";base64")) {
 			String xmime = StringUtils.substringBefore(dataUrl, ";base64");
 			// user browser supplied mime type when possible
-			if (xmime.contains("/")) {
+			if (xmime.contains("/") && !xmime.contains("application") && !xmime.contains("octect")) {
 				return xmime;
 			}
 		}
@@ -154,6 +154,7 @@ public class ImgUtils {
 			dataUrl = StringUtils.substringAfter(dataUrl, "base64,");
 		}
 		dataUrl = StringUtils.left(dataUrl, 16);
+		message("DATA URL START: "+dataUrl);
 		String mime = dataUrl.startsWith("iVBOR") ? "image/png" : "image/jpeg";
 		mime = dataUrl.startsWith("R0lGO") ? "image/gif" : mime;
 		mime = dataUrl.startsWith("UklGR") ? "image/webp" : mime;
@@ -161,7 +162,9 @@ public class ImgUtils {
 	}
 
 	public String guessExtension(String dataUrl) {
-		switch (guessMime(dataUrl)) {
+		String guessMime = guessMime(dataUrl);
+		message("MIME: "+guessMime);
+		switch (guessMime) {
 		case "image/png":
 			return "png";
 		case "image/jpeg":
