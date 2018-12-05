@@ -29,6 +29,20 @@
 		addStyleNames="{style.container}">
 		<m:MaterialRow margin="8">
 			<m:MaterialColumn grid="s7 m5 l3">
+				<m:MaterialVideo ui:field="video"></m:MaterialVideo>
+			</m:MaterialColumn>
+			<m:MaterialColumn grid="s5 m7 l9">
+				<m:MaterialProgress style="margin: 8px;"
+					type="DETERMINATE" percent="0" ui:field="videoUploadProgress" />
+				<d:HiddenFileUpload ui:field="fileUploadVideo" />
+				<m:MaterialButton ui:field="btnUploadVideo"
+					style="margin: 8px;" text="UPLOAD VIDEO"></m:MaterialButton>
+				<m:MaterialLabel
+					text="16:9 aspect ratio recommended. Video will be recoded to HLS format at 720p, 480p, and 240p with a CRF=28 factor. The original video will be discarded for storage space reasons! If the upload queue is full, the upload will be paused until a slot opens up." />
+			</m:MaterialColumn>
+		</m:MaterialRow>
+		<m:MaterialRow margin="8">
+			<m:MaterialColumn grid="s7 m5 l3">
 				<d:MaterialSteemitImage ui:field="posterImage"
 					url='/images/coverImagePlaceholder.png' />
 			</m:MaterialColumn>
@@ -41,20 +55,6 @@
 				<m:MaterialLabel
 					text="16:9 aspect ratio recommended. Image will be auto resized to fit 1280x720." />
 					<m:MaterialLink target="_blank" ui:field="lnkCoverImage"></m:MaterialLink>
-			</m:MaterialColumn>
-		</m:MaterialRow>
-		<m:MaterialRow margin="8">
-			<m:MaterialColumn grid="s7 m5 l3">
-				<m:MaterialVideo ui:field="video"></m:MaterialVideo>
-			</m:MaterialColumn>
-			<m:MaterialColumn grid="s5 m7 l9">
-				<m:MaterialProgress style="margin: 8px;"
-					type="DETERMINATE" percent="0" ui:field="videoUploadProgress" />
-				<d:HiddenFileUpload ui:field="fileUploadVideo" />
-				<m:MaterialButton ui:field="btnUploadVideo"
-					style="margin: 8px;" text="UPLOAD VIDEO"></m:MaterialButton>
-				<m:MaterialLabel
-					text="16:9 aspect ratio recommended. Video will be recoded to HLS format at 720p, 480p, and 240p with a CRF=28 factor. The original video will be discarded for storage space reasons! If the upload queue is full, the upload will be paused until a slot opens up." />
 			</m:MaterialColumn>
 		</m:MaterialRow>
 		<m:MaterialRow margin="8">
