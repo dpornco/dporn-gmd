@@ -123,7 +123,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 	protected void loadImageAndResize(ChangeEvent event) {
 		event.preventDefault();
 		event.stopPropagation();
-		posterImage.setUrl(null);
+		posterImage.setUrl("");
 		lnkCoverImage.setHref("");
 		lnkCoverImage.setText("");
 		HTMLInputElement input = Js.cast(fileUploadImage.getElement());
@@ -133,8 +133,6 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		OnprogressFn imageOnprogressFn = new OnprogressFn() {
 			@Override
 			public void onInvoke(ProgressEvent p0) {
-				log("ProgressEvent [type]: " + p0.type);
-				log("ProgressEvent [phase]: " + p0.eventPhase);
 				if (!p0.lengthComputable) {
 					log("Not Computable");
 					posterUploadProgress.setType(ProgressType.INDETERMINATE);
@@ -146,7 +144,6 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 					return;
 				}
 				double percent = Math.ceil(100d * p0.loaded / p0.total);
-				log("Percent: " + percent);
 				posterUploadProgress.setType(ProgressType.DETERMINATE);
 				posterUploadProgress.setPercent(percent);
 			}
@@ -161,6 +158,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			HTMLImageElement image = Js.cast(DomGlobal.document.createElement("img"));
 			image.onload=(f)->{
 				imgUtils.resizeInplace(image, 1280, 720, true).thenAccept(resized->{
+					posterImage.setUrl(resized.src);
 					imgUtils.toBlob(resized).thenAccept(blob->{
 						presenter.postBlobToIpfsFile(file.name, blob, imageOnprogressFn).thenAccept(location -> {
 							log("IMAGE LOCATION: " + location);
@@ -171,18 +169,22 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 							lnkCoverImage.setText(location);
 							lnkCoverImage.setHref("https://ipfs.io" + location);
 							lnkCoverImage.setTarget("_blank");
+							btnUploadImage.setEnabled(true);
 						}).exceptionally(ex->{
 							MaterialToast.fireToast(ex.getMessage());
+							btnUploadImage.setEnabled(true);
 							return null;
-						}).thenRun(()->btnUploadImage.setEnabled(true));;
+						});
 					}).exceptionally(ex->{
 						MaterialToast.fireToast(ex.getMessage());
+						btnUploadImage.setEnabled(true);
 						return null;
-					}).thenRun(()->btnUploadImage.setEnabled(true));
+					});
 				}).exceptionally(ex->{
 					MaterialToast.fireToast(ex.getMessage());
+					btnUploadImage.setEnabled(true);
 					return null;
-				}).thenRun(()->btnUploadImage.setEnabled(true));
+				});
 				return f;
 			};
 			image.src=reader.result.asString();

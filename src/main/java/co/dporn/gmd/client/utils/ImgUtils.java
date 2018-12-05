@@ -93,11 +93,16 @@ public class ImgUtils {
 			break;
 		default:
 		}
+		
+		if (skip) {
+			future.complete(image);
+			return future;
+		}
 
-		if (!skip && (scale < 1 || maxpect)) {
+		if (scale < 1 || maxpect) {
 			int newWidth = (int) (w * scale);
 			int newHeight = (int) (h * scale);
-			message("Resizing: " + newWidth + " x " + newHeight);
+			message("RESIZING: " + newWidth + " x " + newHeight);
 			HTMLCanvasElement canvas = Js.cast(DomGlobal.document.createElement("canvas"));
 			canvas.width = ((int) (w * scale));
 			canvas.height = ((int) (h * scale));
