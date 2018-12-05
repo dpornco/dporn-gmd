@@ -110,7 +110,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		ac.setMandatoryTags(mandatorySuggestions);
 		btnUploadImage.addClickHandler((e) -> fileUploadImage.click());
 		btnUploadVideo.addClickHandler((e) -> fileUploadVideo.click());
-		fileUploadImage.setAccept(".jpg,.jpeg,.png,.gif");
+		fileUploadImage.setAccept(".jpg,.jpeg,.png,.gif,.svg");
 		fileUploadVideo.setAccept("video/*");
 		fileUploadImage.addChangeHandler(this::loadImageAndResize);
 		fileUploadVideo.addChangeHandler(this::uploadVideo);
@@ -128,6 +128,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		lnkCoverImage.setText("");
 		HTMLInputElement input = Js.cast(fileUploadImage.getElement());
 		if (input.files == null || input.files.length == 0) {
+			GWT.log("loadImageAndResize: NO FILES");
 			return;
 		}
 		OnprogressFn imageOnprogressFn = new OnprogressFn() {
@@ -152,14 +153,21 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		btnUploadImage.setEnabled(false);
 		File file = input.files.getAt(0);
 		FileReader reader = new FileReader();
-		reader.onabort = (e) -> loadImageError(e);
-		reader.onerror = (e) -> loadImageError(e);
+		reader.onabort = (e) -> loadImageError();
+		reader.onerror = (e) -> loadImageError();
 		reader.onloadend = (e) -> {
-			HTMLImageElement image = Js.cast(DomGlobal.document.createElement("img"));
-			image.onload=(f)->{
-				imgUtils.resizeInplace(image, 1280, 720, true).thenAccept(resized->{
-					posterImage.setUrl(resized.src);
-					imgUtils.toBlob(resized).thenAccept(blob->{
+			GWT.log("FileReader: onloadend");
+			String asString = reader.result.asString();
+			HTMLImageElement tmpImage = Js.cast(DomGlobal.document.createElement("img"));
+			tmpImage.onabort = (f) -> loadImageError();
+			tmpImage.onerror = (f) -> loadImageError();
+			tmpImage.onload = (f) -> {
+				GWT.log("imgUtils: resizeInplace");
+				imgUtils.resizeInplace(tmpImage, 1280, 720, true).thenAccept(resized -> {
+					GWT.log("imgUtils: resized");
+					GWT.log("imgUtils: toBlob");
+					imgUtils.toBlob(resized).thenAccept(blob -> {
+						GWT.log("presenter: postBlobToIpfsFile");
 						presenter.postBlobToIpfsFile(file.name, blob, imageOnprogressFn).thenAccept(location -> {
 							log("IMAGE LOCATION: " + location);
 							posterUploadProgress.setType(ProgressType.DETERMINATE);
@@ -170,34 +178,35 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 							lnkCoverImage.setHref("https://ipfs.io" + location);
 							lnkCoverImage.setTarget("_blank");
 							btnUploadImage.setEnabled(true);
-						}).exceptionally(ex->{
-							MaterialToast.fireToast(ex.getMessage());
+						}).exceptionally(ex -> {
 							btnUploadImage.setEnabled(true);
+							MaterialToast.fireToast(ex.getMessage());
 							return null;
 						});
-					}).exceptionally(ex->{
-						MaterialToast.fireToast(ex.getMessage());
+					}).exceptionally(ex -> {
 						btnUploadImage.setEnabled(true);
+						MaterialToast.fireToast(ex.getMessage());
 						return null;
 					});
-				}).exceptionally(ex->{
-					MaterialToast.fireToast(ex.getMessage());
+				}).exceptionally(ex -> {
 					btnUploadImage.setEnabled(true);
+					MaterialToast.fireToast(ex.getMessage());
 					return null;
 				});
-				return f;
+				return null;
 			};
-			image.src=reader.result.asString();
-			
+			tmpImage.src = asString;
+			posterImage.setUrl(asString);
 			return e;
 		};
+		GWT.log("FileReader: readAsDataURL");
 		reader.readAsDataURL(file.slice());
 	}
 
-	protected ProgressEvent loadImageError(ProgressEvent e) {
+	protected Object loadImageError() {
 		btnUploadImage.setEnabled(true);
 		MaterialToast.fireToast("Failed to read file from disk.");
-		return e;
+		return null;
 	}
 
 	protected void uploadVideo(ChangeEvent event) {

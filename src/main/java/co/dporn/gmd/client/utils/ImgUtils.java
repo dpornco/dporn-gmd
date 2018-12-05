@@ -90,22 +90,18 @@ public class ImgUtils {
 		case "gif":
 			scale = 1.0d;
 			skip = true;
-			message("SKIP RESCALE: " + guessExtension(image.src));
 			break;
 		default:
 		}
-		
+
 		if (skip) {
 			future.complete(image);
 			return future;
 		}
 
-		message("MAXPECT: " + maxpect);
-		message("SCALE: " + scale);
 		if (scale < 1 || maxpect) {
 			int newWidth = (int) (w * scale);
 			int newHeight = (int) (h * scale);
-			message("RESIZING: " + newWidth + " x " + newHeight);
 			HTMLCanvasElement canvas = Js.cast(DomGlobal.document.createElement("canvas"));
 			canvas.width = ((int) (w * scale));
 			canvas.height = ((int) (h * scale));
@@ -153,8 +149,7 @@ public class ImgUtils {
 		if (dataUrl.contains("base64,")) {
 			dataUrl = StringUtils.substringAfter(dataUrl, "base64,");
 		}
-		dataUrl = StringUtils.left(dataUrl, 16);
-		message("DATA URL START: "+dataUrl);
+		dataUrl = StringUtils.left(dataUrl, 5);
 		String mime = dataUrl.startsWith("iVBOR") ? "image/png" : "image/jpeg";
 		mime = dataUrl.startsWith("R0lGO") ? "image/gif" : mime;
 		mime = dataUrl.startsWith("UklGR") ? "image/webp" : mime;
@@ -163,7 +158,6 @@ public class ImgUtils {
 
 	public String guessExtension(String dataUrl) {
 		String guessMime = guessMime(dataUrl);
-		message("MIME: "+guessMime);
 		switch (guessMime) {
 		case "image/png":
 			return "png";
@@ -171,8 +165,12 @@ public class ImgUtils {
 			return "jpg";
 		case "image/gif":
 			return "gif";
-		default:
+		case "image/svg+xml":
+			return "png";
+		case "image/webp":
 			return "webp";
+		default:
+			return "jpg";
 		}
 	}
 

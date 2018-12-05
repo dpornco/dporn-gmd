@@ -52,7 +52,7 @@ public class DpornRichEditor extends MaterialRichEditor {
 					ToolbarButton.FULLSCREEN);
 			setHeightOptions(noOptions);
 			setAllowBlank(false);
-			setAutoValidate(true);
+			setAutoValidate(false);
 			setDisableDragAndDrop(false);
 			setValue("<p><br></p>", true, true);
 			getEditor().find("[data-event='imageClass']").remove();
@@ -89,13 +89,13 @@ public class DpornRichEditor extends MaterialRichEditor {
 					srcset.append(path);
 					srcset.append(", ");
 				}
-				image.srcset = srcset.toString();
-				image.src = "https://steemitimages.com/0x0/https://ipfs.io" + path;
 				image.onerror = e -> {
 					image.onerror = null;
 					image.src = "https://ipfs.io" + path;
 					return e;
 				};
+				image.srcset = srcset.toString();
+				image.src = "https://steemitimages.com/0x0/https://ipfs.io" + path;
 			});
 		});
 	}
