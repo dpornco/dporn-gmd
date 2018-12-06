@@ -13,6 +13,7 @@ import elemental2.dom.Event;
 import elemental2.dom.EventListener;
 import elemental2.dom.HTMLCanvasElement;
 import elemental2.dom.HTMLImageElement;
+import elemental2.dom.HTMLVideoElement;
 import gwt.material.design.jquery.client.api.JQuery;
 import gwt.material.design.jquery.client.api.JQueryElement;
 import jsinterop.base.Js;
@@ -223,5 +224,43 @@ public class ImgUtils {
 		if (!src.equals(origSrc)) {
 			e.setAttribute("src", src);
 		}
+	}
+
+	public CompletableFuture<HTMLImageElement> resizeInplace(HTMLVideoElement vid, int maxWidth, int maxHeight,
+			boolean maxpect) {
+
+		CompletableFuture<HTMLImageElement> future = new CompletableFuture<>();
+		if (vid == null) {
+			future.completeExceptionally(new NullPointerException("Video element must not be null"));
+			return future;
+		}
+		double scale = 1;
+		double scaleWidth = 1;
+		double scaleHeight = 1;
+		final double w = vid.videoWidth;
+		final double h = vid.videoHeight;
+		/*
+		 * scale image calculations
+		 */
+		scaleWidth = maxWidth / w;
+		scaleHeight = maxHeight / h;
+		if (scaleWidth < scaleHeight) {
+			scale = scaleWidth;
+		} else {
+			scale = scaleHeight;
+		}
+
+		int newWidth = (int) (w * scale);
+		int newHeight = (int) (h * scale);
+		HTMLCanvasElement canvas = Js.cast(DomGlobal.document.createElement("canvas"));
+		canvas.width = ((int) (w * scale));
+		canvas.height = ((int) (h * scale));
+		CanvasRenderingContext2D ctx = Js.cast(canvas.getContext("2d"));
+		ctx.drawImage(vid, 0, 0, newWidth, newHeight);
+		String mime = "image/jpeg";
+		HTMLImageElement image = Js.cast(DomGlobal.document.createElement("img"));
+		image.onload = (p0) -> future.complete(image);
+		image.src = canvas.toDataURL(mime, BASE64_QUALITY);
+		return future;
 	}
 }
