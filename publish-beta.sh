@@ -5,9 +5,9 @@ set -o pipefail
 
 cd "$(dirname "$0")"
 
-gradle clean
-gradle build
-gradle buildProductBeta
+./gradlew clean
+./gradlew build
+./gradlew buildProductBeta
 
 . ./tunnel.sh
 
