@@ -23,10 +23,13 @@ import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.TagSet;
 import elemental2.dom.Blob;
 import elemental2.dom.DomGlobal;
+import elemental2.dom.Event;
 import elemental2.dom.File;
 import elemental2.dom.FileReader;
+import elemental2.dom.FileReader.OnloadendFn;
 import elemental2.dom.HTMLImageElement;
 import elemental2.dom.HTMLInputElement;
+import elemental2.dom.HTMLMediaElement.OnseekedFn;
 import elemental2.dom.HTMLVideoElement;
 import elemental2.dom.ProgressEvent;
 import elemental2.dom.XMLHttpRequest.OnprogressFn;
@@ -54,6 +57,9 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 
 	private static ThisUiBinder uiBinder = GWT.create(ThisUiBinder.class);
 
+	@UiField
+	protected MaterialButton btnTakeSnap;
+	
 	@UiField
 	protected MaterialProgress videoUploadProgress;
 	@UiField
@@ -119,6 +125,10 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		fileUploadVideo.setAccept("video/*");
 		fileUploadImage.addChangeHandler(this::loadImageAndResize);
 		fileUploadVideo.addChangeHandler(this::uploadVideo);
+		btnTakeSnap.addClickHandler((e)->{
+			takeVideoSnap();
+		});
+		btnTakeSnap.setEnabled(false);
 	}
 
 	protected void log(Object object) {
@@ -140,30 +150,15 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			GWT.log("loadImageAndResize: NO FILES");
 			return;
 		}
-		OnprogressFn imageOnprogressFn = new OnprogressFn() {
-			@Override
-			public void onInvoke(ProgressEvent p0) {
-				if (!p0.lengthComputable) {
-					log("Not Computable");
-					posterUploadProgress.setType(ProgressType.INDETERMINATE);
-					return;
-				}
-				if (p0.loaded == p0.total) {
-					posterUploadProgress.setType(ProgressType.INDETERMINATE);
-					return;
-				}
-				double percent = Math.ceil(100d * p0.loaded / p0.total);
-				posterUploadProgress.setType(ProgressType.DETERMINATE);
-				posterUploadProgress.setPercent(percent);
-			}
-		};
 		ImgUtils imgUtils = new ImgUtils();
+		btnUploadVideo.setEnabled(false);
 		btnUploadImage.setEnabled(false);
+		btnTakeSnap.setEnabled(false);
 		File file = input.files.getAt(0);
 		FileReader reader = new FileReader();
 		reader.onabort = (e) -> loadImageError();
 		reader.onerror = (e) -> loadImageError();
-		reader.onloadend = (e) -> {
+		OnloadendFn onloadendFn = (e) -> {
 			String asString = reader.result.asString();
 			HTMLImageElement tmpImage = Js.cast(DomGlobal.document.createElement("img"));
 			tmpImage.onabort = (f) -> loadImageError();
@@ -171,7 +166,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			tmpImage.onload = (f) -> {
 				imgUtils.resizeInplace(tmpImage, 1280, 720, true).thenAccept(resized -> {
 					imgUtils.toBlob(resized).thenAccept(blob -> {
-						presenter.postBlobToIpfsFile(file.name, blob, imageOnprogressFn).thenAccept(location -> {
+						presenter.postBlobToIpfsFile(file.name, blob, this::imageOnprogressFn).thenAccept(location -> {
 							coverImageLocation = location;
 							posterUploadProgress.setType(ProgressType.DETERMINATE);
 							posterUploadProgress.setPercent(100d);
@@ -180,19 +175,27 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 							lnkCoverImage.setText(location);
 							lnkCoverImage.setHref("https://ipfs.io" + location);
 							lnkCoverImage.setTarget("_blank");
+							btnUploadVideo.setEnabled(true);
 							btnUploadImage.setEnabled(true);
+							btnTakeSnap.setEnabled(true);
 						}).exceptionally(ex -> {
+							btnUploadVideo.setEnabled(true);
 							btnUploadImage.setEnabled(true);
+							btnTakeSnap.setEnabled(true);
 							MaterialToast.fireToast(ex.getMessage());
 							return null;
 						});
 					}).exceptionally(ex -> {
+						btnUploadVideo.setEnabled(true);
 						btnUploadImage.setEnabled(true);
+						btnTakeSnap.setEnabled(true);
 						MaterialToast.fireToast(ex.getMessage());
 						return null;
 					});
 				}).exceptionally(ex -> {
+					btnUploadVideo.setEnabled(true);
 					btnUploadImage.setEnabled(true);
+					btnTakeSnap.setEnabled(true);
 					MaterialToast.fireToast(ex.getMessage());
 					return null;
 				});
@@ -202,6 +205,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			posterImage.setUrl(asString);
 			return e;
 		};
+		reader.onloadend = onloadendFn;
 		reader.readAsDataURL(file.slice());
 	}
 
@@ -216,17 +220,32 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		MaterialToast.fireToast("Failed to read file from disk.");
 		return null;
 	}
+	
+	protected void imageOnprogressFn(ProgressEvent p0) {
+			if (!p0.lengthComputable) {
+				log("Not Computable");
+				posterUploadProgress.setType(ProgressType.INDETERMINATE);
+				return;
+			}
+			if (p0.loaded == p0.total) {
+				posterUploadProgress.setType(ProgressType.INDETERMINATE);
+				return;
+			}
+			double percent = Math.ceil(100d * p0.loaded / p0.total);
+			posterUploadProgress.setType(ProgressType.DETERMINATE);
+			posterUploadProgress.setPercent(percent);
+	};
 
 	protected void uploadVideo(ChangeEvent event) {
-		event.preventDefault();
-		event.stopPropagation();
-		event.preventDefault();
-		event.stopPropagation();
 		HTMLInputElement input = Js.cast(fileUploadVideo.getElement());
 		if (input.files == null || input.files.length == 0) {
 			GWT.log("uploadVideo: NO FILES");
 			return;
 		}
+		event.preventDefault();
+		event.stopPropagation();
+		btnTakeSnap.setEnabled(true);
+		coverImageLocation="";
 		OnprogressFn videoOnprogressFn = new OnprogressFn() {
 			@Override
 			public void onInvoke(ProgressEvent p0) {
@@ -244,23 +263,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 				videoUploadProgress.setPercent(percent);
 			}
 		};
-		OnprogressFn imageOnprogressFn = new OnprogressFn() {
-			@Override
-			public void onInvoke(ProgressEvent p0) {
-				if (!p0.lengthComputable) {
-					log("Not Computable");
-					posterUploadProgress.setType(ProgressType.INDETERMINATE);
-					return;
-				}
-				if (p0.loaded == p0.total) {
-					posterUploadProgress.setType(ProgressType.INDETERMINATE);
-					return;
-				}
-				double percent = Math.ceil(100d * p0.loaded / p0.total);
-				posterUploadProgress.setType(ProgressType.DETERMINATE);
-				posterUploadProgress.setPercent(percent);
-			}
-		};
+		
 		// btnUploadVideo.setEnabled(false);
 		File file = input.files.getAt(0);
 		// FileReader reader = new FileReader();
@@ -278,6 +281,10 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		String player = "<html><body><video src=\"_src_\" controls=\"\" style=\"position:absolute; top:0; left:0; width:100%; height:100%\"></video></body></html>";
 		player = player.replace("_src_", objectURL);
 		video.$this().find("iframe").css("display", "none");// .attr("srcdoc", player);
+		JQueryElement oldjVid = video.$this().find("video").first();
+		if (oldjVid.length()>0) {
+			revokeObjectURL(oldjVid.asElement().getAttribute("src"));
+		}
 		video.$this().find("video").remove();
 		HTMLVideoElement vid = Js.cast(DomGlobal.document.createElement("video"));
 		vid.autobuffer = true;
@@ -286,41 +293,8 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		vid.loop = false;
 		vid.muted = true;
 		vid.volume = 0.1;
-		vid.onseeked = (e) -> {
-			if (coverImageLocation != null && !coverImageLocation.trim().isEmpty()) {
-				return e;
-			}
-			ImgUtils imgUtils = new ImgUtils();
-			imgUtils.resizeInplace(vid, 1280, 720, true).thenAccept(resized -> {
-				imgUtils.toBlob(resized).thenAccept(blob -> {
-					presenter.postBlobToIpfsFile(file.name, blob, imageOnprogressFn).thenAccept(location -> {
-						coverImageLocation = location;
-						posterUploadProgress.setType(ProgressType.DETERMINATE);
-						posterUploadProgress.setPercent(100d);
-						posterImage.setMaxHeight("240px");
-						posterImage.setUrl("https://ipfs.io" + location);
-						lnkCoverImage.setText(location);
-						lnkCoverImage.setHref("https://ipfs.io" + location);
-						lnkCoverImage.setTarget("_blank");
-						btnUploadImage.setEnabled(true);
-					}).exceptionally(ex -> {
-						btnUploadImage.setEnabled(true);
-						MaterialToast.fireToast(ex.getMessage());
-						return null;
-					});
-				}).exceptionally(ex -> {
-					btnUploadImage.setEnabled(true);
-					MaterialToast.fireToast(ex.getMessage());
-					return null;
-				});
-			}).exceptionally(ex -> {
-				btnUploadImage.setEnabled(true);
-				MaterialToast.fireToast(ex.getMessage());
-				return null;
-			});
-			vid.controls = true;
-			return e;
-		};
+		OnseekedFn onseekedFn = loadVideoSnap();
+		vid.onseeked = onseekedFn;
 		vid.currentTime = 4.0;
 		JQueryElement jvid = JQuery.$(vid);
 		jvid.css("position", "absolute");
@@ -330,13 +304,73 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		jvid.css("y", "0");
 		vid.src = objectURL;
 		video.$this().find("iframe").before(jvid);
+	}
 
-		HandlerRegistration[] h = new HandlerRegistration[1];
-		h[0] = video.addValueChangeHandler((e) -> {
-			revokeObjectURL(objectURL);
-			GWT.log("Revoked: " + objectURL);
-			h[0].removeHandler();
-			GWT.log("Handler removed: " + objectURL);
+	private OnseekedFn loadVideoSnap() {
+		return (e) -> {
+			if (coverImageLocation != null && !coverImageLocation.trim().isEmpty()) {
+				return e;
+			}
+			takeVideoSnap();
+			return e;
+		};
+	}
+
+	private void takeVideoSnap() {
+		JQueryElement jvid = video.$this().find("video").first();
+		if (jvid.length() == 0) {
+			return;
+		}
+		posterImage.setUrl("");
+		lnkCoverImage.setHref("");
+		lnkCoverImage.setText("");
+		coverImageLocation = "";
+		HTMLVideoElement vid = Js.cast(jvid.asElement());
+		vid.pause();
+		vid.controls=false;
+		ImgUtils imgUtils = new ImgUtils();
+		imgUtils.resizeInplace(vid, 1280, 720, true).thenAccept(resized -> {
+			btnUploadVideo.setEnabled(false);
+			btnUploadImage.setEnabled(false);
+			btnTakeSnap.setEnabled(false);
+			posterImage.setUrl(resized.src);
+			imgUtils.toBlob(resized).thenAccept(blob -> {
+				presenter.postBlobToIpfsFile("snap.jpg", blob, this::imageOnprogressFn).thenAccept(location -> {
+					coverImageLocation = location;
+					posterUploadProgress.setType(ProgressType.DETERMINATE);
+					posterUploadProgress.setPercent(100d);
+					posterImage.setMaxHeight("240px");
+					posterImage.setUrl("https://ipfs.io" + location);
+					lnkCoverImage.setText(location);
+					lnkCoverImage.setHref("https://ipfs.io" + location);
+					lnkCoverImage.setTarget("_blank");
+					btnUploadImage.setEnabled(true);
+					btnTakeSnap.setEnabled(true);
+					btnUploadVideo.setEnabled(true);
+					vid.controls=true;
+				}).exceptionally(ex -> {
+					btnUploadImage.setEnabled(true);
+					btnTakeSnap.setEnabled(true);
+					btnUploadVideo.setEnabled(true);
+					vid.controls=true;
+					MaterialToast.fireToast(ex.getMessage());
+					return null;
+				});
+			}).exceptionally(ex -> {
+				btnUploadImage.setEnabled(true);
+				btnTakeSnap.setEnabled(true);
+				btnUploadVideo.setEnabled(true);
+				vid.controls=true;
+				MaterialToast.fireToast(ex.getMessage());
+				return null;
+			});
+		}).exceptionally(ex -> {
+			btnUploadImage.setEnabled(true);
+			btnTakeSnap.setEnabled(true);
+			btnUploadVideo.setEnabled(true);
+			vid.controls=true;
+			MaterialToast.fireToast(ex.getMessage());
+			return null;
 		});
 	}
 
