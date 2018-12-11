@@ -8,7 +8,6 @@ import java.util.Set;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
@@ -16,14 +15,13 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SuggestOracle;
 import com.google.gwt.user.client.ui.Widget;
 
+import co.dporn.gmd.client.URL;
 import co.dporn.gmd.client.presenters.UploadVideo;
 import co.dporn.gmd.client.utils.DpornChipProvider;
 import co.dporn.gmd.client.utils.ImgUtils;
 import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.TagSet;
-import elemental2.dom.Blob;
 import elemental2.dom.DomGlobal;
-import elemental2.dom.Event;
 import elemental2.dom.File;
 import elemental2.dom.FileReader;
 import elemental2.dom.FileReader.OnloadendFn;
@@ -277,13 +275,13 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		// reader.readAsDataURL(file);
 
 		// btnUploadVideo.setEnabled(false);
-		String objectURL = createObjectURL(file);
+		String objectURL =URL.createObjectURL(file);
 		String player = "<html><body><video src=\"_src_\" controls=\"\" style=\"position:absolute; top:0; left:0; width:100%; height:100%\"></video></body></html>";
 		player = player.replace("_src_", objectURL);
 		video.$this().find("iframe").css("display", "none");// .attr("srcdoc", player);
 		JQueryElement oldjVid = video.$this().find("video").first();
 		if (oldjVid.length()>0) {
-			revokeObjectURL(oldjVid.asElement().getAttribute("src"));
+			URL.revokeObjectURL(oldjVid.asElement().getAttribute("src"));
 		}
 		video.$this().find("video").remove();
 		HTMLVideoElement vid = Js.cast(DomGlobal.document.createElement("video"));
@@ -373,35 +371,6 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			return null;
 		});
 	}
-
-	/**
-	 * Creates a new object URL, whose lifetime is tied to the document in the
-	 * window on which it was created. The new object URL represents the specified
-	 * Blob object. <a href=
-	 * 'https://github.com/laaglu/lib-gwt-file/blob/master/src/main/java/org/vectomatic/file/FileUtils.java'>https://github.com/laaglu/lib-gwt-file/blob/master/src/main/java/org/vectomatic/file/FileUtils.java</a>
-	 * 
-	 * @param blob
-	 *            the blob to represent
-	 * @return a new object URL representing the blob.
-	 */
-	public static final native String createObjectURL(Blob blob) /*-{
-		return $wnd.URL.createObjectURL(blob);
-	}-*/;
-
-	/**
-	 * Releases an existing object URL which was previously created by calling
-	 * {@link #createObjectURL(org.vectomatic.file.Blob)} . Call this method when
-	 * you've finished using a object URL, in order to let the browser know it
-	 * doesn't need to keep the reference to the file any longer. <a href=
-	 * 'https://github.com/laaglu/lib-gwt-file/blob/master/src/main/java/org/vectomatic/file/FileUtils.java'>https://github.com/laaglu/lib-gwt-file/blob/master/src/main/java/org/vectomatic/file/FileUtils.java</a>
-	 * 
-	 * @param url
-	 *            a string representing the object URL that was created by calling
-	 *            {@link #createObjectURL(org.vectomatic.file.Blob)}
-	 */
-	public static final native void revokeObjectURL(String url) /*-{
-		$wnd.URL.revokeObjectURL(url);
-	}-*/;
 
 	@Override
 	public void bindPresenter(UploadVideo presenter) {
