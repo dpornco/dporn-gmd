@@ -194,7 +194,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		if (filename.startsWith(".")) {
 			filename = String.valueOf(nextCounter()) + filename;
 		}
-		if (filename.length()<5) {
+		if (filename.length() < 5) {
 			filename = String.valueOf(nextCounter()) + "-" + filename;
 		}
 		return filename;
@@ -240,15 +240,39 @@ public class DpornCoApiImpl implements DpornCoApi {
 		response.setFilename(filename);
 		if (!ipfsHashes.isEmpty()) {
 			response.setIpfsHash(ipfsHashes.get(ipfsHashes.size() - 1));
-			System.out.println("ipfsPut => ipfs-hash: "+ipfsHashes.toString());
+			System.out.println("ipfsPut => ipfs-hash: " + ipfsHashes.toString());
 		}
 		if (!locations.isEmpty()) {
 			response.setLocation(locations.get(locations.size() - 1));
-			System.out.println("ipfsPut => location: "+locations.toString());
+			System.out.println("ipfsPut => location: " + locations.toString());
 		}
 		return response;
 	}
-	
+
+	/**
+	 * ffmpeg -hide_banner -y -i beach.mkv \ <br>
+	 * -vf scale=w=640:h=360:force_original_aspect_ratio=decrease -c:a aac -ar 48000
+	 * -c:v h264 -profile:v main -crf 20 -sc_threshold 0 -g 48 -keyint_min 48
+	 * -hls_time 4 -hls_playlist_type vod -b:v 800k -maxrate 856k -bufsize 1200k
+	 * -b:a 96k -hls_segment_filename beach/360p_%03d.ts beach/360p.m3u8 \ <br>
+	 * -vf scale=w=842:h=480:force_original_aspect_ratio=decrease -c:a aac -ar 48000
+	 * -c:v h264 -profile:v main -crf 20 -sc_threshold 0 -g 48 -keyint_min 48
+	 * -hls_time 4 -hls_playlist_type vod -b:v 1400k -maxrate 1498k -bufsize 2100k
+	 * -b:a 128k -hls_segment_filename beach/480p_%03d.ts beach/480p.m3u8 \ <br>
+	 * -vf scale=w=1280:h=720:force_original_aspect_ratio=decrease -c:a aac -ar
+	 * 48000 -c:v h264 -profile:v main -crf 20 -sc_threshold 0 -g 48 -keyint_min 48
+	 * -hls_time 4 -hls_playlist_type vod -b:v 2800k -maxrate 2996k -bufsize 4200k
+	 * -b:a 128k -hls_segment_filename beach/720p_%03d.ts beach/720p.m3u8 \ <br>
+	 * -vf scale=w=1920:h=1080:force_original_aspect_ratio=decrease -c:a aac -ar
+	 * 48000 -c:v h264 -profile:v main -crf 20 -sc_threshold 0 -g 48 -keyint_min 48
+	 * -hls_time 4 -hls_playlist_type vod -b:v 5000k -maxrate 5350k -bufsize 7500k
+	 * -b:a 192k -hls_segment_filename beach/1080p_%03d.ts beach/1080p.m3u8 <br>
+	 * 
+	 */
+
+	/**
+	 * 
+	 */
 	@Override
 	public IpfsHashResponse ipfsPutVideo(InputStream is, String username, String authorization, String filename) {
 		if (!isAuthorized(username, authorization)) {
@@ -270,7 +294,6 @@ public class DpornCoApiImpl implements DpornCoApi {
 		}
 		return response;
 	}
-
 
 	@Override
 	public CommentConfirmResponse commentConfirm(String username, String authorization, String permlink) {
@@ -335,7 +358,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		username = username.toLowerCase().trim();
 		permlink = permlink.trim();
 		BlogEntry entry = MongoDpornCo.getEntry(username, permlink);
-		if (entry==null || !username.equals(entry.getUsername())) {
+		if (entry == null || !username.equals(entry.getUsername())) {
 			return;
 		}
 		synchronized (DpornCoApiImpl.class) {
@@ -366,8 +389,8 @@ public class DpornCoApiImpl implements DpornCoApi {
 			setResponseAsUnauthorized();
 			return null;
 		}
-		if (html==null) {
-			html="";
+		if (html == null) {
+			html = "";
 		}
 		HtmlSanitizedResponse response = new HtmlSanitizedResponse();
 		response.setSanitizedHtml(HtmlSanitizer.get().sanitize(html));
