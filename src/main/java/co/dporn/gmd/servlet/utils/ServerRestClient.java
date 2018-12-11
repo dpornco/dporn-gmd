@@ -116,7 +116,7 @@ public class ServerRestClient {
 		}
 	}
 
-	public static String get(String url, Map<String, String> params) {
+	public static String get(String url, Map<String, String> params) throws IOException {
 		HttpURLConnection urlConnection = null;
 		try {
 			url = createUrlWithQuerystring(url, params);
@@ -126,8 +126,6 @@ public class ServerRestClient {
 			try (InputStream inputStream = urlConnection.getInputStream()) {
 				return getString(inputStream);
 			}
-		} catch (Exception e) {
-			throw new RuntimeException(e);
 		} finally {
 			urlConnection.disconnect();
 		}

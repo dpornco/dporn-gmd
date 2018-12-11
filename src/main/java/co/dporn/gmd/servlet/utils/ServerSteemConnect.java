@@ -21,15 +21,15 @@ public class ServerSteemConnect {
 		}
 		Map<String, String> queryParams = new LinkedHashMap<>();
 		queryParams.put("access_token", authorization);
-		String result = ServerRestClient.get(STEEMCONNECT_API + "me", queryParams);
-		MeAuthorizationCheck me;
 		try {
+			String result = ServerRestClient.get(STEEMCONNECT_API + "me", queryParams);
+			MeAuthorizationCheck me;
 			me = Mapper.get().readValue(result, MeAuthorizationCheck.class);
+			String user = me.getUser();
+			USERNAME_CACHE.put(authorization, user);
+			return user;
 		} catch (IOException e) {
 			return "";
 		}
-		String user = me.getUser();
-		USERNAME_CACHE.put(authorization, user);
-		return user;
 	}
 }
