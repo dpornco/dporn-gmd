@@ -327,7 +327,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			return e1;
 		};
 		vid.currentTime = 4.0;
-		//only post file to IPFS if the browser accepts it as a video file
+		//only submit file for recoding and posting to IPFS if the browser accepts it as a video file
 		vid.onloadeddata=e->{
 			presenter.postBlobToIpfsHlsVideo(file.name, file, videoOnprogressFn).thenAccept((location)->{
 				GWT.log("UPLOADED VIDEO: "+location);
