@@ -19,7 +19,7 @@ import co.dporn.gmd.client.utils.DpornChipProvider;
 import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.TagSet;
 import elemental2.dom.ProgressEvent;
-import elemental2.dom.XMLHttpRequest.OnprogressFn;
+import elemental2.dom.XMLHttpRequestUpload.OnprogressFn;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialChip;
 import gwt.material.design.client.ui.MaterialContainer;

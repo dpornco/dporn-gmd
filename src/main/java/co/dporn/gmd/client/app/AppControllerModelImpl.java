@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 
+import javax.ws.rs.Path;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.github.nmorel.gwtjackson.client.ObjectMapper;
@@ -301,6 +303,36 @@ public class AppControllerModelImpl implements AppControllerModel {
 			return future;
 		}
 		ClientRestClient.get().postBlobToIpfs(username, authorization, filename, blob, onprogress)
+				.thenAccept((response) -> {
+					try {
+						IpfsHashResponse hash = IpfsHashResponseMapper.mapper.read(response);
+						if (hash.getLocation() == null || hash.getLocation().trim().isEmpty()) {
+							future.completeExceptionally(new RuntimeException("NO IPFS PATH RETURNED"));
+							return;
+						}
+						future.complete(hash.getLocation());
+					} catch (JsonDeserializationException e) {
+						future.completeExceptionally(e);
+						return;
+					}
+				}).exceptionally((ex) -> {
+					future.completeExceptionally(ex);
+					return null;
+				});
+		return future;
+	}
+	
+	@Override
+	public CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, OnprogressFn onprogress) {
+		CompletableFuture<String> future = new CompletableFuture<>();
+		String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
+		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
+		if (authorization.trim().isEmpty()) {
+			future.completeExceptionally(new RuntimeException("NOT AUTHORIZED"));
+			routePresenter.toast("UPLOAD NOT AUTHORIZED");
+			return future;
+		}
+		ClientRestClient.get().postBlobToIpfsHlsVideo(username, authorization, filename, blob, onprogress)
 				.thenAccept((response) -> {
 					try {
 						IpfsHashResponse hash = IpfsHashResponseMapper.mapper.read(response);

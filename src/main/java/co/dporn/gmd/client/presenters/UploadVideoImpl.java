@@ -15,7 +15,7 @@ import co.dporn.gmd.client.utils.HtmlReformatter;
 import co.dporn.gmd.client.views.IsView;
 import co.dporn.gmd.shared.BlogEntryType;
 import elemental2.dom.Blob;
-import elemental2.dom.XMLHttpRequest.OnprogressFn;
+import elemental2.dom.XMLHttpRequestUpload.OnprogressFn;
 
 public class UploadVideoImpl implements UploadVideo {
 
@@ -68,7 +68,7 @@ public class UploadVideoImpl implements UploadVideo {
 	}
 
 	@Override
-	public CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob) {
+	public CompletableFuture<String> postBlobToIpfs(String filename, Blob blob) {
 		OnprogressFn onprogressfn = view.getOnprogressFn(filename);
 		return model.postBlobToIpfsFile(filename, blob, (e)->onprogressfn.onInvoke(e));
 	}
@@ -126,6 +126,11 @@ public class UploadVideoImpl implements UploadVideo {
 			});
 			return null;
 		});
+	}
+
+	@Override
+	public CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, OnprogressFn onprogress) {
+		return model.postBlobToIpfsFile(filename, blob, onprogress);
 	}
 
 }

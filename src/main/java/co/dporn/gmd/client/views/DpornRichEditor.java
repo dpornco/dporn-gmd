@@ -1,7 +1,5 @@
 package co.dporn.gmd.client.views;
 
-import java.util.concurrent.CompletableFuture;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.google.gwt.core.client.Scheduler;
@@ -9,9 +7,8 @@ import com.google.gwt.dom.client.Element;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 
 import co.dporn.gmd.client.utils.ImgUtils;
-import elemental2.dom.Blob;
+import co.dporn.gmd.client.utils.IpfsApi;
 import elemental2.dom.HTMLImageElement;
-import elemental2.dom.XMLHttpRequest.OnprogressFn;
 import gwt.material.design.addins.client.richeditor.MaterialRichEditor;
 import gwt.material.design.addins.client.richeditor.base.constants.ToolbarButton;
 import gwt.material.design.client.ui.MaterialLoader;
@@ -19,15 +16,11 @@ import gwt.material.design.client.ui.MaterialToast;
 import jsinterop.base.Js;
 
 public class DpornRichEditor extends MaterialRichEditor {
-	
+
 	private static long _counter = System.currentTimeMillis();
+
 	private static synchronized long nextCounter() {
 		return (_counter = Math.max(_counter + 1, System.currentTimeMillis()));
-	}
-
-	public static interface IpfsApi {
-		CompletableFuture<String> postBlobToIpfsFile(String ipfsFilename, Blob blob);
-		CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob, OnprogressFn onprogressFn);
 	}
 
 	public DpornRichEditor() {
@@ -79,7 +72,7 @@ public class DpornRichEditor extends MaterialRichEditor {
 		}
 		final String ipfsFilename = filename;
 		new ImgUtils().toBlob(image).thenAccept((blob) -> {
-			ipfsApi.postBlobToIpfsFile(ipfsFilename, blob).thenAccept((path) -> {
+			ipfsApi.postBlobToIpfs(ipfsFilename, blob).thenAccept((path) -> {
 				MaterialToast.fireToast("Image posted: " + StringUtils.substringAfterLast(path, "/"));
 				MaterialLoader.loading(false);
 				StringBuilder srcset = new StringBuilder();
@@ -104,7 +97,7 @@ public class DpornRichEditor extends MaterialRichEditor {
 	private IpfsApi ipfsApi;
 
 	private void automaticImageResizeAndIpfsPut(Element e) {
-		if (ipfsApi==null) {
+		if (ipfsApi == null) {
 			MaterialToast.fireToast("WARNING! IPFS NOT CONNECTED");
 			return;
 		}

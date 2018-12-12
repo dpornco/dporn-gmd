@@ -3,6 +3,8 @@ package co.dporn.gmd.client;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+import javax.ws.rs.Path;
+
 import org.fusesource.restygwt.client.Defaults;
 import org.fusesource.restygwt.client.DirectRestService;
 import org.fusesource.restygwt.client.Method;
@@ -70,6 +72,21 @@ public class ClientRestClient {
 		CompletableFuture<String> future = new CompletableFuture<>();
 		filename = URL.encode(filename);
 		String xhrUrl = serviceRoot + "/ipfs/put/" + filename;
+		XMLHttpRequest xhr = new XMLHttpRequest();
+		xhr.upload.onprogress = onprogress;
+		xhr.onloadend = (e) -> future.complete(xhr.responseText);
+		xhr.onerror = (e) -> future.completeExceptionally(new RuntimeException("IPFS XHR FAILED"));
+		xhr.open("PUT", xhrUrl, true);
+		xhr.setRequestHeader("Authorization", authorization);
+		xhr.setRequestHeader("username", username);
+		xhr.send(blob);
+		return future;
+	}
+	public CompletableFuture<String> postBlobToIpfsHlsVideo(String username, String authorization, String filename, Blob blob,
+			OnprogressFn onprogress) {
+		CompletableFuture<String> future = new CompletableFuture<>();
+		filename = URL.encode(filename);
+		String xhrUrl = serviceRoot + "/ipfs/video/put/" + filename;
 		XMLHttpRequest xhr = new XMLHttpRequest();
 		xhr.upload.onprogress = onprogress;
 		xhr.onloadend = (e) -> future.complete(xhr.responseText);

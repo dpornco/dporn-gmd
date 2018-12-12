@@ -15,7 +15,7 @@ import co.dporn.gmd.client.utils.HtmlReformatter;
 import co.dporn.gmd.client.views.IsView;
 import co.dporn.gmd.shared.BlogEntryType;
 import elemental2.dom.Blob;
-import elemental2.dom.XMLHttpRequest.OnprogressFn;
+import elemental2.dom.XMLHttpRequestUpload.OnprogressFn;
 
 public class UploadEroticaImpl implements UploadErotica {
 
@@ -69,7 +69,7 @@ public class UploadEroticaImpl implements UploadErotica {
 	}
 
 	@Override
-	public CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob) {
+	public CompletableFuture<String> postBlobToIpfs(String filename, Blob blob) {
 		OnprogressFn onprogressfn = view.getOnprogressFn(filename);
 		return model.postBlobToIpfsFile(filename, blob, (e)->onprogressfn.onInvoke(e));
 	}
@@ -135,5 +135,13 @@ public class UploadEroticaImpl implements UploadErotica {
 	@Override
 	public CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob, OnprogressFn onprogressFn) {
 		return model.postBlobToIpfsFile(filename, blob, (e)->onprogressFn.onInvoke(e));
+	}
+
+	@Override
+	public CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, OnprogressFn onprogress) {
+		CompletableFuture<String> completableFuture = new CompletableFuture<>();
+		//intentionally not implemented.
+		completableFuture.completeExceptionally(new RuntimeException("Not Implemented."));
+		return completableFuture;
 	}
 }

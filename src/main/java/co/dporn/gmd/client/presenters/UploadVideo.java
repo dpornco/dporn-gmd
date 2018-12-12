@@ -8,14 +8,14 @@ import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 
 import co.dporn.gmd.client.presenters.AppPresenter.IsChildPresenter;
 import co.dporn.gmd.client.presenters.UploadVideo.UploadVideoView;
+import co.dporn.gmd.client.utils.IpfsApi;
 import co.dporn.gmd.client.views.CommonUploadViewFeatures;
-import co.dporn.gmd.client.views.DpornRichEditor.IpfsApi;
 import co.dporn.gmd.client.views.IsView;
 import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.TagSet;
 import elemental2.dom.Blob;
 import elemental2.dom.ProgressEvent;
-import elemental2.dom.XMLHttpRequest.OnprogressFn;
+import elemental2.dom.XMLHttpRequestUpload.OnprogressFn;
 
 public interface UploadVideo extends IsChildPresenter<UploadVideoView>, ScheduledCommand, IpfsApi {
 	interface UploadVideoView extends IsView<UploadVideo>, CommonUploadViewFeatures {
@@ -35,7 +35,8 @@ public interface UploadVideo extends IsChildPresenter<UploadVideoView>, Schedule
 	 * @param blob
 	 * @return
 	 */
-	CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob);
+	CompletableFuture<String> postBlobToIpfs(String filename, Blob blob);
+	CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, OnprogressFn onprogressFn);
 	Void viewRecentTagSets(String mustHaveTag);
 	void showPostBodyPreview(Double editorWidth, String html);
 	void createNewBlogEntry(BlogEntryType entryType, double width, String value, List<? extends Suggestion> tags,
