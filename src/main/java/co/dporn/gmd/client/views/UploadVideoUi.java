@@ -143,7 +143,6 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		event.stopPropagation();
 		posterImage.setUrl("");
 		lnkCoverImage.setHref("");
-		lnkVideoFile.setHref("");
 		lnkCoverImage.setText("");
 		coverImageLocation = "";
 		HTMLInputElement input = Js.cast(fileUploadImage.getElement());
@@ -248,7 +247,8 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		btnUploadImage.setEnabled(false);
 		btnTakeSnap.setEnabled(false);
 		btnUploadVideo.setEnabled(false);
-		coverImageLocation="";
+		lnkVideoFile.setText("");
+		lnkVideoFile.setHref("");
 		OnprogressFn videoOnprogressFn = new OnprogressFn() {
 			@Override
 			public void onInvoke(ProgressEvent p0) {
