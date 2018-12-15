@@ -1,9 +1,13 @@
 package co.dporn.gmd.servlet;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -20,14 +24,16 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import co.dporn.gmd.servlet.mongodb.MongoDpornCo;
 import co.dporn.gmd.servlet.utils.HtmlSanitizer;
 import co.dporn.gmd.servlet.utils.Mapper;
 import co.dporn.gmd.servlet.utils.ResponseWithHeaders;
-import co.dporn.gmd.servlet.utils.ServerRestClient;
 import co.dporn.gmd.servlet.utils.ServerSteemConnect;
+import co.dporn.gmd.servlet.utils.ServerUtils;
 import co.dporn.gmd.servlet.utils.steemj.DpornMetadata;
 import co.dporn.gmd.servlet.utils.steemj.SJCommentMetadata;
 import co.dporn.gmd.servlet.utils.steemj.SteemJInstance;
@@ -232,7 +238,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			return null;
 		}
 		filename = safeFilename(filename);
-		ResponseWithHeaders putResponse = ServerRestClient.putStream(IPFS_GATEWAY + IPFS_EMPTY_DIR + "/" + filename, is,
+		ResponseWithHeaders putResponse = ServerUtils.putStream(IPFS_GATEWAY + IPFS_EMPTY_DIR + "/" + filename, is,
 				null);
 		List<String> ipfsHashes = putResponse.getHeaders().get("ipfs-hash");
 		List<String> locations = putResponse.getHeaders().get("location");
@@ -279,20 +285,198 @@ public class DpornCoApiImpl implements DpornCoApi {
 			setResponseAsUnauthorized();
 			return null;
 		}
-		filename = safeFilename(filename);
-		ResponseWithHeaders putResponse = ServerRestClient.putStream(IPFS_GATEWAY + IPFS_EMPTY_DIR + "/" + filename, is,
-				null);
-		List<String> ipfsHashes = putResponse.getHeaders().get("ipfs-hash");
-		List<String> locations = putResponse.getHeaders().get("location");
 		IpfsHashResponse response = new IpfsHashResponse();
-		response.setFilename(filename);
-		if (!ipfsHashes.isEmpty()) {
-			response.setIpfsHash(ipfsHashes.get(ipfsHashes.size() - 1));
-		}
-		if (!locations.isEmpty()) {
-			response.setLocation(locations.get(locations.size() - 1));
+		File tmpDir = null;
+		Process ffmpeg = null;
+		try {
+			String frameRate = "29.97";
+			tmpDir = Files.createTempDirectory("hls-").toFile();
+			System.out.println(" --- VID TEMP: " + tmpDir.getAbsoluteFile());
+			List<String> cmd = new ArrayList<>();
+			
+			cmd.add("/usr/bin/nice");
+			
+			cmd.add("/usr/bin/ffmpeg");
+			cmd.add("-hide_banner");
+			cmd.add("-y");
+
+			cmd.add("-blocksize");
+			cmd.add("2k");
+			cmd.add("-i");
+			cmd.add("pipe:0");
+						
+			StringBuilder m3u8 = new StringBuilder();
+			m3u8.append("#EXTM3U\n");
+			m3u8.append("#EXT-X-VERSION:3\n");
+			
+			// 240p
+			new File(tmpDir, "240p").mkdir();
+			ffmpegOptionsFor(frameRate, 240, cmd);
+			m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=500000,RESOLUTION=426x240\n");
+			m3u8.append("240p/240p.m3u8\n");
+			// 480p
+			new File(tmpDir, "480p").mkdir();
+			ffmpegOptionsFor(frameRate, 480, cmd);
+			m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=1000000,RESOLUTION=854x480\n");
+			m3u8.append("480p/480p.m3u8\n");
+			// 720p
+			new File(tmpDir, "720p").mkdir();
+			ffmpegOptionsFor(frameRate, 720, cmd);
+			m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=1500000,RESOLUTION=1280x720\n");
+			m3u8.append("720p/720p.m3u8\n");
+			// 1080p
+			new File(tmpDir, "1080p").mkdir();
+			ffmpegOptionsFor(frameRate, 1080, cmd);
+			m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=3000000,RESOLUTION=1920x1080\n");
+			m3u8.append("1080p/1080p.m3u8\n");
+
+			FileUtils.write(new File(tmpDir, "video.m3u8"), m3u8.toString(), StandardCharsets.UTF_8);
+			
+			FileUtils.write(new File(tmpDir, "ffmpeg.txt"),StringUtils.join(cmd, " ")+"\n", StandardCharsets.UTF_8);
+
+			ProcessBuilder pb = new ProcessBuilder(cmd);
+			pb.directory(tmpDir);
+
+			pb.redirectError(new File(tmpDir, "log.err"));
+			pb.redirectOutput(new File(tmpDir, "log.out"));
+
+			ffmpeg = pb.start();
+			ServerUtils.copyStream(is, ffmpeg.getOutputStream());
+			System.out.print("- TRANSCODE FINISHED");
+			IOUtils.closeQuietly(ffmpeg.getOutputStream());
+			ffmpeg.waitFor();
+
+			// filename = safeFilename(filename);
+			// ResponseWithHeaders putResponse = ServerRestClient.putStream(IPFS_GATEWAY +
+			// IPFS_EMPTY_DIR + "/" + filename, is,
+			// null);
+			// List<String> ipfsHashes = putResponse.getHeaders().get("ipfs-hash");
+			// List<String> locations = putResponse.getHeaders().get("location");
+			// response.setFilename(filename);
+			// if (!ipfsHashes.isEmpty()) {
+			// response.setIpfsHash(ipfsHashes.get(ipfsHashes.size() - 1));
+			// }
+			// if (!locations.isEmpty()) {
+			// response.setLocation(locations.get(locations.size() - 1));
+			// }
+		} catch (IOException | InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			if (ffmpeg != null) {
+				ffmpeg.destroyForcibly();
+			}
+			if (tmpDir != null) {
+				// FileUtils.deleteQuietly(tmpDir);
+			}
 		}
 		return response;
+	}
+
+	private void ffmpegOptionsFor(String frameRate, int size, List<String> cmd) {
+		cmd.add("-c:a");
+		cmd.add("aac");
+		cmd.add("-ar");
+		cmd.add("48000");
+		cmd.add("-b:a");
+		
+		if (size<360) {
+			cmd.add("64k");
+		} else if (size<480) {
+			cmd.add("96k");
+		} else if (size<1080) {
+			cmd.add("128k");
+		} else {
+			cmd.add("192k");
+		}
+		
+		cmd.add("-r");
+		cmd.add(frameRate);
+
+		cmd.add("-g");
+		cmd.add(frameRate);
+
+		cmd.add("-preset");
+		cmd.add("ultrafast");
+
+		cmd.add("-tune");
+		cmd.add("film");
+
+		cmd.add("-movflags");
+		cmd.add("+faststart");
+
+		cmd.add("-crf");
+		cmd.add("28");
+		
+		cmd.add("-keyint_min");
+		cmd.add(frameRate);
+		cmd.add("-sc_threshold");
+		cmd.add("0");
+
+		cmd.add("-c:v");
+		cmd.add("h264");
+		cmd.add("-profile:v");
+		cmd.add("main");
+
+		cmd.add("-maxrate");
+		if (size<360) {
+			cmd.add("500k");
+		} else if (size<480) {
+			cmd.add("750k");
+		} else if (size<720) {
+			cmd.add("1000k");
+		} else if (size<1080) {
+			cmd.add("1500k");
+		}  else {
+			cmd.add("3000k");
+		}
+		
+		cmd.add("-bufsize");
+		if (size<360) {
+			cmd.add("1000k");
+		} else if (size<480) {
+			cmd.add("1500k");
+		} else if (size<720) {
+			cmd.add("2000k");
+		} else if (size<1080) {
+			cmd.add("3000k");
+		}  else {
+			cmd.add("6000k");
+		}
+
+		cmd.add("-vf");
+		if (size<360) {
+			cmd.add("scale=w=426x240:force_original_aspect_ratio=decrease,pad=w='iw+mod(iw,2)':h='ih+mod(ih,2)'");
+		} else if (size<480) {
+			cmd.add("scale=w=640x360:force_original_aspect_ratio=decrease,pad=w='iw+mod(iw,2)':h='ih+mod(ih,2)'");
+		} else if (size<720) {
+			cmd.add("scale=w=854x480:force_original_aspect_ratio=decrease,pad=w='iw+mod(iw,2)':h='ih+mod(ih,2)'");
+		} else if (size<1080) {
+			cmd.add("scale=w=1280x720:force_original_aspect_ratio=decrease,pad=w='iw+mod(iw,2)':h='ih+mod(ih,2)'");
+		}  else {
+			cmd.add("scale=w=1920x1080:force_original_aspect_ratio=decrease,pad=w='iw+mod(iw,2)':h='ih+mod(ih,2)'");
+		}
+
+		cmd.add("-hls_time");
+		cmd.add("1");
+		cmd.add("-hls_playlist_type");
+		cmd.add("vod");
+		cmd.add("-hls_segment_filename");
+		
+		String template;
+		if (size<360) {
+			template="240p";
+		} else if (size<480) {
+			template="360p";
+		} else if (size<720) {
+			template="480p";
+		} else if (size<1080) {
+			template="720p";
+		}  else {
+			template="1080p";
+		}
+		
+		cmd.add(template+"/"+template+"_%09d.ts");
+		cmd.add(template+"/"+template+".m3u8");
 	}
 
 	@Override

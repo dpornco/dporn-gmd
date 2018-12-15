@@ -341,7 +341,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 				btnUploadVideo.setEnabled(true);
 				videoUploadProgress.setType(ProgressType.DETERMINATE);
 				videoUploadProgress.setPercent(0);
-				MaterialToast.fireToast("ERROR: "+ex.getMessage());
+				MaterialToast.fireToast("ERROR: "+ex.getMessage(), 5000);
 				return null;
 			});
 			return e;

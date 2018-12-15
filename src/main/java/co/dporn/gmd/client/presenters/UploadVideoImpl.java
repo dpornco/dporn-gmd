@@ -130,7 +130,7 @@ public class UploadVideoImpl implements UploadVideo {
 
 	@Override
 	public CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, OnprogressFn onprogress) {
-		return model.postBlobToIpfsFile(filename, blob, onprogress);
+		return model.postBlobToIpfsHlsVideo(filename, blob, onprogress);
 	}
 
 }

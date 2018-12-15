@@ -14,7 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class ServerRestClient {
+public class ServerUtils {
 
 	protected static String createUrlWithQuerystring(String url, Map<String, String> queryParams)
 			throws UnsupportedEncodingException {
@@ -50,7 +50,7 @@ public class ServerRestClient {
 			urlConnection.setRequestProperty("User-Agent", "dpornco.app/2.0");
 			urlConnection.setDoInput(true);
 			urlConnection.setDoOutput(true);
-			copyLargeSync(is, urlConnection.getOutputStream());
+			copyStream(is, urlConnection.getOutputStream());
 			try (InputStream inputStream = urlConnection.getInputStream()) {
 				response.setBody(getString(inputStream));
 				Map<String, List<String>> headerFields = urlConnection.getHeaderFields();
@@ -80,7 +80,7 @@ public class ServerRestClient {
 			urlConnection.setRequestProperty("User-Agent", "dpornco.app/2.0");
 			urlConnection.setDoInput(true);
 			urlConnection.setDoOutput(true);
-			copyLargeSync(is, urlConnection.getOutputStream());
+			copyStream(is, urlConnection.getOutputStream());
 			try (InputStream inputStream = urlConnection.getInputStream()) {
 				response.setBody(getString(inputStream));
 				response.getHeaders().putAll(urlConnection.getHeaderFields());
@@ -187,7 +187,7 @@ public class ServerRestClient {
 	     * @throws IOException          if an I/O error occurs
 	     * @since 2.2
 	     */
-	    public static long copyLargeSync(final InputStream input, final OutputStream output)
+	    public static long copyStream(final InputStream input, final OutputStream output)
 	            throws IOException {
 	    	byte[] buffer = new byte[4096];
 	        long count = 0;

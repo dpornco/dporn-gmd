@@ -22,7 +22,7 @@ public class ServerSteemConnect {
 		Map<String, String> queryParams = new LinkedHashMap<>();
 		queryParams.put("access_token", authorization);
 		try {
-			String result = ServerRestClient.get(STEEMCONNECT_API + "me", queryParams);
+			String result = ServerUtils.get(STEEMCONNECT_API + "me", queryParams);
 			MeAuthorizationCheck me;
 			me = Mapper.get().readValue(result, MeAuthorizationCheck.class);
 			String user = me.getUser();
