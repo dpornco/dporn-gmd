@@ -2,6 +2,9 @@ package co.dporn.gmd.servlet.utils;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -13,6 +16,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.io.IOUtils;
 
 public class ServerUtils {
 
@@ -39,6 +44,12 @@ public class ServerUtils {
 		return sb.toString();
 	}
 
+	public static ResponseWithHeaders putFile(String url, File file, Map<String, String> params) throws IOException {
+		try (FileInputStream is = new FileInputStream(file)){
+			return putStream(url, is, params);
+		}
+	}
+	
 	public static ResponseWithHeaders putStream(String url, InputStream is, Map<String, String> params) {
 		ResponseWithHeaders response = new ResponseWithHeaders();
 		HttpURLConnection urlConnection = null;

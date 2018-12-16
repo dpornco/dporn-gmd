@@ -26,6 +26,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import co.dporn.gmd.servlet.mongodb.MongoDpornCo;
@@ -293,22 +294,22 @@ public class DpornCoApiImpl implements DpornCoApi {
 			tmpDir = Files.createTempDirectory("hls-").toFile();
 			System.out.println(" --- VID TEMP: " + tmpDir.getAbsoluteFile());
 			List<String> cmd = new ArrayList<>();
-			
+
 			cmd.add("/usr/bin/nice");
-			
+
 			cmd.add("/usr/bin/ffmpeg");
 			cmd.add("-hide_banner");
 			cmd.add("-y");
 
 			cmd.add("-blocksize");
-			cmd.add("2k");
+			cmd.add("1k");
 			cmd.add("-i");
 			cmd.add("pipe:0");
-						
+
 			StringBuilder m3u8 = new StringBuilder();
 			m3u8.append("#EXTM3U\n");
 			m3u8.append("#EXT-X-VERSION:3\n");
-			
+
 			// 240p
 			new File(tmpDir, "240p").mkdir();
 			ffmpegOptionsFor(frameRate, 240, cmd);
@@ -330,9 +331,10 @@ public class DpornCoApiImpl implements DpornCoApi {
 			m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=3000000,RESOLUTION=1920x1080\n");
 			m3u8.append("1080p/1080p.m3u8\n");
 
-			FileUtils.write(new File(tmpDir, "video.m3u8"), m3u8.toString(), StandardCharsets.UTF_8);
-			
-			FileUtils.write(new File(tmpDir, "ffmpeg.txt"),StringUtils.join(cmd, " ")+"\n", StandardCharsets.UTF_8);
+			File video_m3u8 = new File(tmpDir, "video.m3u8");
+			FileUtils.write(video_m3u8, m3u8.toString(), StandardCharsets.UTF_8);
+
+			FileUtils.write(new File(tmpDir, "ffmpeg.txt"), StringUtils.join(cmd, " ") + "\n", StandardCharsets.UTF_8);
 
 			ProcessBuilder pb = new ProcessBuilder(cmd);
 			pb.directory(tmpDir);
@@ -345,20 +347,45 @@ public class DpornCoApiImpl implements DpornCoApi {
 			System.out.print("- TRANSCODE FINISHED");
 			IOUtils.closeQuietly(ffmpeg.getOutputStream());
 			ffmpeg.waitFor();
+			
+			/*
+			 * put in a basic player for direct IPFS playback
+			 */
+			String player = DpornCoEmbed.htmlTemplateVideo();
+			player = player.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
+			player = player.replaceAll("poster=\"[^\"]*?\"", "");
+			player = player.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"\\s+type=\"video/mp4\" />", "<source src=\"video.m3u8\"/>");
+			FileUtils.write(new File(tmpDir, "video.html"), player.toString(), StandardCharsets.UTF_8);
 
-			// filename = safeFilename(filename);
-			// ResponseWithHeaders putResponse = ServerRestClient.putStream(IPFS_GATEWAY +
-			// IPFS_EMPTY_DIR + "/" + filename, is,
-			// null);
-			// List<String> ipfsHashes = putResponse.getHeaders().get("ipfs-hash");
-			// List<String> locations = putResponse.getHeaders().get("location");
-			// response.setFilename(filename);
-			// if (!ipfsHashes.isEmpty()) {
-			// response.setIpfsHash(ipfsHashes.get(ipfsHashes.size() - 1));
-			// }
-			// if (!locations.isEmpty()) {
-			// response.setLocation(locations.get(locations.size() - 1));
-			// }
+			List<File> files = new ArrayList<>(FileUtils.listFiles(tmpDir, null, true));
+			/*
+			 * sort the data by name but force the file video.m3u8 to be last in the list - THIS IS IMPORTANT TO DO!
+			 */
+			Collections.sort(files, (a,b) ->{
+				if (a.equals(video_m3u8)) {
+					return 1;
+				}
+				if (b.equals(video_m3u8)) {
+					return -1;
+				}
+				return a.getAbsolutePath().compareTo(b.getAbsolutePath());
+			});
+			String IPFS_HASH = IPFS_EMPTY_DIR;
+			for (File file : files) {
+				String destFilename = StringUtils.substringAfter(file.getAbsolutePath(), tmpDir.getAbsolutePath());
+				System.out.println("   DEST FILE: " + destFilename);
+				ResponseWithHeaders putResponse = ServerUtils.putFile(IPFS_GATEWAY + IPFS_HASH + destFilename, file,
+						null);
+				List<String> ipfsHashes = putResponse.getHeaders().get("ipfs-hash");
+				List<String> locations = putResponse.getHeaders().get("location");
+				if (!ipfsHashes.isEmpty()) {
+					IPFS_HASH = ipfsHashes.get(ipfsHashes.size() - 1);
+					response.setIpfsHash(IPFS_HASH);
+				}
+				if (!locations.isEmpty()) {
+					response.setLocation(locations.get(locations.size() - 1));
+				}
+			}
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 		} finally {
@@ -366,7 +393,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 				ffmpeg.destroyForcibly();
 			}
 			if (tmpDir != null) {
-				// FileUtils.deleteQuietly(tmpDir);
+				 FileUtils.deleteQuietly(tmpDir);
 			}
 		}
 		return response;
@@ -378,17 +405,17 @@ public class DpornCoApiImpl implements DpornCoApi {
 		cmd.add("-ar");
 		cmd.add("48000");
 		cmd.add("-b:a");
-		
-		if (size<360) {
+
+		if (size < 360) {
 			cmd.add("64k");
-		} else if (size<480) {
+		} else if (size < 480) {
 			cmd.add("96k");
-		} else if (size<1080) {
+		} else if (size < 1080) {
 			cmd.add("128k");
 		} else {
 			cmd.add("192k");
 		}
-		
+
 		cmd.add("-r");
 		cmd.add(frameRate);
 
@@ -406,7 +433,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 		cmd.add("-crf");
 		cmd.add("28");
-		
+
 		cmd.add("-keyint_min");
 		cmd.add(frameRate);
 		cmd.add("-sc_threshold");
@@ -418,41 +445,41 @@ public class DpornCoApiImpl implements DpornCoApi {
 		cmd.add("main");
 
 		cmd.add("-maxrate");
-		if (size<360) {
+		if (size < 360) {
 			cmd.add("500k");
-		} else if (size<480) {
+		} else if (size < 480) {
 			cmd.add("750k");
-		} else if (size<720) {
+		} else if (size < 720) {
 			cmd.add("1000k");
-		} else if (size<1080) {
+		} else if (size < 1080) {
 			cmd.add("1500k");
-		}  else {
+		} else {
 			cmd.add("3000k");
 		}
-		
+
 		cmd.add("-bufsize");
-		if (size<360) {
+		if (size < 360) {
 			cmd.add("1000k");
-		} else if (size<480) {
+		} else if (size < 480) {
 			cmd.add("1500k");
-		} else if (size<720) {
+		} else if (size < 720) {
 			cmd.add("2000k");
-		} else if (size<1080) {
+		} else if (size < 1080) {
 			cmd.add("3000k");
-		}  else {
+		} else {
 			cmd.add("6000k");
 		}
 
 		cmd.add("-vf");
-		if (size<360) {
+		if (size < 360) {
 			cmd.add("scale=w=426x240:force_original_aspect_ratio=decrease,pad=w='iw+mod(iw,2)':h='ih+mod(ih,2)'");
-		} else if (size<480) {
+		} else if (size < 480) {
 			cmd.add("scale=w=640x360:force_original_aspect_ratio=decrease,pad=w='iw+mod(iw,2)':h='ih+mod(ih,2)'");
-		} else if (size<720) {
+		} else if (size < 720) {
 			cmd.add("scale=w=854x480:force_original_aspect_ratio=decrease,pad=w='iw+mod(iw,2)':h='ih+mod(ih,2)'");
-		} else if (size<1080) {
+		} else if (size < 1080) {
 			cmd.add("scale=w=1280x720:force_original_aspect_ratio=decrease,pad=w='iw+mod(iw,2)':h='ih+mod(ih,2)'");
-		}  else {
+		} else {
 			cmd.add("scale=w=1920x1080:force_original_aspect_ratio=decrease,pad=w='iw+mod(iw,2)':h='ih+mod(ih,2)'");
 		}
 
@@ -461,22 +488,22 @@ public class DpornCoApiImpl implements DpornCoApi {
 		cmd.add("-hls_playlist_type");
 		cmd.add("vod");
 		cmd.add("-hls_segment_filename");
-		
+
 		String template;
-		if (size<360) {
-			template="240p";
-		} else if (size<480) {
-			template="360p";
-		} else if (size<720) {
-			template="480p";
-		} else if (size<1080) {
-			template="720p";
-		}  else {
-			template="1080p";
+		if (size < 360) {
+			template = "240p";
+		} else if (size < 480) {
+			template = "360p";
+		} else if (size < 720) {
+			template = "480p";
+		} else if (size < 1080) {
+			template = "720p";
+		} else {
+			template = "1080p";
 		}
-		
-		cmd.add(template+"/"+template+"_%09d.ts");
-		cmd.add(template+"/"+template+".m3u8");
+
+		cmd.add(template + "/" + template + "_%09d.ts");
+		cmd.add(template + "/" + template + ".m3u8");
 	}
 
 	@Override

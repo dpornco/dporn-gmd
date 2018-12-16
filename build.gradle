@@ -60,7 +60,7 @@ gretty {
 	httpPort = 8080;
 	servletContainer = 'tomcat9'
 	extraResourceBase 'build/gwt/out'
-	jvmArgs = ['-Dfile.encoding=UTF-8', '-Xmx1024M']
+	jvmArgs = ['-Dfile.encoding=UTF-8', '-Xmx2048M']
 	managedClassReload = false
 	contextPath='/'
 }
@@ -249,6 +249,6 @@ test {
   useTestNG()
   outputs.upToDateWhen { false }
   dependsOn 'compileJava', 'compileGwt'
-  maxHeapSize = "1024m"
+  maxHeapSize = "2048m"
 }
  

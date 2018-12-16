@@ -35,7 +35,7 @@ public class DpornCoEmbed {
 	private static String htmlTemplateVideo;
 	private static String htmlTemplateBlog;
 
-	private static String htmlTemplateVideo() {
+	public static String htmlTemplateVideo() {
 		if (htmlTemplateVideo == null) {
 			try {
 				htmlTemplateVideo = IOUtils.toString(DpornCoEmbed.class.getResourceAsStream("/embed/embed-player.html"));
