@@ -4,6 +4,7 @@ public class IpfsHashResponse {
 	private String ipfsHash;
 	private String filename;
 	private String location;
+	private String error;
 
 	public String getIpfsHash() {
 		return ipfsHash;
@@ -27,5 +28,13 @@ public class IpfsHashResponse {
 
 	public void setLocation(String location) {
 		this.location = location;
+	}
+
+	public String getError() {
+		return error;
+	}
+
+	public void setError(String error) {
+		this.error = error;
 	}
 }

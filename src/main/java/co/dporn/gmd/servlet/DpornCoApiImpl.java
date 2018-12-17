@@ -3,6 +3,7 @@ package co.dporn.gmd.servlet;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -209,11 +210,11 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 	private boolean isAuthorized(String username, String authorization) {
 		if (username == null) {
-			System.err.println("isAuthorized: username is null");
+			System.out.println("isAuthorized: username is null");
 			return false;
 		}
 		String meUsername = ServerSteemConnect.username(authorization);
-		System.err.println("isAuthorized: meUsername = " + meUsername);
+		System.out.println("isAuthorized: meUsername = " + meUsername);
 		boolean authorized = username.equalsIgnoreCase(meUsername);
 		return authorized;
 	}
@@ -257,31 +258,11 @@ public class DpornCoApiImpl implements DpornCoApi {
 	}
 
 	/**
-	 * ffmpeg -hide_banner -y -i beach.mkv \ <br>
-	 * -vf scale=w=640:h=360:force_original_aspect_ratio=decrease -c:a aac -ar 48000
-	 * -c:v h264 -profile:v main -crf 20 -sc_threshold 0 -g 48 -keyint_min 48
-	 * -hls_time 4 -hls_playlist_type vod -b:v 800k -maxrate 856k -bufsize 1200k
-	 * -b:a 96k -hls_segment_filename beach/360p_%03d.ts beach/360p.m3u8 \ <br>
-	 * -vf scale=w=842:h=480:force_original_aspect_ratio=decrease -c:a aac -ar 48000
-	 * -c:v h264 -profile:v main -crf 20 -sc_threshold 0 -g 48 -keyint_min 48
-	 * -hls_time 4 -hls_playlist_type vod -b:v 1400k -maxrate 1498k -bufsize 2100k
-	 * -b:a 128k -hls_segment_filename beach/480p_%03d.ts beach/480p.m3u8 \ <br>
-	 * -vf scale=w=1280:h=720:force_original_aspect_ratio=decrease -c:a aac -ar
-	 * 48000 -c:v h264 -profile:v main -crf 20 -sc_threshold 0 -g 48 -keyint_min 48
-	 * -hls_time 4 -hls_playlist_type vod -b:v 2800k -maxrate 2996k -bufsize 4200k
-	 * -b:a 128k -hls_segment_filename beach/720p_%03d.ts beach/720p.m3u8 \ <br>
-	 * -vf scale=w=1920:h=1080:force_original_aspect_ratio=decrease -c:a aac -ar
-	 * 48000 -c:v h264 -profile:v main -crf 20 -sc_threshold 0 -g 48 -keyint_min 48
-	 * -hls_time 4 -hls_playlist_type vod -b:v 5000k -maxrate 5350k -bufsize 7500k
-	 * -b:a 192k -hls_segment_filename beach/1080p_%03d.ts beach/1080p.m3u8 <br>
-	 * 
-	 */
-
-	/**
 	 * 
 	 */
 	@Override
 	public IpfsHashResponse ipfsPutVideo(InputStream is, String username, String authorization, String filename) {
+		System.out.println("ipfsPutVideo: "+username+", "+filename);
 		if (!isAuthorized(username, authorization)) {
 			setResponseAsUnauthorized();
 			return null;
@@ -302,7 +283,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			cmd.add("-y");
 
 			cmd.add("-blocksize");
-			cmd.add("1k");
+			cmd.add("128k");
 			cmd.add("-i");
 			cmd.add("pipe:0");
 
@@ -310,26 +291,29 @@ public class DpornCoApiImpl implements DpornCoApi {
 			m3u8.append("#EXTM3U\n");
 			m3u8.append("#EXT-X-VERSION:3\n");
 
-			// 240p
-			new File(tmpDir, "240p").mkdir();
-			ffmpegOptionsFor(frameRate, 240, cmd);
-			m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=500000,RESOLUTION=426x240\n");
-			m3u8.append("240p/240p.m3u8\n");
-			// 480p
-			new File(tmpDir, "480p").mkdir();
-			ffmpegOptionsFor(frameRate, 480, cmd);
-			m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=1000000,RESOLUTION=854x480\n");
-			m3u8.append("480p/480p.m3u8\n");
-			// 720p
-			new File(tmpDir, "720p").mkdir();
-			ffmpegOptionsFor(frameRate, 720, cmd);
-			m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=1500000,RESOLUTION=1280x720\n");
-			m3u8.append("720p/720p.m3u8\n");
 			// 1080p
 			new File(tmpDir, "1080p").mkdir();
 			ffmpegOptionsFor(frameRate, 1080, cmd);
 			m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=3000000,RESOLUTION=1920x1080\n");
 			m3u8.append("1080p/1080p.m3u8\n");
+			
+			// 720p
+			new File(tmpDir, "720p").mkdir();
+			ffmpegOptionsFor(frameRate, 720, cmd);
+			m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=1500000,RESOLUTION=1280x720\n");
+			m3u8.append("720p/720p.m3u8\n");
+			
+			// 480p
+			new File(tmpDir, "480p").mkdir();
+			ffmpegOptionsFor(frameRate, 480, cmd);
+			m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=1000000,RESOLUTION=854x480\n");
+			m3u8.append("480p/480p.m3u8\n");
+			
+			// 240p
+			new File(tmpDir, "240p").mkdir();
+			ffmpegOptionsFor(frameRate, 240, cmd);
+			m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=500000,RESOLUTION=426x240\n");
+			m3u8.append("240p/240p.m3u8\n");
 
 			File video_m3u8 = new File(tmpDir, "video.m3u8");
 			FileUtils.write(video_m3u8, m3u8.toString(), StandardCharsets.UTF_8);
@@ -344,12 +328,11 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 			ffmpeg = pb.start();
 			ServerUtils.copyStream(is, ffmpeg.getOutputStream());
-			System.out.print("- TRANSCODE FINISHED");
 			IOUtils.closeQuietly(ffmpeg.getOutputStream());
 			ffmpeg.waitFor();
 			
 			/*
-			 * put in a basic player for direct IPFS playback
+			 * Supply a basic player for direct IPFS playback
 			 */
 			String player = DpornCoEmbed.htmlTemplateVideo();
 			player = player.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
@@ -388,9 +371,14 @@ public class DpornCoApiImpl implements DpornCoApi {
 			}
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
+			this.response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			response.setError(e.getMessage());
 		} finally {
 			if (ffmpeg != null) {
-				ffmpeg.destroyForcibly();
+				IOUtils.closeQuietly(ffmpeg.getOutputStream());
+				if (ffmpeg.isAlive()) {
+					ffmpeg.destroyForcibly();
+				}
 			}
 			if (tmpDir != null) {
 				 FileUtils.deleteQuietly(tmpDir);
@@ -400,6 +388,9 @@ public class DpornCoApiImpl implements DpornCoApi {
 	}
 
 	private void ffmpegOptionsFor(String frameRate, int size, List<String> cmd) {
+		BigDecimal hlsTime = BigDecimal.valueOf(2l);
+		BigDecimal tsLength = new BigDecimal(frameRate).multiply(hlsTime);
+		
 		cmd.add("-c:a");
 		cmd.add("aac");
 		cmd.add("-ar");
@@ -420,7 +411,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		cmd.add(frameRate);
 
 		cmd.add("-g");
-		cmd.add(frameRate);
+		cmd.add(tsLength.toPlainString());
 
 		cmd.add("-preset");
 		cmd.add("ultrafast");
@@ -435,7 +426,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		cmd.add("28");
 
 		cmd.add("-keyint_min");
-		cmd.add(frameRate);
+		cmd.add(tsLength.toPlainString());
 		cmd.add("-sc_threshold");
 		cmd.add("0");
 
@@ -484,7 +475,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		}
 
 		cmd.add("-hls_time");
-		cmd.add("1");
+		cmd.add(hlsTime.toPlainString());
 		cmd.add("-hls_playlist_type");
 		cmd.add("vod");
 		cmd.add("-hls_segment_filename");
@@ -577,7 +568,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			try {
 				content = SteemJInstance.get().getContent(username, permlink);
 				if (content == null || content.getAuthor() == null || !username.equals(content.getAuthor().getName())) {
-					System.err.println("BAD ENTRY: " + username + " | " + permlink);
+					System.out.println("BAD ENTRY: " + username + " | " + permlink);
 					MongoDpornCo.deleteEntry(username, permlink);
 				}
 

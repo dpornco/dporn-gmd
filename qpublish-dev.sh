@@ -5,7 +5,6 @@ set -o pipefail
 
 cd "$(dirname "$0")"
 
-./gradlew clean
 ./gradlew build
 ./gradlew buildProductDev
 

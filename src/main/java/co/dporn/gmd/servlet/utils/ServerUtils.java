@@ -4,7 +4,6 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,8 +15,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.commons.io.IOUtils;
 
 public class ServerUtils {
 
@@ -200,12 +197,11 @@ public class ServerUtils {
 	     */
 	    public static long copyStream(final InputStream input, final OutputStream output)
 	            throws IOException {
-	    	byte[] buffer = new byte[4096];
+	    	byte[] buffer = new byte[32768];
 	        long count = 0;
 	        int n;
 	        while (EOF != (n = input.read(buffer))) {
 	            output.write(buffer, 0, n);
-	            output.flush();
 	            count += n;
 	        }
 	        return count;
