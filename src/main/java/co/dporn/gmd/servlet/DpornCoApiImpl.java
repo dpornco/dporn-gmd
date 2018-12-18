@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.nio.channels.InterruptedByTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -15,6 +16,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -59,6 +62,7 @@ import eu.bittrade.libs.steemj.apis.database.models.state.Discussion;
 @Path("1.0")
 public class DpornCoApiImpl implements DpornCoApi {
 
+	private static final int MAX_CONCURRENT_UPLOADS = 1;
 	@Context
 	protected HttpServletRequest request;
 	@Context
@@ -257,153 +261,197 @@ public class DpornCoApiImpl implements DpornCoApi {
 		return response;
 	}
 
+	private static Semaphore semaphore = new Semaphore(MAX_CONCURRENT_UPLOADS, true);
+
 	/**
 	 * 
 	 */
 	@Override
 	public IpfsHashResponse ipfsPutVideo(InputStream is, String username, String authorization, String filename) {
-		System.out.println("ipfsPutVideo: "+username+", "+filename);
 		if (!isAuthorized(username, authorization)) {
 			setResponseAsUnauthorized();
 			return null;
 		}
-		IpfsHashResponse response = new IpfsHashResponse();
-		File tmpDir = null;
-		Process ffmpeg = null;
+		System.out.println("ipfsPutVideo - semaphore requested: " + username + ", " + filename);
+		boolean acquired = false;
 		try {
-			String frameRate = "29.97";
-			tmpDir = Files.createTempDirectory("hls-").toFile();
-			System.out.println(" --- VID TEMP: " + tmpDir.getAbsoluteFile());
-			List<String> cmd = new ArrayList<>();
-
-			cmd.add("/usr/bin/nice");
-
-			cmd.add("/usr/bin/ffmpeg");
-			cmd.add("-hide_banner");
-			cmd.add("-y");
-
-			cmd.add("-blocksize");
-			cmd.add("128k");
-			cmd.add("-i");
-			cmd.add("pipe:0");
-
-			StringBuilder m3u8 = new StringBuilder();
-			m3u8.append("#EXTM3U\n");
-			m3u8.append("#EXT-X-VERSION:3\n");
-
-			// 1080p
-			new File(tmpDir, "1080p").mkdir();
-			ffmpegOptionsFor(frameRate, 1080, cmd);
-			m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=3000000,RESOLUTION=1920x1080\n");
-			m3u8.append("1080p/1080p.m3u8\n");
-			
-			// 720p
-			new File(tmpDir, "720p").mkdir();
-			ffmpegOptionsFor(frameRate, 720, cmd);
-			m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=1500000,RESOLUTION=1280x720\n");
-			m3u8.append("720p/720p.m3u8\n");
-			
-			// 480p
-			new File(tmpDir, "480p").mkdir();
-			ffmpegOptionsFor(frameRate, 480, cmd);
-			m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=1000000,RESOLUTION=854x480\n");
-			m3u8.append("480p/480p.m3u8\n");
-			
-			// 240p
-			new File(tmpDir, "240p").mkdir();
-			ffmpegOptionsFor(frameRate, 240, cmd);
-			m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=500000,RESOLUTION=426x240\n");
-			m3u8.append("240p/240p.m3u8\n");
-
-			File video_m3u8 = new File(tmpDir, "video.m3u8");
-			FileUtils.write(video_m3u8, m3u8.toString(), StandardCharsets.UTF_8);
-
-			FileUtils.write(new File(tmpDir, "ffmpeg.txt"), StringUtils.join(cmd, " ") + "\n", StandardCharsets.UTF_8);
-
-			ProcessBuilder pb = new ProcessBuilder(cmd);
-			pb.directory(tmpDir);
-
-			pb.redirectError(new File(tmpDir, "log.err"));
-			pb.redirectOutput(new File(tmpDir, "log.out"));
-
-			ffmpeg = pb.start();
-			ServerUtils.copyStream(is, ffmpeg.getOutputStream());
-			IOUtils.closeQuietly(ffmpeg.getOutputStream());
-			ffmpeg.waitFor();
-			
-			/*
-			 * Supply a basic player for direct IPFS playback
-			 */
-			String player = DpornCoEmbed.htmlTemplateVideo();
-			player = player.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
-			player = player.replaceAll("poster=\"[^\"]*?\"", "");
-			player = player.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"\\s+type=\"video/mp4\" />", "<source src=\"video.m3u8\"/>");
-			FileUtils.write(new File(tmpDir, "video.html"), player.toString(), StandardCharsets.UTF_8);
-
-			List<File> files = new ArrayList<>(FileUtils.listFiles(tmpDir, null, true));
-			/*
-			 * sort the data by name but force the file video.m3u8 to be last in the list - THIS IS IMPORTANT TO DO!
-			 */
-			Collections.sort(files, (a,b) ->{
-				if (a.equals(video_m3u8)) {
-					return 1;
-				}
-				if (b.equals(video_m3u8)) {
-					return -1;
-				}
-				return a.getAbsolutePath().compareTo(b.getAbsolutePath());
-			});
-			String IPFS_HASH = IPFS_EMPTY_DIR;
-			for (File file : files) {
-				String destFilename = StringUtils.substringAfter(file.getAbsolutePath(), tmpDir.getAbsolutePath());
-				System.out.println("   DEST FILE: " + destFilename);
-				ResponseWithHeaders putResponse = ServerUtils.putFile(IPFS_GATEWAY + IPFS_HASH + destFilename, file,
-						null);
-				List<String> ipfsHashes = putResponse.getHeaders().get("ipfs-hash");
-				List<String> locations = putResponse.getHeaders().get("location");
-				if (!ipfsHashes.isEmpty()) {
-					IPFS_HASH = ipfsHashes.get(ipfsHashes.size() - 1);
-					response.setIpfsHash(IPFS_HASH);
-				}
-				if (!locations.isEmpty()) {
-					response.setLocation(locations.get(locations.size() - 1));
-				}
+//			if (semaphore.availablePermits()<1) {
+//				IpfsHashResponse response = new IpfsHashResponse();
+//				response.setTryAgain(true);
+//				response.setError("UPLOAD QUEUE FULL - PLEASE TRY AGAIN LATER");
+//				return response;
+//			}
+			acquired = semaphore.tryAcquire(1, TimeUnit.SECONDS);
+			if (!acquired) {
+				throw new InterruptedByTimeoutException();
 			}
-		} catch (IOException | InterruptedException e) {
-			e.printStackTrace();
-			this.response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			response.setError(e.getMessage());
-		} finally {
-			if (ffmpeg != null) {
+			System.out.println("ipfsPutVideo - semaphore acquired: " + username + ", " + filename);
+			System.out.println(" - semaphore slots remaining: " + semaphore.availablePermits());
+
+			IpfsHashResponse response = new IpfsHashResponse();
+			File tmpDir = null;
+			Process ffmpeg = null;
+			try {
+				String frameRate = "29.97";
+				tmpDir = Files.createTempDirectory("hls-").toFile();
+				System.out.println(" --- VID TEMP: " + tmpDir.getAbsoluteFile());
+				List<String> cmd = new ArrayList<>();
+
+				cmd.add("/usr/bin/nice");
+
+				cmd.add("/usr/bin/ffmpeg");
+				cmd.add("-hide_banner");
+				cmd.add("-y");
+
+				cmd.add("-blocksize");
+				cmd.add("128k");
+				cmd.add("-i");
+				cmd.add("pipe:0");
+
+				StringBuilder m3u8 = new StringBuilder();
+				m3u8.append("#EXTM3U\n");
+				m3u8.append("#EXT-X-VERSION:3\n");
+
+				// 1080p
+				new File(tmpDir, "1080p").mkdir();
+				ffmpegOptionsFor(frameRate, 1080, cmd);
+				m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=3000000,RESOLUTION=1920x1080\n");
+				m3u8.append("1080p/1080p.m3u8\n");
+
+				// 720p
+				new File(tmpDir, "720p").mkdir();
+				ffmpegOptionsFor(frameRate, 720, cmd);
+				m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=1500000,RESOLUTION=1280x720\n");
+				m3u8.append("720p/720p.m3u8\n");
+
+				// 480p
+				new File(tmpDir, "480p").mkdir();
+				ffmpegOptionsFor(frameRate, 480, cmd);
+				m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=1000000,RESOLUTION=854x480\n");
+				m3u8.append("480p/480p.m3u8\n");
+
+				// 360p
+				new File(tmpDir, "360p").mkdir();
+				ffmpegOptionsFor(frameRate, 360, cmd);
+				m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=750000,RESOLUTION=640x360\n");
+				m3u8.append("360p/360p.m3u8\n");
+
+				// 240p
+				new File(tmpDir, "240p").mkdir();
+				ffmpegOptionsFor(frameRate, 240, cmd);
+				m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=500000,RESOLUTION=426x240\n");
+				m3u8.append("240p/240p.m3u8\n");
+
+				File video_m3u8 = new File(tmpDir, "video.m3u8");
+				FileUtils.write(video_m3u8, m3u8.toString(), StandardCharsets.UTF_8);
+
+				FileUtils.write(new File(tmpDir, "ffmpeg.txt"), StringUtils.join(cmd, " ") + "\n",
+						StandardCharsets.UTF_8);
+
+				ProcessBuilder pb = new ProcessBuilder(cmd);
+				pb.directory(tmpDir);
+
+				pb.redirectError(new File(tmpDir, "log.err"));
+				pb.redirectOutput(new File(tmpDir, "log.out"));
+
+				ffmpeg = pb.start();
+				ServerUtils.copyStream(is, ffmpeg.getOutputStream());
 				IOUtils.closeQuietly(ffmpeg.getOutputStream());
-				if (ffmpeg.isAlive()) {
-					ffmpeg.destroyForcibly();
+				ffmpeg.waitFor();
+
+				/*
+				 * Supply a basic player for direct IPFS playback
+				 */
+				String player = DpornCoEmbed.htmlTemplateVideo();
+				player = player.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
+				player = player.replaceAll("poster=\"[^\"]*?\"", "");
+				player = player.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"\\s+type=\"video/mp4\" />",
+						"<source src=\"video.m3u8\"/>");
+				FileUtils.write(new File(tmpDir, "video.html"), player.toString(), StandardCharsets.UTF_8);
+
+				List<File> files = new ArrayList<>(FileUtils.listFiles(tmpDir, null, true));
+				/*
+				 * sort the data by name but force the file video.m3u8 to be last in the list -
+				 * THIS IS IMPORTANT TO DO!
+				 */
+				Collections.sort(files, (a, b) -> {
+					if (a.equals(video_m3u8)) {
+						return 1;
+					}
+					if (b.equals(video_m3u8)) {
+						return -1;
+					}
+					return a.getAbsolutePath().compareTo(b.getAbsolutePath());
+				});
+				String IPFS_HASH = IPFS_EMPTY_DIR;
+				for (File file : files) {
+					if (Thread.interrupted()) {
+						System.out.println("IPFS POST INTERRUPTED");
+						throw new InterruptedException("IPFS POST INTERRUPTED");
+					}
+					String destFilename = StringUtils.substringAfter(file.getAbsolutePath(), tmpDir.getAbsolutePath());
+					System.out.println("   DEST FILE: " + destFilename);
+					ResponseWithHeaders putResponse = ServerUtils.putFile(IPFS_GATEWAY + IPFS_HASH + destFilename, file,
+							null);
+					List<String> ipfsHashes = putResponse.getHeaders().get("ipfs-hash");
+					List<String> locations = putResponse.getHeaders().get("location");
+					if (!ipfsHashes.isEmpty()) {
+						IPFS_HASH = ipfsHashes.get(ipfsHashes.size() - 1);
+						response.setIpfsHash(IPFS_HASH);
+					}
+					if (!locations.isEmpty()) {
+						response.setLocation(locations.get(locations.size() - 1));
+					}
+				}
+			} catch (IOException | InterruptedException e) {
+				e.printStackTrace();
+				this.response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+				response.setError(e.getMessage());
+			} finally {
+				if (ffmpeg != null) {
+					IOUtils.closeQuietly(ffmpeg.getOutputStream());
+					if (ffmpeg.isAlive()) {
+						ffmpeg.destroyForcibly();
+					}
+				}
+				if (tmpDir != null) {
+					FileUtils.deleteQuietly(tmpDir);
 				}
 			}
-			if (tmpDir != null) {
-				 FileUtils.deleteQuietly(tmpDir);
+			return response;
+		} catch (InterruptedException | InterruptedByTimeoutException e) {
+			IpfsHashResponse response = new IpfsHashResponse();
+			response.setTryAgain(true);
+			response.setError("TRY AGAIN");
+			return response;
+		} finally {
+			if (acquired) {
+				semaphore.release();
 			}
 		}
-		return response;
 	}
 
 	private void ffmpegOptionsFor(String frameRate, int size, List<String> cmd) {
 		BigDecimal hlsTime = BigDecimal.valueOf(2l);
 		BigDecimal tsLength = new BigDecimal(frameRate).multiply(hlsTime);
-		
+
 		cmd.add("-c:a");
 		cmd.add("aac");
 		cmd.add("-ar");
 		cmd.add("48000");
 		cmd.add("-b:a");
 
-		if (size < 360) {
+		if (size <= 360) {
+			// 240p
 			cmd.add("64k");
 		} else if (size < 480) {
+			// 360p
 			cmd.add("96k");
 		} else if (size < 1080) {
+			// 480p, 720p
 			cmd.add("128k");
 		} else {
+			// 1080p
 			cmd.add("192k");
 		}
 
@@ -414,7 +462,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		cmd.add(tsLength.toPlainString());
 
 		cmd.add("-preset");
-		cmd.add("ultrafast");
+		cmd.add("slow");
 
 		cmd.add("-tune");
 		cmd.add("film");
@@ -422,8 +470,27 @@ public class DpornCoApiImpl implements DpornCoApi {
 		cmd.add("-movflags");
 		cmd.add("+faststart");
 
-		cmd.add("-crf");
-		cmd.add("28");
+		if (size < 360) {
+			// 240p
+			cmd.add("-crf");
+			cmd.add("27");
+		} else if (size < 480) {
+			// 360p
+			cmd.add("-crf");
+			cmd.add("26");
+		} else if (size < 720) {
+			// 480p
+			cmd.add("-crf");
+			cmd.add("25");
+		} else if (size < 1080) {
+			// 720p
+			cmd.add("-crf");
+			cmd.add("24");
+		} else {
+			// 1080p
+			cmd.add("-crf");
+			cmd.add("23");
+		}
 
 		cmd.add("-keyint_min");
 		cmd.add(tsLength.toPlainString());
@@ -437,27 +504,37 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 		cmd.add("-maxrate");
 		if (size < 360) {
+			// 240p
 			cmd.add("500k");
 		} else if (size < 480) {
+			// 360p
 			cmd.add("750k");
 		} else if (size < 720) {
+			// 480p
 			cmd.add("1000k");
 		} else if (size < 1080) {
+			// 720p
 			cmd.add("1500k");
 		} else {
+			// 1080p
 			cmd.add("3000k");
 		}
 
 		cmd.add("-bufsize");
 		if (size < 360) {
+			// 240p
 			cmd.add("1000k");
 		} else if (size < 480) {
+			// 360p
 			cmd.add("1500k");
 		} else if (size < 720) {
+			// 480p
 			cmd.add("2000k");
 		} else if (size < 1080) {
+			// 720p
 			cmd.add("3000k");
 		} else {
+			// 1080p
 			cmd.add("6000k");
 		}
 

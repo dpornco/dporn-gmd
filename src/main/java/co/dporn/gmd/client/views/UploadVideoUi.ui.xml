@@ -39,10 +39,9 @@
 					style="margin: 8px;" text="UPLOAD VIDEO"></m:MaterialButton>
 				<m:MaterialButton ui:field="btnTakeSnap"
 					style="margin: 8px;" text="TAKE SNAPSHOT"></m:MaterialButton>
+			<m:MaterialButton ui:field="previewVideoFile" style="margin: 8px;" text="PREVIEW HLS VIDEO"></m:MaterialButton>
 				<m:MaterialLabel
 					text="16:9 aspect ratio recommended. Video will be recoded to HLS format at 720p, 480p, and 240p with a CRF=28 factor. The original video will be discarded for storage space reasons! If the upload queue is full, the upload will be paused until a slot opens up." />
-			<m:MaterialLink target="_blank"
-					ui:field="lnkVideoFile"></m:MaterialLink>
 			</m:MaterialColumn>
 		</m:MaterialRow>
 		<m:MaterialRow margin="8">

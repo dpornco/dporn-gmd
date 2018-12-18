@@ -5,6 +5,7 @@ public class IpfsHashResponse {
 	private String filename;
 	private String location;
 	private String error;
+	private boolean tryAgain;
 
 	public String getIpfsHash() {
 		return ipfsHash;
@@ -36,5 +37,13 @@ public class IpfsHashResponse {
 
 	public void setError(String error) {
 		this.error = error;
+	}
+
+	public boolean isTryAgain() {
+		return tryAgain;
+	}
+
+	public void setTryAgain(boolean tryAgain) {
+		this.tryAgain = tryAgain;
 	}
 }

@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
@@ -32,6 +33,7 @@ import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.storage.client.StorageMap;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window.Location;
 import com.wallissoftware.pushstate.client.PushStateHistorian;
 
@@ -231,7 +233,8 @@ public class AppControllerModelImpl implements AppControllerModel {
 	}
 
 	@Override
-	public CompletableFuture<BlogEntryListResponse> listBlogEntries(BlogEntryType entryType, String startId, int count) {
+	public CompletableFuture<BlogEntryListResponse> listBlogEntries(BlogEntryType entryType, String startId,
+			int count) {
 		return ClientRestClient.get().listBlogEntries(entryType, startId == null ? "" : startId, count);
 	}
 
@@ -321,7 +324,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 				});
 		return future;
 	}
-	
+
 	@Override
 	public CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, OnprogressFn onprogress) {
 		CompletableFuture<String> future = new CompletableFuture<>();
@@ -336,7 +339,11 @@ public class AppControllerModelImpl implements AppControllerModel {
 				.thenAccept((response) -> {
 					try {
 						IpfsHashResponse hash = IpfsHashResponseMapper.mapper.read(response);
-						if (hash.getLocation() == null || hash.getLocation().trim().isEmpty()) {
+						if (hash.isTryAgain()) {
+							future.completeExceptionally(new RuntimeException("TRY AGAIN"));
+							return;
+						}
+						if (!hash.isTryAgain() && (hash.getLocation() == null || hash.getLocation().trim().isEmpty())) {
 							future.completeExceptionally(new RuntimeException("NO IPFS PATH RETURNED"));
 							return;
 						}
