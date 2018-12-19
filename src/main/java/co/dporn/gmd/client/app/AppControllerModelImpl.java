@@ -8,12 +8,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
-
-import javax.ws.rs.Path;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,7 +30,6 @@ import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.storage.client.StorageMap;
-import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window.Location;
 import com.wallissoftware.pushstate.client.PushStateHistorian;
 
@@ -326,7 +322,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 	}
 
 	@Override
-	public CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, OnprogressFn onprogress) {
+	public CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, int videoWidth, int videoHeight, OnprogressFn onprogress) {
 		CompletableFuture<String> future = new CompletableFuture<>();
 		String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
 		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
@@ -335,7 +331,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 			routePresenter.toast("UPLOAD NOT AUTHORIZED");
 			return future;
 		}
-		ClientRestClient.get().postBlobToIpfsHlsVideo(username, authorization, filename, blob, onprogress)
+		ClientRestClient.get().postBlobToIpfsHlsVideo(username, authorization, filename, blob, videoWidth, videoHeight, onprogress)
 				.thenAccept((response) -> {
 					try {
 						IpfsHashResponse hash = IpfsHashResponseMapper.mapper.read(response);

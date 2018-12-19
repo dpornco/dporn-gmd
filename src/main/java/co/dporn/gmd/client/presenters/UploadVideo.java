@@ -36,7 +36,7 @@ public interface UploadVideo extends IsChildPresenter<UploadVideoView>, Schedule
 	 * @return
 	 */
 	CompletableFuture<String> postBlobToIpfs(String filename, Blob blob);
-	CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, OnprogressFn onprogressFn);
+	CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, int videoWidth, int videoHeight, OnprogressFn onprogressFn);
 	Void viewRecentTagSets(String mustHaveTag);
 	void showPostBodyPreview(Double editorWidth, String html);
 	void createNewBlogEntry(BlogEntryType entryType, double width, String value, List<? extends Suggestion> tags,

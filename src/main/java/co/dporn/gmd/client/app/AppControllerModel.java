@@ -61,7 +61,7 @@ public interface AppControllerModel {
 	CompletableFuture<List<String>> tagsOracle(String query, int limit);
 
 	CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob, OnprogressFn onprogress);
-	CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, OnprogressFn onprogress);
+	CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, int videoWidth, int videoHeight, OnprogressFn onprogress);
 	
 	CompletableFuture<List<TagSet>> recentTagSets(String mustHaveTag);
 	

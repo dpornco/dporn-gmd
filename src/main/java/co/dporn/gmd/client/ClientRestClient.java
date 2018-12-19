@@ -3,8 +3,6 @@ package co.dporn.gmd.client;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
-import javax.ws.rs.Path;
-
 import org.fusesource.restygwt.client.Defaults;
 import org.fusesource.restygwt.client.DirectRestService;
 import org.fusesource.restygwt.client.Method;
@@ -49,23 +47,24 @@ public class ClientRestClient {
 	}
 
 	public static interface DpornCoRestApi extends DpornCoApi, DirectRestService {
-		
+
 	}
 
 	private final DpornCoRestApi rest;
-	
-	public CompletableFuture<HtmlSanitizedResponse> getHtmlSanitized(String username, String authorization, String html) {
+
+	public CompletableFuture<HtmlSanitizedResponse> getHtmlSanitized(String username, String authorization,
+			String html) {
 		MethodCallbackAsFuture<HtmlSanitizedResponse> callback = new MethodCallbackAsFuture<>();
 		call(callback).getHtmlSanitized(username, authorization, html);
 		return callback.getFuture();
 	}
-	
-	public CompletableFuture<CommentConfirmResponse> commentConfirm(String username, String authorization, String permlink) {
+
+	public CompletableFuture<CommentConfirmResponse> commentConfirm(String username, String authorization,
+			String permlink) {
 		MethodCallbackAsFuture<CommentConfirmResponse> callback = new MethodCallbackAsFuture<>();
 		call(callback).commentConfirm(username, authorization, permlink);
 		return callback.getFuture();
 	}
-
 
 	public CompletableFuture<String> postBlobToIpfs(String username, String authorization, String filename, Blob blob,
 			OnprogressFn onprogress) {
@@ -82,18 +81,27 @@ public class ClientRestClient {
 		xhr.send(blob);
 		return future;
 	}
-	public CompletableFuture<String> postBlobToIpfsHlsVideo(String username, String authorization, String filename, Blob blob,
-			OnprogressFn onprogress) {
+
+	public CompletableFuture<String> postBlobToIpfsHlsVideo(String username, String authorization, String filename,
+			Blob blob, int videoWidth, int videoHeight, OnprogressFn onprogress) {
 		CompletableFuture<String> future = new CompletableFuture<>();
 		filename = URL.encode(filename);
 		String xhrUrl = serviceRoot + "/ipfs/video/put/" + filename;
 		XMLHttpRequest xhr = new XMLHttpRequest();
 		xhr.upload.onprogress = onprogress;
 		xhr.onloadend = (e) -> future.complete(xhr.responseText);
-		xhr.onerror = (e) -> future.completeExceptionally(new RuntimeException("IPFS XHR FAILED"));
-		xhr.open("PUT", xhrUrl, true);
+		xhr.onreadystatechange = (e) -> {
+			return e;
+		};
+		xhr.onerror = (e) -> {
+			future.completeExceptionally(new RuntimeException("IPFS XHR FAILED"));
+			return e;
+		};
+		xhr.open("PUT", xhrUrl);
 		xhr.setRequestHeader("Authorization", authorization);
-		xhr.setRequestHeader("username", username);
+		xhr.setRequestHeader("Username", username);
+		xhr.setRequestHeader("videoWidth", String.valueOf(videoWidth));
+		xhr.setRequestHeader("videoHeight", String.valueOf(videoHeight));
 		xhr.send(blob);
 		return future;
 	}
@@ -131,7 +139,8 @@ public class ClientRestClient {
 		return callback.getFuture();
 	}
 
-	public CompletableFuture<BlogEntryListResponse> listBlogEntries(BlogEntryType entryType, String startId, int count) {
+	public CompletableFuture<BlogEntryListResponse> listBlogEntries(BlogEntryType entryType, String startId,
+			int count) {
 		MethodCallbackAsFuture<BlogEntryListResponse> callback = new MethodCallbackAsFuture<>();
 		call(callback).blogEntries(entryType, startId, count);
 		return callback.getFuture();

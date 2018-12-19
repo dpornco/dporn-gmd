@@ -16,7 +16,7 @@ import javax.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public interface DpornCoApi {
-	
+
 	@POST
 	@Path("html/sanitized")
 	HtmlSanitizedResponse getHtmlSanitized(@HeaderParam("username") String username,
@@ -40,12 +40,13 @@ public interface DpornCoApi {
 	@PUT
 	IpfsHashResponse ipfsPut(InputStream is, @HeaderParam("username") String username,
 			@HeaderParam("Authorization") String authorization, @PathParam("filename") String filename);
-	
+
 	@Consumes(MediaType.WILDCARD)
 	@Path("ipfs/video/put/{filename}")
 	@PUT
 	IpfsHashResponse ipfsPutVideo(InputStream is, @HeaderParam("username") String username,
-			@HeaderParam("Authorization") String authorization, @PathParam("filename") String filename);
+			@HeaderParam("Authorization") String authorization, @PathParam("filename") String filename,
+			@HeaderParam("videoWidth") int videoWidth, @HeaderParam("videoHeight") int videoHeight);
 
 	@Path("suggest/{tag}")
 	@GET
@@ -74,8 +75,8 @@ public interface DpornCoApi {
 
 	@Path("blog/entries/{entryType}/{startId}/{count}")
 	@GET
-	BlogEntryListResponse blogEntries(@PathParam("entryType") BlogEntryType entryType, @PathParam("startId") String startId,
-			@PathParam("count") int count);
+	BlogEntryListResponse blogEntries(@PathParam("entryType") BlogEntryType entryType,
+			@PathParam("startId") String startId, @PathParam("count") int count);
 
 	@Path("blog/entries/{entryType}/{count}")
 	@GET

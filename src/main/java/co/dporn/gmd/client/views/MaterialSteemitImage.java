@@ -13,7 +13,7 @@ public class MaterialSteemitImage extends MaterialImage {
 	public MaterialSteemitImage() {
 		super();
 	}
-
+	
 	/**
 	 * Sets the image SRC and also calculates and adds RESPONSIVE SIZED images via
 	 * steemitimages in srcset.
@@ -24,7 +24,7 @@ public class MaterialSteemitImage extends MaterialImage {
 			url="";
 		}
 		HTMLImageElement img = Js.cast(getElement());
-		img.src = url;
+		super.setUrl(url);
 		if (!url.startsWith("http://") && !url.startsWith("https://")) {
 			img.srcset="";
 			return;
