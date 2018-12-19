@@ -283,7 +283,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 				double percent = Math.ceil(100d * p0.loaded / p0.total);
 				videoUploadProgress.setType(ProgressType.DETERMINATE);
 				videoUploadProgress.setPercent(percent);
-				if (System.currentTimeMillis()-start>10000) {
+				if (System.currentTimeMillis()-start>15000) {
 					start=System.currentTimeMillis();
 					MaterialToast.fireToast("Video upload and conversion: "+percent+"%");
 				}
