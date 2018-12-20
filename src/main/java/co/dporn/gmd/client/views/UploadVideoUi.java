@@ -122,7 +122,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		btnUploadImage.addClickHandler((e) -> fileUploadImage.click());
 		btnUploadVideo.addClickHandler((e) -> fileUploadVideo.click());
 		fileUploadImage.setAccept(".jpg,.jpeg,.png,.gif");
-		fileUploadVideo.setAccept("video/*");
+		fileUploadVideo.setAccept("video/mp4,video/mp2t,video/x-msvideo,video/x-ms-wmv");
 		fileUploadImage.addChangeHandler(this::loadImageAndResize);
 		fileUploadVideo.addChangeHandler(this::uploadVideo);
 		btnTakeSnap.addClickHandler((e) -> {
@@ -189,9 +189,9 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 							posterUploadProgress.setType(ProgressType.DETERMINATE);
 							posterUploadProgress.setPercent(100d);
 							posterImage.setMaxHeight("240px");
-							posterImage.setUrl("https://ipfs.io" + location);
+							posterImage.setUrl("https://dporn.co" + location);
 							lnkCoverImage.setText(location);
-							lnkCoverImage.setHref("https://ipfs.io" + location);
+							lnkCoverImage.setHref("https://dporn.co" + location);
 							lnkCoverImage.setTarget("_blank");
 							btnUploadVideo.setEnabled(true);
 							btnUploadImage.setEnabled(true);
@@ -309,9 +309,10 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			e.removeFromParent();
 		});
 		HTMLVideoElement vid = Js.cast(DomGlobal.document.createElement("video"));
+		vid.setAttribute("playsinline", "playsinline");
 		vid.autobuffer = true;
 		vid.autoplay = false;
-		vid.controls = false;
+		vid.controls = true;
 		vid.loop = false;
 		vid.muted = true;
 		vid.volume = 0.1;
@@ -344,6 +345,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			return e;
 		};
 		vid.onseeked = e1 -> {
+			vid.pause();
 			//only take snap if there isn't one already
 			if (posterImage.getUrl()==null || posterImage.getUrl().trim().isEmpty()) {
 				log("AUTO SNAP!");
@@ -352,7 +354,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			vid.onseeked = null;
 			return e1;
 		};
-		vid.currentTime = 4.0;
+		
 		// only submit file for recoding and posting to IPFS if the browser accepts it
 		// as a video file
 		vid.onloadeddata = e -> {
@@ -379,6 +381,8 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			return e;
 		};
 		vid.src = URL.createObjectURL(file);
+		vid.play();
+		vid.currentTime = 4.0;
 	}
 
 	private String videoLocation = "";
@@ -408,9 +412,9 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 					posterUploadProgress.setType(ProgressType.DETERMINATE);
 					posterUploadProgress.setPercent(100d);
 					posterImage.setMaxHeight("240px");
-					posterImage.setUrl("https://ipfs.io" + location);
+					posterImage.setUrl("https://dporn.co" + location);
 					lnkCoverImage.setText(location);
-					lnkCoverImage.setHref("https://ipfs.io" + location);
+					lnkCoverImage.setHref("https://dporn.co" + location);
 					lnkCoverImage.setTarget("_blank");
 					btnUploadImage.setEnabled(true);
 					btnTakeSnap.setEnabled(true);

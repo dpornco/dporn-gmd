@@ -5,8 +5,11 @@
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>__TITLE__</title>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.3.0/video-js.min.css"	rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.3.0/video.min.js"></script>
+<link
+	href="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.3.0/video-js.min.css"
+	rel="stylesheet">
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.3.0/video.min.js"></script>
 <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-hls/5.14.1/videojs-contrib-hls.min.js"></script> -->
 <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js-chromecast/2.0.9/videojs-chromecast.min.js"></script> -->
 <style>
@@ -31,22 +34,21 @@ html, body {
 	/* Setting width & height to auto prevents the browser from stretching or squishing the video */
 	width: auto;
 	height: auto;
- 	position: absolute; 
+	position: absolute;
 }
 </style>
 <!-- TODO: Needs a timeout function added if the video gets hung loading or during playback to switch hosts. -->
 </head>
 <body class="video-container">
 	<video id="player" class="video-js vjs-default-skin" preload="none"
-		poster="https://steemitimages.com/400x400/https://ipfs.io__POSTERPATH__"
-		style="max-width: 100%; max-height: 100%; width: 1920px; height: 1080px;">
+		poster="https://steemitimages.com/400x400/https://dporn.co__POSTERPATH__"
+		style="max-width: 100%; max-height: 100%; width: 1920px; height: 1080px;"
+		playsinline="playsinline">
+		<source src="https://dporn.co__VIDEOPATH__" type="video/mp4" />
 		<source src="https://ipfs.io__VIDEOPATH__" type="video/mp4" />
-		<!-- Cloudflare doesn't handle "ranged" requests properly, use as last fallback -->
 		<source src="https://cloudflare-ipfs.com__VIDEOPATH__"
 			type="video/mp4" />
-		<source src="https://dporn.co__VIDEOPATH__" type="video/mp4" />
-		<source src="https://gateway.ipfs.io__VIDEOPATH__"
-			type="video/mp4" />
+		<source src="https://gateway.ipfs.io__VIDEOPATH__" type="video/mp4" />
 	</video>
 	<script>
 		var player = videojs('player', {

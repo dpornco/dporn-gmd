@@ -197,7 +197,7 @@ public class ServerUtils {
 	     */
 	    public static long copyStream(final InputStream input, final OutputStream output)
 	            throws IOException {
-	    	byte[] buffer = new byte[32768];
+	    	byte[] buffer = new byte[1024*1024];
 	        long count = 0;
 	        int n;
 	        while (EOF != (n = input.read(buffer))) {

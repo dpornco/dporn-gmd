@@ -1,6 +1,7 @@
 package co.dporn.gmd.servlet;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -273,6 +274,10 @@ public class DpornCoApiImpl implements DpornCoApi {
 			return null;
 		}
 		System.out.println("ipfsPutVideo: " + username + ", " + filename+" ["+semaphore.availablePermits()+" slots]");
+		String contentType = String.valueOf(request.getContentType()==null?"":request.getContentType()).toLowerCase();
+		String guessedMimeType = request.getServletContext().getMimeType(filename).toLowerCase();
+		System.out.println(" - contentType: "+contentType);
+		System.out.println(" - guessed content type: "+guessedMimeType);
 		if (width <= 0 || height <= 0) {
 			System.out.println("ipfsPutVideo - bad dimensions: " + width + "x" + height);
 			if (width <= 0) {
@@ -305,6 +310,9 @@ public class DpornCoApiImpl implements DpornCoApi {
 			String frameRate = "29.97";
 			tmpDir = Files.createTempDirectory("hls-").toFile();
 			System.out.println(" --- VID TEMP: " + tmpDir.getAbsoluteFile());
+			
+			boolean useTempFile = contentType.contains("quicktime") || guessedMimeType.contains("quicktime");
+			
 			List<String> cmd = new ArrayList<>();
 
 			cmd.add("/usr/bin/nice");
@@ -314,9 +322,15 @@ public class DpornCoApiImpl implements DpornCoApi {
 			cmd.add("-y");
 
 			cmd.add("-blocksize");
-			cmd.add("4k");
-			cmd.add("-i");
-			cmd.add("pipe:0");
+			cmd.add("1024k");
+			
+			if (useTempFile) {
+				cmd.add("-i");
+				cmd.add("tmp.mov");
+			} else {
+				cmd.add("-i");
+				cmd.add("pipe:0");
+			}
 
 			StringBuilder m3u8 = new StringBuilder();
 			m3u8.append("#EXTM3U\n");
@@ -400,9 +414,17 @@ public class DpornCoApiImpl implements DpornCoApi {
 			pb.redirectErrorStream(true);
 			pb.redirectOutput(new File(tmpDir, "log.txt"));
 
+			if (useTempFile) {
+				FileOutputStream os = new FileOutputStream(new File(tmpDir, "tmp.mov"));
+				ServerUtils.copyStream(is, os);
+				IOUtils.closeQuietly(os);
+			}
+			
 			ffmpeg = pb.start();
-			ServerUtils.copyStream(is, ffmpeg.getOutputStream());
-			IOUtils.closeQuietly(ffmpeg.getOutputStream());
+			if (!useTempFile) {
+				ServerUtils.copyStream(is, ffmpeg.getOutputStream());
+				IOUtils.closeQuietly(ffmpeg.getOutputStream());
+			}
 			ffmpeg.waitFor();
 
 			/*
@@ -439,6 +461,9 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 			String IPFS_HASH = IPFS_EMPTY_DIR;
 			for (File file : files) {
+				if (file.getName().equalsIgnoreCase("tmp.mov")) {
+//					continue;
+				}
 				if (Thread.interrupted()) {
 					System.out.println("IPFS POST INTERRUPTED");
 					throw new InterruptedException("IPFS POST INTERRUPTED");
@@ -457,6 +482,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 					response.setLocation(locations.get(locations.size() - 1));
 				}
 			}
+			System.out.println(" VIDEO FOLDER: https://dporn.co/ipfs/"+IPFS_HASH);
 			return response;
 		} catch (Exception e) {
 			response.setError(e.getMessage());
