@@ -462,7 +462,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			String IPFS_HASH = IPFS_EMPTY_DIR;
 			for (File file : files) {
 				if (file.getName().equalsIgnoreCase("tmp.mov")) {
-//					continue;
+					continue;
 				}
 				if (Thread.interrupted()) {
 					System.out.println("IPFS POST INTERRUPTED");
