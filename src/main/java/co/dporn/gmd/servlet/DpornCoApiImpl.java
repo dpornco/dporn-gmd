@@ -499,7 +499,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 					response.setLocation(locations.get(locations.size() - 1));
 				}
 			}
-			System.out.println(" VIDEO FOLDER: https://dporn.co/ipfs/"+IPFS_HASH);
+			System.out.println(" VIDEO FOLDER: https://ipfs.dporn.co/ipfs/"+IPFS_HASH);
 			return response;
 		} catch (Exception e) {
 			response.setError(e.getMessage());

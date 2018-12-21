@@ -76,19 +76,19 @@ public class DpornRichEditor extends MaterialRichEditor {
 				MaterialToast.fireToast("Image posted: " + StringUtils.substringAfterLast(path, "/"));
 				MaterialLoader.loading(false);
 				StringBuilder srcset = new StringBuilder();
-				for (String ipfsgw : new String[] { "https://dporn.co",
-						"https://steemitimages.com/0x0/https://dporn.co" }) {
+				for (String ipfsgw : new String[] { "https://ipfs.dporn.co",
+						"https://steemitimages.com/0x0/https://ipfs.dporn.co" }) {
 					srcset.append(ipfsgw);
 					srcset.append(path);
 					srcset.append(", ");
 				}
 				image.onerror = e -> {
 					image.onerror = null;
-					image.src = "https://dporn.co" + path;
+					image.src = "https://ipfs.dporn.co" + path;
 					return e;
 				};
 				image.srcset = srcset.toString();
-				image.src = "https://steemitimages.com/0x0/https://dporn.co" + path;
+				image.src = "https://steemitimages.com/0x0/https://ipfs.dporn.co" + path;
 			});
 		});
 	}

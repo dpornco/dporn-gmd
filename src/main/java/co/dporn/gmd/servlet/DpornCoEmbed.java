@@ -179,7 +179,7 @@ public class DpornCoEmbed {
 		embedHtml = embedHtml.replace("__VIDEOPATH__", StringEscapeUtils.escapeXml10(videoPath));
 		// hack to deal with non IPFS path images or videos
 		if (isHttp || isHttps) {
-			embedHtml = embedHtml.replace("https://steemitimages.com/400x400/https://dporn.co/ipfs" + posterImagePath,
+			embedHtml = embedHtml.replace("https://steemitimages.com/400x400/https://ipfs.dporn.co/ipfs" + posterImagePath,
 					"https://steemitimages.com/400x400/" + posterImagePath);
 		}
 		return embedHtml;

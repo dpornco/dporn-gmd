@@ -145,7 +145,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		dialog.addCloseHandler((d) -> dialog.removeFromParent());
 		dialog.setFullscreen(true);
 		MaterialDialogContent content = new MaterialDialogContent();
-		MaterialVideo video = new MaterialVideo(videoLocation.replaceAll(".m3u8$", ".html"));
+		MaterialVideo video = new MaterialVideo("https://ipfs.dporn.co"+videoLocation.replaceAll(".m3u8$", ".html"));
 		video.setFullscreen(true);
 		content.add(video);
 		dialog.add(content);
@@ -194,9 +194,9 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 							posterUploadProgress.setType(ProgressType.DETERMINATE);
 							posterUploadProgress.setPercent(100d);
 							posterImage.setMaxHeight("240px");
-							posterImage.setUrl("https://dporn.co" + location);
+							posterImage.setUrl("https://ipfs.dporn.co" + location);
 							lnkCoverImage.setText(location);
-							lnkCoverImage.setHref("https://dporn.co" + location);
+							lnkCoverImage.setHref("https://ipfs.dporn.co" + location);
 							lnkCoverImage.setTarget("_blank");
 							btnUploadVideo.setEnabled(true);
 							btnUploadImage.setEnabled(true);
@@ -440,9 +440,9 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 					posterUploadProgress.setType(ProgressType.DETERMINATE);
 					posterUploadProgress.setPercent(100d);
 					posterImage.setMaxHeight("240px");
-					posterImage.setUrl("https://dporn.co" + location);
+					posterImage.setUrl("https://ipfs.dporn.co" + location);
 					lnkCoverImage.setText(location);
-					lnkCoverImage.setHref("https://dporn.co" + location);
+					lnkCoverImage.setHref("https://ipfs.dporn.co" + location);
 					lnkCoverImage.setTarget("_blank");
 					btnUploadImage.setEnabled(true);
 					btnTakeSnap.setEnabled(true);
