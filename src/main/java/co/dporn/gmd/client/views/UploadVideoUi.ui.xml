@@ -28,10 +28,10 @@
 	<m:MaterialContainer ui:field="mainContent"
 		addStyleNames="{style.container}">
 		<m:MaterialRow margin="8">
-			<m:MaterialColumn grid="s7 m5 l3">
+			<m:MaterialColumn grid="s12 m7 l3">
 				<m:MaterialVideo ui:field="video"></m:MaterialVideo>
 			</m:MaterialColumn>
-			<m:MaterialColumn grid="s5 m7 l9">
+			<m:MaterialColumn grid="s12 m5 l9">
 				<m:MaterialProgress style="margin: 8px;"
 					type="DETERMINATE" percent="0" ui:field="videoUploadProgress" />
 				<d:HiddenFileUpload ui:field="fileUploadVideo" />
@@ -43,14 +43,16 @@
 					style="margin: 8px;" text="PREVIEW HLS VIDEO"></m:MaterialButton>
 				<m:MaterialLabel
 					text="16:9 aspect ratio recommended. Video will be recoded to HLS format at 720p, 480p, and 240p with a CRF=28 factor. The original video will be discarded for storage space reasons! If the upload queue is full, the upload will be paused until a slot opens up." />
+					<m:MaterialLabel ui:field="maxLengthNotice"
+					text="Max video length: 15 minutes. If you would like to upload longer videos, &quot;Get Verified&quot;." />
 			</m:MaterialColumn>
 		</m:MaterialRow>
 		<m:MaterialRow margin="8">
-			<m:MaterialColumn grid="s7 m5 l3">
+			<m:MaterialColumn grid="s12 m7 l3">
 				<d:MaterialSteemitImage
 					ui:field="posterImage" />
 			</m:MaterialColumn>
-			<m:MaterialColumn grid="s5 m7 l9">
+			<m:MaterialColumn grid="s12 m5 l9">
 				<m:MaterialProgress style="margin: 8px;"
 					type="DETERMINATE" percent="0" ui:field="posterUploadProgress" />
 				<d:HiddenFileUpload ui:field="fileUploadImage" />

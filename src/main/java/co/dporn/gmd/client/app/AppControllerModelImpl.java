@@ -75,6 +75,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 
 	private static final int CHANNEL_ENTRIES_INITIAL_SIZE = 8;
 	private static final int FEATURED_ENTRIES_POOL_MULTIPLIER_SIZE = 3;
+	private static final String DPORN_VERIFIED_KEY = "dporn-verified";
 	private static final String STEEM_USERNAME_KEY = "steem-username";
 	private static final String STEEMCONNECT_KEY = "steemconnectv2";
 	private static final int TAGSETS_MAX_SIZE = 6;
@@ -322,7 +323,8 @@ public class AppControllerModelImpl implements AppControllerModel {
 	}
 
 	@Override
-	public CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, int videoWidth, int videoHeight, OnprogressFn onprogress) {
+	public CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, int videoWidth, int videoHeight,
+			OnprogressFn onprogress) {
 		CompletableFuture<String> future = new CompletableFuture<>();
 		String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
 		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
@@ -331,7 +333,8 @@ public class AppControllerModelImpl implements AppControllerModel {
 			routePresenter.toast("UPLOAD NOT AUTHORIZED");
 			return future;
 		}
-		ClientRestClient.get().postBlobToIpfsHlsVideo(username, authorization, filename, blob, videoWidth, videoHeight, onprogress)
+		ClientRestClient.get()
+				.postBlobToIpfsHlsVideo(username, authorization, filename, blob, videoWidth, videoHeight, onprogress)
 				.thenAccept((response) -> {
 					try {
 						IpfsHashResponse hash = IpfsHashResponseMapper.mapper.read(response);
@@ -392,6 +395,16 @@ public class AppControllerModelImpl implements AppControllerModel {
 			}
 			loggedIn = true;
 			appModelCache.put(STEEM_USERNAME_KEY, me.getUser());
+			ClientRestClient.get().getIsVerified(me.getUser()).thenAccept((x) -> {
+				if (x.isVerified()) {
+					appModelCache.put(DPORN_VERIFIED_KEY, me.getUser());
+				} else {
+					appModelCache.remove(DPORN_VERIFIED_KEY);
+				}
+			}).exceptionally(ex -> {
+				appModelCache.remove(DPORN_VERIFIED_KEY);
+				return null;
+			});
 			routePresenter.setUserInfo(new ActiveUserInfo(me.getUser(), displayName == null ? "" : displayName.trim()));
 		});
 	}

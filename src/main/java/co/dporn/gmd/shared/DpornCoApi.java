@@ -16,6 +16,10 @@ import javax.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public interface DpornCoApi {
+	
+	@GET
+	@Path("isverified/{username}")
+	IsVerifiedResponse getIsVerified(@PathParam("username") String username);
 
 	@POST
 	@Path("html/sanitized")

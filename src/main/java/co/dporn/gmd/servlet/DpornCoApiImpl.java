@@ -52,6 +52,7 @@ import co.dporn.gmd.shared.CommentConfirmResponse;
 import co.dporn.gmd.shared.DpornCoApi;
 import co.dporn.gmd.shared.HtmlSanitizedResponse;
 import co.dporn.gmd.shared.IpfsHashResponse;
+import co.dporn.gmd.shared.IsVerifiedResponse;
 import co.dporn.gmd.shared.MongoDate;
 import co.dporn.gmd.shared.PingResponse;
 import co.dporn.gmd.shared.SuggestTagsResponse;
@@ -111,7 +112,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 	@Override
 	public ActiveBlogsResponse blogsRecent() {
-		List<String> active = SteemJInstance.get().getActiveNsfwVerifiedList();
+		List<String> active = SteemJInstance.get().getActiveDpornVerifiedList();
 		List<String> sublist = active.subList(0, Math.min(active.size(), 16));
 		ActiveBlogsResponse activeBlogsResponse = new ActiveBlogsResponse(sublist);
 		activeBlogsResponse.setInfoMap(SteemJInstance.get().getBlogDetails(sublist));
@@ -220,6 +221,10 @@ public class DpornCoApiImpl implements DpornCoApi {
 		String meUsername = ServerSteemConnect.username(authorization);
 		System.out.println("isAuthorized: meUsername = " + meUsername);
 		boolean authorized = username.equalsIgnoreCase(meUsername);
+		if (SteemJInstance.get().getBlacklist().contains(username)) {
+			System.out.println("isAuthorized: BLACKLISTED: "+username);
+			return false;
+		}
 		return authorized;
 	}
 
@@ -273,6 +278,9 @@ public class DpornCoApiImpl implements DpornCoApi {
 			setResponseAsUnauthorized();
 			return null;
 		}
+		
+		boolean isDpornVerified = SteemJInstance.get().getDpornVerifiedSet().contains(username);
+		
 		System.out.println("ipfsPutVideo: " + username + ", " + filename+" ["+semaphore.availablePermits()+" slots]");
 		String contentType = String.valueOf(request.getContentType()==null?"":request.getContentType()).toLowerCase();
 		String guessedMimeType = request.getServletContext().getMimeType(filename).toLowerCase();
@@ -314,11 +322,14 @@ public class DpornCoApiImpl implements DpornCoApi {
 			cmd.add("/usr/bin/nice");
 
 			cmd.add("/usr/bin/ffmpeg");
+			cmd.add("-threads");
+			cmd.add("1");
+			
 			cmd.add("-hide_banner");
 			cmd.add("-y");
 
 			cmd.add("-blocksize");
-			cmd.add("1024k");
+			cmd.add("32k");
 			
 			if (useTempFile) {
 				cmd.add("-i");
@@ -326,6 +337,16 @@ public class DpornCoApiImpl implements DpornCoApi {
 			} else {
 				cmd.add("-i");
 				cmd.add("pipe:0");
+			}
+			
+			if (isDpornVerified) {
+				System.out.println(" - time limit: 60 minutes");
+				cmd.add("-t");
+				cmd.add("1:00:00");
+			} else {
+				System.out.println(" - time limit: 15 minutes");
+				cmd.add("-t");
+				cmd.add("15:00");
 			}
 
 			StringBuilder m3u8 = new StringBuilder();
@@ -743,6 +764,11 @@ public class DpornCoApiImpl implements DpornCoApi {
 		HtmlSanitizedResponse response = new HtmlSanitizedResponse();
 		response.setSanitizedHtml(HtmlSanitizer.get().sanitize(html));
 		return response;
+	}
+
+	@Override
+	public IsVerifiedResponse getIsVerified(String username) {
+		return new IsVerifiedResponse(username, SteemJInstance.get().getDpornVerifiedSet().contains(username));
 	}
 
 }

@@ -122,14 +122,14 @@ public class SteemJInstance {
 		return new HashMap<>(map);
 	}
 
-	public synchronized List<String> getActiveNsfwVerifiedList() {
+	public synchronized List<String> getActiveDpornVerifiedList() {
 		List<String> cached = cachedStringLists.get(VERIFIED_ACTIVE_LIST_KEY);
 		if (cached != null) {
-			System.out.println("getActiveNsfwVerifiedList:cached");
+			System.out.println("getActiveDpornVerifiedList:cached");
 			return new ArrayList<>(cached);
 		}
 		List<String> active = new ArrayList<>();
-		Set<String> verified = new HashSet<>(getNsfwVerifiedSet());
+		Set<String> verified = new HashSet<>(getDpornVerifiedSet());
 		Set<String> already = new HashSet<>();
 		List<BlogEntry> entries;
 		try {
@@ -155,10 +155,10 @@ public class SteemJInstance {
 		return new ArrayList<>(active);
 	}
 
-	public synchronized Set<String> getNsfwVerifiedSet() {
+	public synchronized Set<String> getDpornVerifiedSet() {
 		List<String> cached = cachedStringLists.get(VERIFIED_FULL_LIST_KEY);
 		if (cached != null) {
-			System.out.println("getNsfwVerifiedList:cached");
+			System.out.println("getDpornVerifiedSet:cached");
 			return new TreeSet<>(cached);
 		}
 		Set<String> set = new TreeSet<>();

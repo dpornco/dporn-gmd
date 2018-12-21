@@ -40,6 +40,7 @@ import gwt.material.design.client.ui.MaterialContainer;
 import gwt.material.design.client.ui.MaterialDialog;
 import gwt.material.design.client.ui.MaterialDialogContent;
 import gwt.material.design.client.ui.MaterialDialogFooter;
+import gwt.material.design.client.ui.MaterialLabel;
 import gwt.material.design.client.ui.MaterialLink;
 import gwt.material.design.client.ui.MaterialProgress;
 import gwt.material.design.client.ui.MaterialRow;
@@ -51,12 +52,16 @@ import gwt.material.design.jquery.client.api.JQueryElement;
 import jsinterop.base.Js;
 
 public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoView {
+	private static final String MAX_NOT_VERIFIED = "Max video length: 15 minutes. If you would like to upload longer videos, \"Get Verified\".";
+	private static final String MAX_VERIFIED = "Max video length: 60 minutes.";
 
 	interface ThisUiBinder extends UiBinder<Widget, UploadVideoUi> {
 	}
 
 	private static ThisUiBinder uiBinder = GWT.create(ThisUiBinder.class);
 
+	@UiField
+	protected MaterialLabel maxLengthNotice;
 	@UiField
 	protected MaterialButton btnTakeSnap;
 	@UiField
@@ -260,6 +265,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			GWT.log("uploadVideo: NO FILES");
 			return;
 		}
+		this.maxLengthNotice.setText("");
 		btnUploadImage.setEnabled(false);
 		btnTakeSnap.setEnabled(false);
 		btnUploadVideo.setEnabled(false);
@@ -347,6 +353,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		// only submit file for recoding and posting to IPFS if the browser accepts it
 		// as a video file
 		vid.onloadeddata = e -> {
+			setMaxVideoLengthNotice(vid);
 			vid.onseeked = e1 -> {
 				vid.pause();
 				//only take snap if there isn't one already
@@ -381,6 +388,29 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			return e;
 		};
 		vid.src = URL.createObjectURL(file);
+	}
+
+	private void setMaxVideoLengthNotice(HTMLVideoElement vid) {
+		int totalSeconds = (int) vid.duration;
+		int seconds = totalSeconds % 60;
+		int minutes = (totalSeconds/60) % 60;
+		int hours = (totalSeconds/(60*60));
+		StringBuilder sb = new StringBuilder();
+		if (hours<10) {
+			sb.append("0");
+		}
+		sb.append(hours);
+		sb.append(":");
+		if (minutes<10) {
+			sb.append("0");
+		}
+		sb.append(minutes);
+		sb.append(":");
+		if (seconds<10) {
+			sb.append("0");
+		}
+		sb.append(seconds);
+		maxLengthNotice.setText(sb.toString());
 	}
 
 	private String videoLocation = "";
