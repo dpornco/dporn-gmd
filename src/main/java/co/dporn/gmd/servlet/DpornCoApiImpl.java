@@ -322,8 +322,6 @@ public class DpornCoApiImpl implements DpornCoApi {
 			cmd.add("/usr/bin/nice");
 
 			cmd.add("/usr/bin/ffmpeg");
-			cmd.add("-threads");
-			cmd.add("1");
 			
 			cmd.add("-hide_banner");
 			cmd.add("-y");
@@ -348,6 +346,9 @@ public class DpornCoApiImpl implements DpornCoApi {
 				cmd.add("-t");
 				cmd.add("15:00");
 			}
+			
+			cmd.add("-threads");
+			cmd.add("1");
 
 			StringBuilder m3u8 = new StringBuilder();
 			m3u8.append("#EXTM3U\n");
