@@ -59,7 +59,7 @@ public class DisplayBlogEntryPresenterImpl implements DisplayBlogEntryPresenter 
 		if (!(view instanceof DisplayBlogEntryView)) {
 			return;
 		}
-		DisplayBlogEntryView channelView = (DisplayBlogEntryView) view;
+		DisplayBlogEntryView channelView = view;
 		if (!infoMap.getInfoMap().containsKey(username)) {
 			channelView.showUserNotFound(username);
 			return;
@@ -77,7 +77,7 @@ public class DisplayBlogEntryPresenterImpl implements DisplayBlogEntryPresenter 
 			if (!(view instanceof DisplayBlogEntryView)) {
 				return;
 			}
-			DisplayBlogEntryView blogEntryView = (DisplayBlogEntryView) view;
+			DisplayBlogEntryView blogEntryView = view;
 			deferred(()->{
 				BlogHeader blogHeader = blogEntryView.getBlogHeader();
 				blogHeader.setAbout(entry.getTitle());

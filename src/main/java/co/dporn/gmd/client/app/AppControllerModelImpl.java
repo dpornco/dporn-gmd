@@ -136,7 +136,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 				CompletableFuture<List<Vote>> voteFuture = SteemApi.getActiveVotes(blogEntry.getUsername(),
 						blogEntry.getPermlink());
 				voteFuture.thenAccept((v) -> {
-					blogEntry.setScore((double) v.size() * weight);
+					blogEntry.setScore(v.size() * weight);
 					synchronized (list) {
 						list.add(blogEntry);
 					}

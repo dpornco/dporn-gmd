@@ -69,7 +69,7 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 			ac.clearErrorText();
 			presenter.createNewBlogEntry( //
 					BlogEntryType.EROTICA, //
-					(double) editor.getEditor().width(), //
+					editor.getEditor().width(), //
 					title.getValue(), //
 					ac.getValue(), //
 					editor.getValue() //
@@ -102,7 +102,7 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 				}
 				if (System.currentTimeMillis() - start > 10000l) {
 					start = System.currentTimeMillis();
-					int percent = (int) Math.ceil((double) p0.loaded * 100d / (double) p0.total);
+					int percent = (int) Math.ceil(p0.loaded * 100d / p0.total);
 					MaterialToast.fireToast("Posting to IPFS: " + filename + " " + percent + "%");
 				}
 			}
@@ -194,7 +194,7 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 
 	@Override
 	public double getEditorWidth() {
-		return (double) editor.getEditor().width();
+		return editor.getEditor().width();
 	}
 
 	@Override

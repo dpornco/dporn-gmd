@@ -116,7 +116,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			ac.clearErrorText();
 			presenter.createNewBlogEntry( //
 					BlogEntryType.VIDEO, //
-					(double) editor.getEditor().width(), //
+					editor.getEditor().width(), //
 					title.getValue(), //
 					ac.getValue(), //
 					editor.getValue() //
@@ -499,7 +499,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 				}
 				if (System.currentTimeMillis() - start > 10000l) {
 					start = System.currentTimeMillis();
-					int percent = (int) Math.ceil((double) p0.loaded * 100d / (double) p0.total);
+					int percent = (int) Math.ceil(p0.loaded * 100d / p0.total);
 					MaterialToast.fireToast("Posting to IPFS: " + filename + " " + percent + "%");
 				}
 			}
@@ -590,7 +590,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 
 	@Override
 	public double getEditorWidth() {
-		return (double) editor.getEditor().width();
+		return editor.getEditor().width();
 	}
 
 	@Override

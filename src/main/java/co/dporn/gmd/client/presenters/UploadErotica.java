@@ -35,6 +35,7 @@ public interface UploadErotica extends IsChildPresenter<UploadEroticaView>, Sche
 	 * @param blob
 	 * @return
 	 */
+	@Override
 	CompletableFuture<String> postBlobToIpfs(String filename, Blob blob);
 	Void viewRecentTagSets(String mustHaveTag);
 	void showPostBodyPreview(Double editorWidth, String html);

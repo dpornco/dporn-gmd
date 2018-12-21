@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableSet;
 public class HtmlSanitizer {
 
 	private static final AttributePolicy INTEGER = new AttributePolicy() {
+		@Override
 		public String apply(String elementName, String attributeName, String value) {
 			int n = value.length();
 			if (n == 0) {

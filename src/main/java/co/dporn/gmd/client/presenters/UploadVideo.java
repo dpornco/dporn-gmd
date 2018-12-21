@@ -35,6 +35,7 @@ public interface UploadVideo extends IsChildPresenter<UploadVideoView>, Schedule
 	 * @param blob
 	 * @return
 	 */
+	@Override
 	CompletableFuture<String> postBlobToIpfs(String filename, Blob blob);
 	CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, int videoWidth, int videoHeight, OnprogressFn onprogressFn);
 	Void viewRecentTagSets(String mustHaveTag);

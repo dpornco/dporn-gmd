@@ -32,6 +32,7 @@ public interface ContentPresenter extends IsChildPresenter<ContentView> {
 		void setChannelRoute(String route);
 		void setBusyLink(String username);
 		void setSteemitLink(String username);
+		@Override
 		void setDisplayName(String displayName);
 		void setAbout(String about);
 	}
@@ -63,5 +64,6 @@ public interface ContentPresenter extends IsChildPresenter<ContentView> {
 	public static interface PhotoGalleryCardView extends BlogCardView {
 		void setGallerySourceUrl(String url);
 	}
+	@Override
 	ContentView getContentView();
 }

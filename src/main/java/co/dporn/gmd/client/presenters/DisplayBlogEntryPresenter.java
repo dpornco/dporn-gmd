@@ -8,7 +8,9 @@ import co.dporn.gmd.client.views.IsView;
 
 public interface DisplayBlogEntryPresenter extends ContentPresenter, ScheduledCommand {
 	interface DisplayBlogEntryView extends ContentView {
+		@Override
 		IsWidget getContainer();
+		@Override
 		void showLoading(boolean loading);
 		void setEmbedUrl(String embedUrl);
 		void setTitle(String title);
