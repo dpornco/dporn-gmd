@@ -129,7 +129,7 @@ public class SteemJInstance {
 			return new ArrayList<>(cached);
 		}
 		List<String> active = new ArrayList<>();
-		Set<String> verified = new HashSet<>(getNsfwVerifiedList());
+		Set<String> verified = new HashSet<>(getNsfwVerifiedSet());
 		Set<String> already = new HashSet<>();
 		List<BlogEntry> entries;
 		try {
@@ -155,11 +155,11 @@ public class SteemJInstance {
 		return new ArrayList<>(active);
 	}
 
-	public synchronized List<String> getNsfwVerifiedList() {
+	public synchronized Set<String> getNsfwVerifiedSet() {
 		List<String> cached = cachedStringLists.get(VERIFIED_FULL_LIST_KEY);
 		if (cached != null) {
 			System.out.println("getNsfwVerifiedList:cached");
-			return new ArrayList<>(cached);
+			return new TreeSet<>(cached);
 		}
 		Set<String> set = new TreeSet<>();
 		List<FollowApiObject> following;
@@ -187,14 +187,14 @@ public class SteemJInstance {
 			}
 		} while (following.size() > 1);
 		cachedStringLists.put(VERIFIED_FULL_LIST_KEY, new ArrayList<>(set));
-		return new ArrayList<>(set);
+		return new TreeSet<>(set);
 	}
 
-	public synchronized List<String> getBlacklist() {
+	public synchronized Set<String> getBlacklist() {
 		List<String> cached = cachedStringLists.get(BLACKLIST_KEY);
 		if (cached != null) {
 			System.out.println("getBlacklist:cached");
-			return new ArrayList<>(cached);
+			return new TreeSet<>(cached);
 		}
 		Set<String> set = new TreeSet<>();
 		List<FollowApiObject> following;
@@ -223,6 +223,6 @@ public class SteemJInstance {
 			}
 		} while (following.size() > 1);
 		cachedStringLists.put(BLACKLIST_KEY, new ArrayList<>(set));
-		return new ArrayList<>(set);
+		return new TreeSet<>(set);
 	}
 }
