@@ -311,7 +311,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		HTMLVideoElement vid = Js.cast(DomGlobal.document.createElement("video"));
 		vid.setAttribute("playsinline", "playsinline");
 		vid.autobuffer = true;
-		vid.autoplay = false;
+		vid.autoplay = true;
 		vid.controls = true;
 		vid.loop = false;
 		vid.muted = true;
@@ -344,20 +344,20 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			btnTakeSnap.setEnabled(true);
 			return e;
 		};
-		vid.onseeked = e1 -> {
-			vid.pause();
-			//only take snap if there isn't one already
-			if (posterImage.getUrl()==null || posterImage.getUrl().trim().isEmpty()) {
-				log("AUTO SNAP!");
-				takeVideoSnap();
-			}
-			vid.onseeked = null;
-			return e1;
-		};
-		
 		// only submit file for recoding and posting to IPFS if the browser accepts it
 		// as a video file
 		vid.onloadeddata = e -> {
+			vid.onseeked = e1 -> {
+				vid.pause();
+				//only take snap if there isn't one already
+				if (posterImage.getUrl()==null || posterImage.getUrl().trim().isEmpty()) {
+					log("AUTO SNAP!");
+					takeVideoSnap();
+				}
+				vid.onseeked = null;
+				return e1;
+			};
+			vid.currentTime = 4.0;
 			presenter.postBlobToIpfsHlsVideo(file.name, file, vid.videoWidth, vid.videoHeight, videoOnprogressFn)
 					.thenAccept((location) -> {
 						GWT.log("UPLOADED VIDEO: " + location);
@@ -381,8 +381,6 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			return e;
 		};
 		vid.src = URL.createObjectURL(file);
-		vid.play();
-		vid.currentTime = 4.0;
 	}
 
 	private String videoLocation = "";
@@ -592,5 +590,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		title.reset();
 		editor.reset();
 		title.setFocus(true);
+		posterImage.setUrl(null);
+		video.setUrl(null);
 	}
 }

@@ -278,6 +278,8 @@ public class DpornCoApiImpl implements DpornCoApi {
 		String guessedMimeType = request.getServletContext().getMimeType(filename).toLowerCase();
 		System.out.println(" - contentType: "+contentType);
 		System.out.println(" - guessed content type: "+guessedMimeType);
+		boolean useTempFile = contentType.contains("quicktime") || guessedMimeType.contains("quicktime");
+		
 		if (width <= 0 || height <= 0) {
 			System.out.println("ipfsPutVideo - bad dimensions: " + width + "x" + height);
 			if (width <= 0) {
@@ -288,17 +290,12 @@ public class DpornCoApiImpl implements DpornCoApi {
 			}
 		}
 		IpfsHashResponse response = new IpfsHashResponse();
-		if (semaphore.availablePermits() < 2) {
-			response.setTryAgain(true);
-			response.setError("UPLOAD QUEUE FULL - PLEASE TRY AGAIN LATER");
-			return response;
-		}
 		boolean acquired = false;
 		File tmpDir = null;
 		Process ffmpeg = null;
 		final String player = DpornCoEmbed.htmlTemplateVideo();
 		try {
-			acquired = semaphore.tryAcquire(0, TimeUnit.SECONDS);
+			acquired = semaphore.tryAcquire(10, TimeUnit.SECONDS);
 			if (!acquired) {
 				response.setTryAgain(true);
 				response.setError("UPLOAD QUEUE FULL - PLEASE TRY AGAIN LATER");
@@ -306,12 +303,11 @@ public class DpornCoApiImpl implements DpornCoApi {
 			}
 			System.out.println("ipfsPutVideo - semaphore acquired: " + username + ", " + filename);
 			System.out.println(" - upload slots remaining: " + semaphore.availablePermits());
+			System.out.println(" - using temporary file: "+useTempFile);
 
 			String frameRate = "29.97";
 			tmpDir = Files.createTempDirectory("hls-").toFile();
 			System.out.println(" --- VID TEMP: " + tmpDir.getAbsoluteFile());
-			
-			boolean useTempFile = contentType.contains("quicktime") || guessedMimeType.contains("quicktime");
 			
 			List<String> cmd = new ArrayList<>();
 
