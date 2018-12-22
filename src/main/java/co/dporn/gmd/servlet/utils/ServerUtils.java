@@ -42,11 +42,11 @@ public class ServerUtils {
 	}
 
 	public static ResponseWithHeaders putFile(String url, File file, Map<String, String> params) throws IOException {
-		try (FileInputStream is = new FileInputStream(file)){
+		try (FileInputStream is = new FileInputStream(file)) {
 			return putStream(url, is, params);
 		}
 	}
-	
+
 	public static ResponseWithHeaders putStream(String url, InputStream is, Map<String, String> params) {
 		ResponseWithHeaders response = new ResponseWithHeaders();
 		HttpURLConnection urlConnection = null;
@@ -169,42 +169,48 @@ public class ServerUtils {
 	 * @throws IOException
 	 */
 	protected static String getString(InputStream inputStream) throws IOException {
-		BufferedInputStream bis = new BufferedInputStream(inputStream);
-		ByteArrayOutputStream buf = new ByteArrayOutputStream();
-		int result = bis.read();
-		while (result != -1) {
-			buf.write((byte) result);
-			result = bis.read();
+		try (BufferedInputStream bis = new BufferedInputStream(inputStream)) {
+			ByteArrayOutputStream buf = new ByteArrayOutputStream();
+			int result = bis.read();
+			while (result != -1) {
+				buf.write((byte) result);
+				result = bis.read();
+			}
+			return buf.toString(StandardCharsets.UTF_8.name());
 		}
-		return buf.toString(StandardCharsets.UTF_8.name());
 	}
-	
+
 	/**
-	     * Copies bytes from a large (over 2GB) <code>InputStream</code> to an
-	     * <code>OutputStream</code>.
-	     * <p>
-	     * This method uses the provided buffer, so there is no need to use a
-	     * <code>BufferedInputStream</code>.
-	     * <p>
-	     *
-	     * @param input the <code>InputStream</code> to read from
-	     * @param output the <code>OutputStream</code> to write to
-	     * @param buffer the buffer to use for the copy
-	     * @return the number of bytes copied
-	     * @throws NullPointerException if the input or output is null
-	     * @throws IOException          if an I/O error occurs
-	     * @since 2.2
-	     */
-	    public static long copyStream(final InputStream input, final OutputStream output)
-	            throws IOException {
-	    	byte[] buffer = new byte[1024*1024];
-	        long count = 0;
-	        int n;
-	        while (EOF != (n = input.read(buffer))) {
-	            output.write(buffer, 0, n);
-	            count += n;
-	        }
-	        return count;
-	    }
-	    public static final int EOF = -1;
+	 * Copies bytes from a large (over 2GB) <code>InputStream</code> to an
+	 * <code>OutputStream</code>.
+	 * <p>
+	 * This method uses the provided buffer, so there is no need to use a
+	 * <code>BufferedInputStream</code>.
+	 * <p>
+	 *
+	 * @param input
+	 *            the <code>InputStream</code> to read from
+	 * @param output
+	 *            the <code>OutputStream</code> to write to
+	 * @param buffer
+	 *            the buffer to use for the copy
+	 * @return the number of bytes copied
+	 * @throws NullPointerException
+	 *             if the input or output is null
+	 * @throws IOException
+	 *             if an I/O error occurs
+	 * @since 2.2
+	 */
+	public static long copyStream(final InputStream input, final OutputStream output) throws IOException {
+		byte[] buffer = new byte[32 * 1024];
+		long count = 0;
+		int n;
+		while (EOF != (n = input.read(buffer))) {
+			output.write(buffer, 0, n);
+			count += n;
+		}
+		return count;
+	}
+
+	public static final int EOF = -1;
 }

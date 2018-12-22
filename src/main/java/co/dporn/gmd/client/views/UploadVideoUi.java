@@ -138,6 +138,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		videoLocation = "";
 		previewVideoFile.setEnabled(false);
 		previewVideoFile.addClickHandler(this::showVideoPreviewDialog);
+		btnSubmit.setEnabled(false);
 	}
 
 	private Object showVideoPreviewDialog(ClickEvent e) {

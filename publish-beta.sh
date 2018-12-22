@@ -25,5 +25,6 @@ rsync	--exclude /work/ \
 	Beta/ "$USER"@"$HOST":Beta/
 	
 echo "START REMOTE SERVICES"
-ssh -p "$PORT" "$USER"@"$HOST" 'cd Beta; (bash start.sh < /dev/null > tomcat.log 2> tomcat.err) & sleep 3' || true
+ssh -p "$PORT" "$USER"@"$HOST" 'cd Beta; (bash start.sh) < /dev/null > tomcat.log 2> tomcat.err & sleep 3' || true
+ssh -p "$PORT" "$USER"@"$HOST" 'cd Beta; (bash restart.sh || bash start.sh) < /dev/null > tomcat.log 2> tomcat.err & sleep 3'
 echo "DONE"
