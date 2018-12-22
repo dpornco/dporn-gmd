@@ -307,7 +307,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		boolean acquired = false;
 		File tmpDir = null;
 		Process ffmpeg = null;
-		final String player = DpornCoEmbed.htmlTemplateVideo();
+		final String player = DpornCoEmbed.htmlTemplateVideo().replace("video/mp4", "application/x-mpegurl");
 		try {
 			acquired = semaphore.tryAcquire(10, TimeUnit.SECONDS);
 			if (!acquired) {

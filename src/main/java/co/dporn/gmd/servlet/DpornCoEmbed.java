@@ -61,7 +61,7 @@ public class DpornCoEmbed {
 	private HttpServletRequest request;
 	private static final long LAST_MODIFIED = System.currentTimeMillis();
 
-	private static final Map<String, String> CACHE = Collections.synchronizedMap(new LRUMap<>(256));
+	private static final Map<String, String> CACHE = Collections.synchronizedMap(new LRUMap<>(16));
 
 	@Produces(MediaType.TEXT_HTML)
 	@Path("@{authorname}/{permlink}")
@@ -122,6 +122,9 @@ public class DpornCoEmbed {
 		String embedHtml = null;
 		if (BlogEntryType.VIDEO == entry.getEntryType() || entry.getVideoPath()!=null) {
 			embedHtml = getVideoEmbedHtml(entry);
+			if (entry.getVideoPath().toLowerCase().endsWith(".m3u8")) {
+				embedHtml.replace("video/mp4", "application/x-mpegurl");
+			}
 		} else {
 			embedHtml = getGenericEmbedHtml(entry);
 		}
