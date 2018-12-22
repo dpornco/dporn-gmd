@@ -123,7 +123,7 @@ public class DpornCoEmbed {
 		if (BlogEntryType.VIDEO == entry.getEntryType() || entry.getVideoPath()!=null) {
 			embedHtml = getVideoEmbedHtml(entry);
 			if (entry.getVideoPath().toLowerCase().endsWith(".m3u8")) {
-				embedHtml.replace("video/mp4", "application/x-mpegurl");
+				embedHtml = embedHtml.replace("video/mp4", "application/x-mpegurl");
 			}
 		} else {
 			embedHtml = getGenericEmbedHtml(entry);
@@ -177,6 +177,9 @@ public class DpornCoEmbed {
 			return null;
 		}
 		String embedHtml = htmlTemplateVideo();
+		if (videoPath.toLowerCase().endsWith(".m3u8")) {
+			embedHtml = embedHtml.replace("video/mp4", "application/x-mpegurl");
+		}
 		embedHtml = embedHtml.replace("__TITLE__", StringEscapeUtils.escapeXml10(entry.getTitle()));
 		embedHtml = embedHtml.replace("__POSTERPATH__", StringEscapeUtils.escapeXml10(posterImagePath));
 		embedHtml = embedHtml.replace("__VIDEOPATH__", StringEscapeUtils.escapeXml10(videoPath));
