@@ -282,7 +282,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		boolean isDpornVerified = SteemJInstance.get().getDpornVerifiedSet().contains(username);
 		
 		boolean do1080p = isDpornVerified;
-		boolean do720p = isDpornVerified;
+		boolean do720p = true;
 		boolean do480p = true;
 		boolean do360p = true;
 		boolean do240p = true;
@@ -574,7 +574,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			cmd.add("23");
 		} else {
 			cmd.add("-crf");
-			cmd.add("28");
+			cmd.add("23");
 		}
 
 		cmd.add("-keyint_min");
