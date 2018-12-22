@@ -360,7 +360,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			// 1080p
 			if (do1080p && height >= (1080 + 720) / 2) {
 				new File(tmpDir, "1080p").mkdir();
-				ffmpegOptionsFor(frameRate, 1080, cmd);
+				ffmpegOptionsFor(isDpornVerified, frameRate, 1080, cmd);
 				m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=5300000,RESOLUTION=1920x1080\n");
 				m3u8.append("1080p/1080p.m3u8\n");
 				String hlsPlayer = player;
@@ -374,7 +374,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			// 720p
 			if (do720p && height >= (720 + 480) / 2) {
 				new File(tmpDir, "720p").mkdir();
-				ffmpegOptionsFor(frameRate, 720, cmd);
+				ffmpegOptionsFor(isDpornVerified, frameRate, 720, cmd);
 				m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=3200000,RESOLUTION=1280x720\n");
 				m3u8.append("720p/720p.m3u8\n");
 				String hlsPlayer = player;
@@ -388,7 +388,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			// 480p
 			if (do480p && height >= (480 + 360) / 2) {
 				new File(tmpDir, "480p").mkdir();
-				ffmpegOptionsFor(frameRate, 480, cmd);
+				ffmpegOptionsFor(isDpornVerified, frameRate, 480, cmd);
 				m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=1600000,RESOLUTION=854x480\n");
 				m3u8.append("480p/480p.m3u8\n");
 				String hlsPlayer = player;
@@ -402,7 +402,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			// 360p
 			if (do360p && height >= (360 + 240) / 2) {
 				new File(tmpDir, "360p").mkdir();
-				ffmpegOptionsFor(frameRate, 360, cmd);
+				ffmpegOptionsFor(isDpornVerified, frameRate, 360, cmd);
 				m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=900000,RESOLUTION=640x360\n");
 				m3u8.append("360p/360p.m3u8\n");
 				String hlsPlayer = player;
@@ -416,7 +416,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			// 240p
 			if (do240p) {
 				new File(tmpDir, "240p").mkdir();
-				ffmpegOptionsFor(frameRate, 240, cmd);
+				ffmpegOptionsFor(isDpornVerified, frameRate, 240, cmd);
 				m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=600000,RESOLUTION=426x240\n");
 				m3u8.append("240p/240p.m3u8\n");
 				String hlsPlayer = player;
@@ -527,8 +527,8 @@ public class DpornCoApiImpl implements DpornCoApi {
 		}
 	}
 
-	private void ffmpegOptionsFor(String frameRate, int size, List<String> cmd) {
-		BigDecimal hlsTime = BigDecimal.valueOf(5l);
+	private void ffmpegOptionsFor(boolean isDpornVerified, String frameRate, int size, List<String> cmd) {
+		BigDecimal hlsTime = BigDecimal.valueOf(1l);
 		BigDecimal tsLength = new BigDecimal(frameRate).multiply(hlsTime);
 		
 		cmd.add("-threads");
@@ -568,27 +568,13 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 		cmd.add("-movflags");
 		cmd.add("+faststart");
-
-		if (size < 360) {
-			// 240p
-			cmd.add("-crf");
-			cmd.add("23");
-		} else if (size < 480) {
-			// 360p
-			cmd.add("-crf");
-			cmd.add("23");
-		} else if (size < 720) {
-			// 480p
-			cmd.add("-crf");
-			cmd.add("23");
-		} else if (size < 1080) {
-			// 720p
+		
+		if (isDpornVerified) {
 			cmd.add("-crf");
 			cmd.add("23");
 		} else {
-			// 1080p
 			cmd.add("-crf");
-			cmd.add("23");
+			cmd.add("28");
 		}
 
 		cmd.add("-keyint_min");
