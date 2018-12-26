@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ServerUtils {
-
+	
 	protected static String createUrlWithQuerystring(String url, Map<String, String> queryParams)
 			throws UnsupportedEncodingException {
 		if (queryParams == null) {
@@ -208,6 +208,41 @@ public class ServerUtils {
 		while (EOF != (n = input.read(buffer))) {
 			output.write(buffer, 0, n);
 			count += n;
+		}
+		return count;
+	}
+	
+	/**
+	 * Copies bytes from a large (over 2GB) <code>InputStream</code> to an
+	 * <code>OutputStream</code>.
+	 * <p>
+	 * This method uses the provided buffer, so there is no need to use a
+	 * <code>BufferedInputStream</code>.
+	 * <p>
+	 *
+	 * @param input
+	 *            the <code>InputStream</code> to read from
+	 * @param output
+	 *            the <code>OutputStream</code> to write to
+	 * @param buffer
+	 *            the buffer to use for the copy
+	 * @return the number of bytes copied
+	 * @throws NullPointerException
+	 *             if the input or output is null
+	 * @throws IOException
+	 *             if an I/O error occurs
+	 * @since 2.2
+	 */
+	public static long copyStreamWithNotify(final InputStream input, final OutputStream output, final Runnable notify) throws IOException {
+		byte[] buffer = new byte[32 * 1024];
+		long count = 0;
+		int n;
+		while (EOF != (n = input.read(buffer))) {
+			output.write(buffer, 0, n);
+			count += n;
+			if (notify!=null) {
+				notify.run();
+			}
 		}
 		return count;
 	}

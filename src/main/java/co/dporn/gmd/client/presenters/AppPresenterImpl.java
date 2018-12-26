@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.core.shared.GWT;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.ui.HasWidgets;
@@ -28,6 +29,7 @@ import co.dporn.gmd.client.views.IsView;
 import co.dporn.gmd.client.views.UploadEroticaUi;
 import co.dporn.gmd.client.views.UploadVideoUi;
 import co.dporn.gmd.shared.DpornConsts;
+import gwt.material.design.client.ui.MaterialToast;
 
 public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePresenter {
 	private AppLayoutView view;
@@ -257,9 +259,31 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 		GWT.log(this.getClass().getSimpleName() + "#execute");
 		rootDisplay.clear();
 		rootDisplay.add(view.asWidget());
-		deferred(() -> {
-			model.fireRouteState();
-		});
+		deferred(() -> model.fireRouteState());
+		deferred(this::notificationsWatch);
+	}
+	
+	private Timer notificationsWatch=null;
+	private void notificationsWatch() {
+		if (notificationsWatch!=null) {
+			notificationsWatch.cancel();
+		}
+		notificationsWatch = new Timer() {
+			@Override
+			public void run() {
+				model.getNotifications().thenAccept(response->{
+					if (response==null || response.getNotifications()==null) {
+						return;
+					}
+					for (String notice: response.getNotifications()) {
+						MaterialToast.fireToast(notice);
+					}
+				}).exceptionally(ex->{
+					return null;
+				});
+			}
+		};
+		notificationsWatch.scheduleRepeating(3000);
 	}
 
 	@Override

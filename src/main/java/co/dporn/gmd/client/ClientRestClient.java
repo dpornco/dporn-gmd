@@ -20,6 +20,7 @@ import co.dporn.gmd.shared.CommentConfirmResponse;
 import co.dporn.gmd.shared.DpornCoApi;
 import co.dporn.gmd.shared.HtmlSanitizedResponse;
 import co.dporn.gmd.shared.IsVerifiedResponse;
+import co.dporn.gmd.shared.NotificationsResponse;
 import co.dporn.gmd.shared.PingResponse;
 import co.dporn.gmd.shared.SuggestTagsResponse;
 import elemental2.dom.Blob;
@@ -56,6 +57,12 @@ public class ClientRestClient {
 	public CompletableFuture<IsVerifiedResponse> getIsVerified(String username) {
 		MethodCallbackAsFuture<IsVerifiedResponse> callback = new MethodCallbackAsFuture<>();
 		call(callback).getIsVerified(username);
+		return callback.getFuture();
+	}
+	
+	public CompletableFuture<NotificationsResponse> getNotifications(String username, String authorization) {
+		MethodCallbackAsFuture<NotificationsResponse> callback = new MethodCallbackAsFuture<>();
+		call(callback).getNotifications(username, authorization);
 		return callback.getFuture();
 	}
 	

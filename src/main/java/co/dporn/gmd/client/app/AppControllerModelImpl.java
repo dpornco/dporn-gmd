@@ -44,6 +44,7 @@ import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.DpornConsts;
 import co.dporn.gmd.shared.HtmlSanitizedResponse;
 import co.dporn.gmd.shared.IpfsHashResponse;
+import co.dporn.gmd.shared.NotificationsResponse;
 import co.dporn.gmd.shared.TagSet;
 import elemental2.dom.Blob;
 import elemental2.dom.DomGlobal;
@@ -827,5 +828,17 @@ public class AppControllerModelImpl implements AppControllerModel {
 		String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
 		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
 		return ClientRestClient.get().getHtmlSanitized(username, authorization, html);
+	}
+
+	@Override
+	public CompletableFuture<NotificationsResponse> getNotifications() {
+		String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
+		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
+		if (username.isEmpty() || authorization.isEmpty()) {
+			CompletableFuture<NotificationsResponse> future = new CompletableFuture<>();
+			future.complete(new NotificationsResponse());
+			return future;
+		}
+		return ClientRestClient.get().getNotifications(username, authorization);
 	}
 }

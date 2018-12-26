@@ -55,22 +55,29 @@ html, body {
 			"autoplay" : false,
 			"controls" : true,
 			"preload" : "none",
-			"loop" : false
+			"loop" : false,
+			"fluid": true,
+			"nativeVideoTracks": false,
+			"html5": {
+				"hls": {
+					"overrideNative": true
+				}
+			}
 		}, function onPlayerReady() {
 			//console.log("Player Ready");
 		});
 		//simplistic fail over to next host on 404 errors		
-		player.on('error', function(event) {
-			try {
-				console.log("ERROR: " + this.error().message);
-			} catch (e) {
-			}
-			var sources = this.cache_.sources;
-			sources.shift();
-			//sources.push(); //rotate
-			//this.reset();
-			this.src(sources);
-		});
+// 		player.on('error', function(event) {
+// 			try {
+// 				console.log("ERROR: " + this.error().message);
+// 			} catch (e) {
+// 			}
+// 			var sources = this.cache_.sources;
+// 			sources.shift();
+// 			//sources.push(); //rotate
+// 			//this.reset();
+// 			this.src(sources);
+// 		});
 	</script>
 </body>
 </html>

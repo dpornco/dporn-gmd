@@ -9,6 +9,7 @@ import co.dporn.gmd.shared.BlogEntry;
 import co.dporn.gmd.shared.BlogEntryListResponse;
 import co.dporn.gmd.shared.BlogEntryType;
 import co.dporn.gmd.shared.HtmlSanitizedResponse;
+import co.dporn.gmd.shared.NotificationsResponse;
 import co.dporn.gmd.shared.TagSet;
 import elemental2.dom.Blob;
 import elemental2.dom.XMLHttpRequestUpload.OnprogressFn;
@@ -68,5 +69,6 @@ public interface AppControllerModel {
 	CompletableFuture<List<String>> sortTagsByNetVoteDesc(List<String> tags);
 	
 	CompletableFuture<String> newBlogEntry(BlogEntryType blogEntryType, double width, String title, List<String> tags, String content);
+	CompletableFuture<NotificationsResponse> getNotifications();
 	
 }

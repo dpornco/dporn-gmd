@@ -18,6 +18,10 @@ import javax.ws.rs.core.MediaType;
 public interface DpornCoApi {
 	
 	@GET
+	@Path("notifications/{username}")
+	NotificationsResponse getNotifications(@PathParam("username")String username, @HeaderParam("Authorization")String accessToken);
+	
+	@GET
 	@Path("isverified/{username}")
 	IsVerifiedResponse getIsVerified(@PathParam("username") String username);
 

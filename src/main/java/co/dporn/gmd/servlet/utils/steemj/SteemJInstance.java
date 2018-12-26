@@ -193,7 +193,6 @@ public class SteemJInstance {
 	public synchronized Set<String> getBlacklist() {
 		List<String> cached = cachedStringLists.get(BLACKLIST_KEY);
 		if (cached != null) {
-			System.out.println("getBlacklist:cached");
 			return new TreeSet<>(cached);
 		}
 		Set<String> set = new TreeSet<>();

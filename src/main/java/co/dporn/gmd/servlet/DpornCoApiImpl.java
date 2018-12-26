@@ -28,6 +28,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -36,6 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 import co.dporn.gmd.servlet.mongodb.MongoDpornCo;
 import co.dporn.gmd.servlet.utils.HtmlSanitizer;
 import co.dporn.gmd.servlet.utils.Mapper;
+import co.dporn.gmd.servlet.utils.Notifications;
 import co.dporn.gmd.servlet.utils.ResponseWithHeaders;
 import co.dporn.gmd.servlet.utils.ServerSteemConnect;
 import co.dporn.gmd.servlet.utils.ServerUtils;
@@ -54,6 +56,7 @@ import co.dporn.gmd.shared.HtmlSanitizedResponse;
 import co.dporn.gmd.shared.IpfsHashResponse;
 import co.dporn.gmd.shared.IsVerifiedResponse;
 import co.dporn.gmd.shared.MongoDate;
+import co.dporn.gmd.shared.NotificationsResponse;
 import co.dporn.gmd.shared.PingResponse;
 import co.dporn.gmd.shared.SuggestTagsResponse;
 import eu.bittrade.libs.steemj.apis.database.models.state.Discussion;
@@ -63,7 +66,7 @@ import eu.bittrade.libs.steemj.apis.database.models.state.Discussion;
 @Path("1.0")
 public class DpornCoApiImpl implements DpornCoApi {
 
-	private static final int MAX_CONCURRENT_UPLOADS = 4;
+	private static final int MAX_CONCURRENT_UPLOADS = 8;
 	@Context
 	protected HttpServletRequest request;
 	@Context
@@ -213,16 +216,18 @@ public class DpornCoApiImpl implements DpornCoApi {
 		return filename;
 	}
 
+	private static Map<String, String> cachedUsernameAuthorizations = new PassiveExpiringMap<>(60000);
 	private boolean isAuthorized(String username, String authorization) {
 		if (username == null) {
-			System.out.println("isAuthorized: username is null");
 			return false;
 		}
-		String meUsername = ServerSteemConnect.username(authorization);
-		System.out.println("isAuthorized: meUsername = " + meUsername);
+		String meUsername = cachedUsernameAuthorizations.get(authorization);
+		if (meUsername == null) {
+			meUsername = ServerSteemConnect.username(authorization);
+			cachedUsernameAuthorizations.put(authorization, meUsername);
+		}
 		boolean authorized = username.equalsIgnoreCase(meUsername);
 		if (SteemJInstance.get().getBlacklist().contains(username)) {
-			System.out.println("isAuthorized: BLACKLISTED: "+username);
 			return false;
 		}
 		return authorized;
@@ -307,7 +312,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		boolean acquired = false;
 		File tmpDir = null;
 		Process ffmpeg = null;
-		final String player = DpornCoEmbed.htmlTemplateVideo().replace("video/mp4", "application/x-mpegurl");
+		final String player = DpornCoEmbed.htmlTemplateVideo();//.replace("video/mp4", "application/x-mpegurl");
 		try {
 			acquired = semaphore.tryAcquire(10, TimeUnit.SECONDS);
 			if (!acquired) {
@@ -366,7 +371,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 				String hlsPlayer = player;
 				hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
 				hlsPlayer = hlsPlayer.replaceAll("poster=\"[^\"]*?\"", "");
-				hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"\\s+type=\"video/mp4\" />",
+				hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"[^>]*>",
 						"<source src=\"1080p.m3u8\"/>");
 				FileUtils.write(new File(tmpDir, "1080p/video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
 			}
@@ -380,7 +385,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 				String hlsPlayer = player;
 				hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
 				hlsPlayer = hlsPlayer.replaceAll("poster=\"[^\"]*?\"", "");
-				hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"\\s+type=\"video/mp4\" />",
+				hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"[^>]*>",
 						"<source src=\"720p.m3u8\"/>");
 				FileUtils.write(new File(tmpDir, "720p/video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
 			}
@@ -394,7 +399,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 				String hlsPlayer = player;
 				hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
 				hlsPlayer = hlsPlayer.replaceAll("poster=\"[^\"]*?\"", "");
-				hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"\\s+type=\"video/mp4\" />",
+				hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"[^>]*>",
 						"<source src=\"480p.m3u8\"/>");
 				FileUtils.write(new File(tmpDir, "480p/video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
 			}
@@ -408,7 +413,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 				String hlsPlayer = player;
 				hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
 				hlsPlayer = hlsPlayer.replaceAll("poster=\"[^\"]*?\"", "");
-				hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"\\s+type=\"video/mp4\" />",
+				hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"[^>]*>",
 						"<source src=\"360p.m3u8\"/>");
 				FileUtils.write(new File(tmpDir, "360p/video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
 			}
@@ -422,7 +427,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 				String hlsPlayer = player;
 				hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
 				hlsPlayer = hlsPlayer.replaceAll("poster=\"[^\"]*?\"", "");
-				hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"\\s+type=\"video/mp4\" />",
+				hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"[^>]*>",
 						"<source src=\"240p.m3u8\"/>");
 				FileUtils.write(new File(tmpDir, "240p/video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
 			}
@@ -438,6 +443,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			pb.redirectOutput(new File(tmpDir, "log.txt"));
 
 			if (useTempFile) {
+				Notifications.notify(username, "Copying upload to temporary file");
 				FileOutputStream os = new FileOutputStream(new File(tmpDir, "tmp.mov"));
 				ServerUtils.copyStream(is, os);
 				IOUtils.closeQuietly(os);
@@ -445,7 +451,13 @@ public class DpornCoApiImpl implements DpornCoApi {
 			
 			ffmpeg = pb.start();
 			if (!useTempFile) {
-				ServerUtils.copyStream(is, ffmpeg.getOutputStream());
+				long[] nextNotify = {0l};
+				ServerUtils.copyStreamWithNotify(is, ffmpeg.getOutputStream(), ()->{
+					if (nextNotify[0]<System.currentTimeMillis()) {
+						nextNotify[0] = System.currentTimeMillis()+6000l;
+						Notifications.notify(username, "Converting to streaming format");
+					}
+				});
 				IOUtils.closeQuietly(ffmpeg.getOutputStream());
 			}
 			ffmpeg.waitFor();
@@ -456,7 +468,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			String hlsPlayer = player;
 			hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
 			hlsPlayer = hlsPlayer.replaceAll("poster=\"[^\"]*?\"", "");
-			hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"\\s+type=\"video/mp4\" />",
+			hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"[^>]*>",
 					"<source src=\"video.m3u8\"/>");
 			FileUtils.write(new File(tmpDir, "video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
 
@@ -482,8 +494,19 @@ public class DpornCoApiImpl implements DpornCoApi {
 				System.out.println(" - upload slots remaining: " + semaphore.availablePermits());
 			}
 
+			long nextNotify = 0l;
+			int count=0;
+			int size=files.size();
+			int percent=-1;
 			String IPFS_HASH = IPFS_EMPTY_DIR;
+			nextNotify = 0l;
 			for (File file : files) {
+				count++;
+				if (nextNotify<System.currentTimeMillis()) {
+					nextNotify = System.currentTimeMillis()+6000l;
+					percent = 100*count/size;
+					Notifications.notify(username, "Adding HLS video to IPFS: "+percent+"%");
+				}
 				if (file.getName().equalsIgnoreCase("tmp.mov")) {
 					continue;
 				}
@@ -505,6 +528,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 					response.setLocation(locations.get(locations.size() - 1));
 				}
 			}
+			Notifications.notify(username, "HLS video added to IPFS.");
 			System.out.println(" VIDEO FOLDER: https://ipfs.dporn.co/ipfs/"+IPFS_HASH);
 			return response;
 		} catch (Exception e) {
@@ -764,6 +788,15 @@ public class DpornCoApiImpl implements DpornCoApi {
 	@Override
 	public IsVerifiedResponse getIsVerified(String username) {
 		return new IsVerifiedResponse(username, SteemJInstance.get().getDpornVerifiedSet().contains(username));
+	}
+
+	@Override
+	public NotificationsResponse getNotifications(String username, String authorization) {
+		if (!isAuthorized(username, authorization)) {
+			setResponseAsUnauthorized();
+			return null;
+		}
+		return new NotificationsResponse(Notifications.getNotifications(username));
 	}
 
 }

@@ -284,7 +284,6 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 				if (p0.loaded == p0.total) {
 					videoUploadProgress.setType(ProgressType.INDETERMINATE);
 					start=System.currentTimeMillis();
-					MaterialToast.fireToast("Adding to IPFS", 15000);
 					return;
 				}
 				double percent = Math.ceil(100d * p0.loaded / p0.total);
@@ -292,7 +291,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 				videoUploadProgress.setPercent(percent);
 				if (System.currentTimeMillis()-start>15000) {
 					start=System.currentTimeMillis();
-					MaterialToast.fireToast("Video upload and conversion: "+percent+"%");
+					MaterialToast.fireToast("Video upload: "+percent+"%");
 				}
 			}
 		};
