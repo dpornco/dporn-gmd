@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -366,7 +367,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			if (do1080p && height >= (1080 + 720) / 2) {
 				new File(tmpDir, "1080p").mkdir();
 				ffmpegOptionsFor(isDpornVerified, frameRate, 1080, cmd);
-				m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=5300000,RESOLUTION=1920x1080\n");
+				m3u8.append("#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE=29.97,AVERAGE-BANDWIDTH=4500000,BANDWIDTH=4950000,RESOLUTION=1920x1080\n");
 				m3u8.append("1080p/1080p.m3u8\n");
 				String hlsPlayer = player;
 				hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
@@ -380,7 +381,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			if (do720p && height >= (720 + 480) / 2) {
 				new File(tmpDir, "720p").mkdir();
 				ffmpegOptionsFor(isDpornVerified, frameRate, 720, cmd);
-				m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=3200000,RESOLUTION=1280x720\n");
+				m3u8.append("#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE=29.97,AVERAGE-BANDWIDTH=2500000,BANDWIDTH=2750000,RESOLUTION=1280x720\n");
 				m3u8.append("720p/720p.m3u8\n");
 				String hlsPlayer = player;
 				hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
@@ -394,7 +395,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			if (do480p && height >= (480 + 360) / 2) {
 				new File(tmpDir, "480p").mkdir();
 				ffmpegOptionsFor(isDpornVerified, frameRate, 480, cmd);
-				m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=1600000,RESOLUTION=854x480\n");
+				m3u8.append("#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE=29.97,AVERAGE-BANDWIDTH=1250000,BANDWIDTH=1375000,RESOLUTION=854x480\n");
 				m3u8.append("480p/480p.m3u8\n");
 				String hlsPlayer = player;
 				hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
@@ -408,7 +409,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			if (do360p && height >= (360 + 240) / 2) {
 				new File(tmpDir, "360p").mkdir();
 				ffmpegOptionsFor(isDpornVerified, frameRate, 360, cmd);
-				m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=900000,RESOLUTION=640x360\n");
+				m3u8.append("#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE=29.97,AVERAGE-BANDWIDTH=700000,BANDWIDTH=770000,RESOLUTION=640x360\n");
 				m3u8.append("360p/360p.m3u8\n");
 				String hlsPlayer = player;
 				hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
@@ -422,7 +423,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			if (do240p) {
 				new File(tmpDir, "240p").mkdir();
 				ffmpegOptionsFor(isDpornVerified, frameRate, 240, cmd);
-				m3u8.append("#EXT-X-STREAM-INF:BANDWIDTH=600000,RESOLUTION=426x240\n");
+				m3u8.append("#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE=29.97,AVERAGE-BANDWIDTH=400000,BANDWIDTH=440000,RESOLUTION=426x240\n");
 				m3u8.append("240p/240p.m3u8\n");
 				String hlsPlayer = player;
 				hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
@@ -552,7 +553,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 	}
 
 	private void ffmpegOptionsFor(boolean isDpornVerified, String frameRate, int size, List<String> cmd) {
-		BigDecimal hlsTime = BigDecimal.valueOf(3l);
+		BigDecimal hlsTime = BigDecimal.valueOf(1l);
 		BigDecimal tsLength = new BigDecimal(frameRate).multiply(hlsTime);
 		
 		cmd.add("-threads");
@@ -593,14 +594,6 @@ public class DpornCoApiImpl implements DpornCoApi {
 		cmd.add("-movflags");
 		cmd.add("+faststart");
 		
-		if (isDpornVerified) {
-			cmd.add("-crf");
-			cmd.add("23");
-		} else {
-			cmd.add("-crf");
-			cmd.add("23");
-		}
-
 		cmd.add("-keyint_min");
 		cmd.add(tsLength.toPlainString());
 		cmd.add("-sc_threshold");
@@ -610,43 +603,71 @@ public class DpornCoApiImpl implements DpornCoApi {
 		cmd.add("h264");
 		cmd.add("-profile:v");
 		cmd.add("main");
-
+		
+		if (isDpornVerified) {
+			cmd.add("-crf");
+			cmd.add("21");
+		} else {
+			cmd.add("-crf");
+			cmd.add("21");
+		}
+		
+		cmd.add("-b:v");
+		if (size < 360) {
+			// 240p
+			cmd.add("400k");
+		} else if (size < 480) {
+			// 360p
+			cmd.add("700k");
+		} else if (size < 720) {
+			// 480p
+			cmd.add("1250k");
+		} else if (size < 1080) {
+			// 720p
+			cmd.add("2500k");
+		} else {
+			// 1080p
+			cmd.add("4500k");
+		}
+		
+		//max 10% higher than wanted avg rate
 		cmd.add("-maxrate");
 		if (size < 360) {
 			// 240p
-			cmd.add("600k");
+			cmd.add("440k");
 		} else if (size < 480) {
 			// 360p
-			cmd.add("900k");
+			cmd.add("770k");
 		} else if (size < 720) {
 			// 480p
-			cmd.add("1600k");
+			cmd.add("1375k");
 		} else if (size < 1080) {
 			// 720p
-			cmd.add("3200k");
+			cmd.add("2750k");
 		} else {
 			// 1080p
-			cmd.add("5300k");
+			cmd.add("4950k");
 		}
 
+		//same as avg rate
 		cmd.add("-bufsize");
 		if (size < 360) {
 			// 240p
-			cmd.add("1200k");
+			cmd.add("400k");
 		} else if (size < 480) {
 			// 360p
-			cmd.add("1800k");
+			cmd.add("700k");
 		} else if (size < 720) {
 			// 480p
-			cmd.add("3200k");
+			cmd.add("1250k");
 		} else if (size < 1080) {
 			// 720p
-			cmd.add("6400k");
+			cmd.add("2500k");
 		} else {
 			// 1080p
-			cmd.add("10600k");
+			cmd.add("4500k");
 		}
-
+		
 		cmd.add("-vf");
 		if (size < 360) {
 			cmd.add("scale=w=426x240:force_original_aspect_ratio=decrease,pad=w='iw+mod(iw,2)':h='ih+mod(ih,2)'");
