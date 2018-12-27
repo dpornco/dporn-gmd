@@ -454,7 +454,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 				long[] nextNotify = {0l};
 				ServerUtils.copyStreamWithNotify(is, ffmpeg.getOutputStream(), ()->{
 					if (nextNotify[0]<System.currentTimeMillis()) {
-						nextNotify[0] = System.currentTimeMillis()+6000l;
+						nextNotify[0] = System.currentTimeMillis()+12000l;
 						Notifications.notify(username, "Converting to streaming format");
 					}
 				});
@@ -552,7 +552,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 	}
 
 	private void ffmpegOptionsFor(boolean isDpornVerified, String frameRate, int size, List<String> cmd) {
-		BigDecimal hlsTime = BigDecimal.valueOf(1l);
+		BigDecimal hlsTime = BigDecimal.valueOf(3l);
 		BigDecimal tsLength = new BigDecimal(frameRate).multiply(hlsTime);
 		
 		cmd.add("-threads");

@@ -60,7 +60,11 @@ html, body {
 			"nativeVideoTracks": false,
 			"html5": {
 				"hls": {
-					"overrideNative": true
+					"overrideNative": true,
+					"blacklistDuration": 1,
+					"bandwidth", 5300000,
+					"useBandwidthFromLocalStorage": true,
+					"limitRenditionByPlayerDimensions": false
 				}
 			}
 		}, function onPlayerReady() {
