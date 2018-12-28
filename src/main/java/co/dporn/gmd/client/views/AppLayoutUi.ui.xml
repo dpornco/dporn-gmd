@@ -54,7 +54,7 @@
 				text="Settings" iconType="COLLECTIONS" />
 			<!-- <d:DpornLink text="Send Feedback" -->
 			<!-- iconType="ANNOUNCEMENT" href="https://discord.gg/28NwJ8u" target="_blank"/> -->
-			<m:MaterialLink text="Get Verified"
+			<m:MaterialLink ui:field="lnkGetVerified" text="Get Verified"
 				iconType="ANNOUNCEMENT" href="https://discord.gg/sP7YHdU"
 				target="_blank" />
 			<m:MaterialLink text="Help / Feedback" iconType="HELP"

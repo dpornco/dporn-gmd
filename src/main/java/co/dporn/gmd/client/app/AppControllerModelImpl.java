@@ -841,4 +841,32 @@ public class AppControllerModelImpl implements AppControllerModel {
 		}
 		return ClientRestClient.get().getNotifications(username, authorization);
 	}
+
+	private Map<String, Boolean> VERIFIED_CACHE = new HashMap<>();
+	private long VERIFIED_CACHE_EXPIRES = 0l;
+
+	@Override
+	public CompletableFuture<Boolean> isVerified() {
+		String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
+		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
+		CompletableFuture<Boolean> future = new CompletableFuture<>();
+		if (username.isEmpty() || authorization.isEmpty()) {
+			future.complete(false);
+			return future;
+		}
+		if (VERIFIED_CACHE_EXPIRES < System.currentTimeMillis()) {
+			VERIFIED_CACHE.clear();
+		}
+		if (VERIFIED_CACHE.containsKey(username)) {
+			future.complete(VERIFIED_CACHE.get(username));
+			return future;
+		}
+		ClientRestClient.get().getIsVerified(username).thenAccept(r -> {
+			boolean verified = r.isVerified();
+			VERIFIED_CACHE.put(username, verified);
+			VERIFIED_CACHE_EXPIRES = System.currentTimeMillis()+5l*60000l;
+			future.complete(verified);
+		});
+		return future;
+	}
 }

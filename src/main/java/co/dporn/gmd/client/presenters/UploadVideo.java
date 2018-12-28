@@ -28,6 +28,7 @@ public interface UploadVideo extends IsChildPresenter<UploadVideoView>, Schedule
 		void setErrorBadContent();
 		void setErrorBadTags();
 		void reset();
+		void setVerified(Boolean verified);
 	}
 	void reset();
 	/**

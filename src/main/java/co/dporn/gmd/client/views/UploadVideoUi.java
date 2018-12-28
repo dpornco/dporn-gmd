@@ -52,14 +52,16 @@ import gwt.material.design.jquery.client.api.JQueryElement;
 import jsinterop.base.Js;
 
 public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoView {
-	private static final String MAX_NOT_VERIFIED = "Max video length: 15 minutes. If you would like to upload longer videos, \"Get Verified\".";
-	private static final String MAX_VERIFIED = "Max video length: 60 minutes.";
+	private static final String MAX_NOT_VERIFIED = "Max video length: 15 minutes. Stream max quality is 480p. If you would like to upload longer higher quality videos, \"Get Verified\".";
+	private static final String MAX_VERIFIED = "Max video length: 60 minutes. Max quality is 1080p.";
 
 	interface ThisUiBinder extends UiBinder<Widget, UploadVideoUi> {
 	}
 
 	private static ThisUiBinder uiBinder = GWT.create(ThisUiBinder.class);
 
+	@UiField
+	protected MaterialButton btnCancelUploadVideo;
 	@UiField
 	protected MaterialLabel maxLengthNotice;
 	@UiField
@@ -622,5 +624,14 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		title.setFocus(true);
 		posterImage.setUrl(null);
 		video.setUrl(null);
+	}
+
+	@Override
+	public void setVerified(Boolean verified) {
+		if (verified) {
+			maxLengthNotice.setText(MAX_VERIFIED);
+		} else {
+			maxLengthNotice.setText(MAX_NOT_VERIFIED);
+		}
 	}
 }

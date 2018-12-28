@@ -25,6 +25,7 @@ public interface AppPresenter extends IsPresenter<AppLayoutView>, ScheduledComma
 		void enableContentCreatorRoles(boolean enabled);
 		void toast(String string);
 		void enableUnimplementedFeatures(boolean enable);
+		void setVerified(Boolean verified);
 	}
 	
 	void setDisplay(HasWidgets rootView);

@@ -14,12 +14,15 @@ import co.dporn.gmd.client.presenters.AppPresenter.IsChildPresenter;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialImage;
 import gwt.material.design.client.ui.MaterialLabel;
+import gwt.material.design.client.ui.MaterialLink;
 import gwt.material.design.client.ui.MaterialPanel;
 import gwt.material.design.client.ui.MaterialSideNavPush;
 import gwt.material.design.client.ui.MaterialToast;
 
 public class AppLayoutUi extends Composite implements AppLayoutView {
 
+	@UiField
+	protected MaterialLink lnkGetVerified;
 	@UiField
 	protected DpornLink linkMyChannel;
 	
@@ -163,5 +166,14 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 		linkUploadPhotos.setEnabled(enabled);
 		linkUploadVideo.setEnabled(enabled);
 		linkSettings.setEnabled(enabled);
+	}
+
+	@Override
+	public void setVerified(Boolean verified) {
+		if (verified) {
+			lnkGetVerified.setText("Verified Chat");
+		} else {
+			lnkGetVerified.setText("Get Verified");
+		}
 	}
 }

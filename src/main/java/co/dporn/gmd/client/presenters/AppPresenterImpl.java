@@ -261,6 +261,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 		rootDisplay.add(view.asWidget());
 		deferred(() -> model.fireRouteState());
 		deferred(this::notificationsWatch);
+		model.isVerified().thenAccept(verified->view.setVerified(verified));
 	}
 	
 	private Timer notificationsWatch=null;

@@ -58,8 +58,10 @@ public class UploadVideoImpl implements UploadVideo {
 
 	@Override
 	public void execute() {
-		// TODO Auto-generated method stub
-
+		CompletableFuture<Boolean> future = model.isVerified();
+		future.thenAccept(verified->{
+			view.setVerified(verified);
+		});
 	}
 
 	@Override

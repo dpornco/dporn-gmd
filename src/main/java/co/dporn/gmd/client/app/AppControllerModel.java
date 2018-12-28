@@ -70,5 +70,6 @@ public interface AppControllerModel {
 	
 	CompletableFuture<String> newBlogEntry(BlogEntryType blogEntryType, double width, String title, List<String> tags, String content);
 	CompletableFuture<NotificationsResponse> getNotifications();
+	CompletableFuture<Boolean> isVerified();
 	
 }

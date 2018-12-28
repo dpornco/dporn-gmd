@@ -41,10 +41,12 @@
 					style="margin: 8px;" text="TAKE SNAPSHOT"></m:MaterialButton>
 				<m:MaterialButton ui:field="previewVideoFile"
 					style="margin: 8px;" text="PREVIEW HLS VIDEO"></m:MaterialButton>
+				<m:MaterialButton ui:field="btnCancelUploadVideo"
+					style="margin: 8px;" text="CANCEL UPLOAD"></m:MaterialButton>
 				<m:MaterialLabel
-					text="16:9 aspect ratio recommended. Video will be recoded to HLS format at 720p, 480p, and 240p with a CRF=28 factor. The original video will be discarded for storage space reasons! If the upload queue is full, the upload will be paused until a slot opens up." />
-					<m:MaterialLabel ui:field="maxLengthNotice"
-					text="Max video length: 15 minutes. If you would like to upload longer videos, &quot;Get Verified&quot;." />
+					text="16:9 aspect ratio recommended. Video will be reencoded to HLS format. The original video will be discarded for storage space reasons! If the upload queue is full, the upload will be paused until a slot opens up." />
+				<m:MaterialLabel ui:field="maxLengthNotice"
+					text="The max video length is 15 minutes for non-verified users and 60 minutes for verified users." />
 			</m:MaterialColumn>
 		</m:MaterialRow>
 		<m:MaterialRow margin="8">
