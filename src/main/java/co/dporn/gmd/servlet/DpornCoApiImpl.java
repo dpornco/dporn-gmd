@@ -566,17 +566,13 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 		if (size >= (1080 + 720) / 2) {
 			size = 1080;
-		}
-		if (size >= (720 + 480) / 2) {
+		} else if (size >= (720 + 480) / 2) {
 			size = 720;
-		}
-		if (size >= (480 + 360) / 2) {
+		} else if (size >= (480 + 360) / 2) {
 			size = 480;
-		}
-		if (size >= (360 + 240) / 2) {
+		} else if (size >= (360 + 240) / 2) {
 			size = 360;
-		}
-		if (size < 360) {
+		} else {
 			size = 240;
 		}
 
@@ -630,10 +626,10 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 		if (isDpornVerified) {
 			cmd.add("-crf");
-			cmd.add("23");
+			cmd.add("28");
 		} else {
 			cmd.add("-crf");
-			cmd.add("23");
+			cmd.add("28");
 		}
 
 		/*
@@ -695,7 +691,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		default:
 			cmd.add("550k");
 		}
-		
+
 		cmd.add("-vf");
 		if (size < 360) {
 			cmd.add("scale=w=426x240:force_original_aspect_ratio=decrease,pad=w='iw+mod(iw,2)':h='ih+mod(ih,2)'");
