@@ -177,16 +177,13 @@ public class DpornCoEmbed {
 			return null;
 		}
 		String embedHtml = htmlTemplateVideo();
-//		if (videoPath.toLowerCase().endsWith(".m3u8")) {
-//			embedHtml = embedHtml.replace("video/mp4", "application/x-mpegurl");
-//		}
 		embedHtml = embedHtml.replace("__TITLE__", StringEscapeUtils.escapeXml10(entry.getTitle()));
 		embedHtml = embedHtml.replace("__POSTERPATH__", StringEscapeUtils.escapeXml10(posterImagePath));
 		embedHtml = embedHtml.replace("__VIDEOPATH__", StringEscapeUtils.escapeXml10(videoPath));
 		// hack to deal with non IPFS path images or videos
 		if (isHttp || isHttps) {
 			embedHtml = embedHtml.replace("https://steemitimages.com/400x400/https://ipfs.dporn.co/ipfs" + posterImagePath,
-					"https://steemitimages.com/400x400/" + posterImagePath);
+					"https://steemitimages.com/640x360/" + posterImagePath);
 		}
 		return embedHtml;
 	}
