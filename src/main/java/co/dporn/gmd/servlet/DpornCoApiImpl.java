@@ -66,7 +66,7 @@ import eu.bittrade.libs.steemj.apis.database.models.state.Discussion;
 @Path("1.0")
 public class DpornCoApiImpl implements DpornCoApi {
 
-	private static final long HLS_SPLIT_TIME_SECONDS = 2l;
+	private static final String HLS_SPLIT_TIME_SECONDS = "1.5";
 	private static final int MAX_CONCURRENT_UPLOADS = 8;
 	@Context
 	protected HttpServletRequest request;
@@ -292,7 +292,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		boolean do720p = isDpornVerified;
 		boolean do480p = true;
 		boolean do360p = true;
-		boolean do240p = true;
+		boolean do240p = false;
 
 		System.out.println(
 				"ipfsPutVideo: " + username + ", " + filename + " [" + semaphore.availablePermits() + " slots]");
@@ -361,84 +361,86 @@ public class DpornCoApiImpl implements DpornCoApi {
 				cmd.add("-t");
 				cmd.add("15:00");
 			}
-
+			
 			StringBuilder m3u8 = new StringBuilder();
 			m3u8.append("#EXTM3U\n");
-			m3u8.append("#EXT-X-VERSION:3\n");
+			m3u8.append("#EXT-X-VERSION:7\n");
+			m3u8.append("#EXT-X-ALLOW-CACHE:YES");
+			m3u8.append("#EXT-X-PLAYLIST-TYPE:VOD");
 
 			// 1080p
 			if (do1080p && height >= (1080 + 720) / 2) {
-				new File(tmpDir, "1080p").mkdir();
+//				new File(tmpDir, "1080p").mkdir();
 				ffmpegOptionsFor(isDpornVerified, frameRate, 1080, cmd);
 				m3u8.append(
-						"#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE=29.97,AVERAGE-BANDWIDTH=4900000,BANDWIDTH=5390000,RESOLUTION=1920x1080\n");
-				m3u8.append("1080p/1080p.m3u8\n");
+						"#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE=29.97,AVERAGE-BANDWIDTH=4146000,BANDWIDTH=5390000,RESOLUTION=1920x1080\n");
+				m3u8.append("1080p.m3u8\n");
 				String hlsPlayer = player;
 				hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
 				hlsPlayer = hlsPlayer.replaceAll("poster=\"[^\"]*?\"", "");
 				hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"[^>]*>",
 						"<source src=\"1080p.m3u8\"/>");
-				FileUtils.write(new File(tmpDir, "1080p/video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
+				FileUtils.write(new File(tmpDir, "1080p-video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
 			}
 
 			// 720p
 			if (do720p && height >= (720 + 480) / 2) {
-				new File(tmpDir, "720p").mkdir();
+//				new File(tmpDir, "720p").mkdir();
 				ffmpegOptionsFor(isDpornVerified, frameRate, 720, cmd);
 				m3u8.append(
-						"#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE=29.97,AVERAGE-BANDWIDTH=2850000,BANDWIDTH=3135000,RESOLUTION=1280x720\n");
-				m3u8.append("720p/720p.m3u8\n");
+						"#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE=29.97,AVERAGE-BANDWIDTH=2411000,BANDWIDTH=3135000,RESOLUTION=1280x720\n");
+				m3u8.append("720p.m3u8\n");
 				String hlsPlayer = player;
 				hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
 				hlsPlayer = hlsPlayer.replaceAll("poster=\"[^\"]*?\"", "");
 				hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"[^>]*>",
 						"<source src=\"720p.m3u8\"/>");
-				FileUtils.write(new File(tmpDir, "720p/video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
+				FileUtils.write(new File(tmpDir, "720p-video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
 			}
 
 			// 480p
 			if (do480p && height >= (480 + 360) / 2) {
-				new File(tmpDir, "480p").mkdir();
+//				new File(tmpDir, "480p").mkdir();
 				ffmpegOptionsFor(isDpornVerified, frameRate, 480, cmd);
 				m3u8.append(
-						"#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE=29.97,AVERAGE-BANDWIDTH=1425000,BANDWIDTH=1567000,RESOLUTION=854x480\n");
-				m3u8.append("480p/480p.m3u8\n");
+						"#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE=29.97,AVERAGE-BANDWIDTH=1205000,BANDWIDTH=1567000,RESOLUTION=854x480\n");
+				m3u8.append("480p.m3u8\n");
 				String hlsPlayer = player;
 				hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
 				hlsPlayer = hlsPlayer.replaceAll("poster=\"[^\"]*?\"", "");
 				hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"[^>]*>",
 						"<source src=\"480p.m3u8\"/>");
-				FileUtils.write(new File(tmpDir, "480p/video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
+				FileUtils.write(new File(tmpDir, "480p-video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
 			}
 
 			// 360p
 			if (do360p && height >= (360 + 240) / 2) {
-				new File(tmpDir, "360p").mkdir();
+//				new File(tmpDir, "360p").mkdir();
 				ffmpegOptionsFor(isDpornVerified, frameRate, 360, cmd);
 				m3u8.append(
-						"#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE=29.97,AVERAGE-BANDWIDTH=800000,BANDWIDTH=880000,RESOLUTION=640x360\n");
-				m3u8.append("360p/360p.m3u8\n");
+						"#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE=29.97,AVERAGE-BANDWIDTH=676000,BANDWIDTH=880000,RESOLUTION=640x360\n");
+				m3u8.append("360p.m3u8\n");
 				String hlsPlayer = player;
 				hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
 				hlsPlayer = hlsPlayer.replaceAll("poster=\"[^\"]*?\"", "");
 				hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"[^>]*>",
 						"<source src=\"360p.m3u8\"/>");
-				FileUtils.write(new File(tmpDir, "360p/video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
+				FileUtils.write(new File(tmpDir, "360p-video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
 			}
 
 			// 240p
 			if (do240p) {
-				new File(tmpDir, "240p").mkdir();
+//				new File(tmpDir, "240p").mkdir();
 				ffmpegOptionsFor(isDpornVerified, frameRate, 240, cmd);
 				m3u8.append(
-						"#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE=29.97,AVERAGE-BANDWIDTH=500000,BANDWIDTH=550000,RESOLUTION=426x240\n");
-				m3u8.append("240p/240p.m3u8\n");
+						"#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE=29.97,AVERAGE-BANDWIDTH=423000,BANDWIDTH=550000,RESOLUTION=426x240\n");
+				m3u8.append("240p.m3u8\n");
 				String hlsPlayer = player;
 				hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
 				hlsPlayer = hlsPlayer.replaceAll("poster=\"[^\"]*?\"", "");
 				hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"[^>]*>",
 						"<source src=\"240p.m3u8\"/>");
-				FileUtils.write(new File(tmpDir, "240p/video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
+				FileUtils.write(new File(tmpDir, "240p-video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
 			}
 
 			File video_m3u8 = new File(tmpDir, "video.m3u8");
@@ -561,7 +563,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 	}
 
 	private void ffmpegOptionsFor(boolean isDpornVerified, String frameRate, int size, List<String> cmd) {
-		BigDecimal hlsTime = BigDecimal.valueOf(HLS_SPLIT_TIME_SECONDS);
+		BigDecimal hlsTime = new BigDecimal(HLS_SPLIT_TIME_SECONDS);
 		BigDecimal tsLength = new BigDecimal(frameRate).multiply(hlsTime);
 
 		if (size >= (1080 + 720) / 2) {
@@ -705,11 +707,17 @@ public class DpornCoApiImpl implements DpornCoApi {
 			cmd.add("scale=w=1920x1080:force_original_aspect_ratio=decrease,pad=w='iw+mod(iw,2)':h='ih+mod(ih,2)'");
 		}
 
+		cmd.add("-hls_allow_cache");
+		cmd.add("1");
+		
+		cmd.add("-hls_segment_type");
+		cmd.add("fmp4");
+		
 		cmd.add("-hls_time");
 		cmd.add(hlsTime.toPlainString());
+		
 		cmd.add("-hls_playlist_type");
 		cmd.add("vod");
-		cmd.add("-hls_segment_filename");
 
 		String template;
 		switch (size) {
@@ -728,9 +736,14 @@ public class DpornCoApiImpl implements DpornCoApi {
 		default:
 			template = "240p";
 		}
-
-		cmd.add(template + "/" + template + "_%09d.ts");
-		cmd.add(template + "/" + template + ".m3u8");
+		
+		cmd.add("-hls_fmp4_init_filename");
+		cmd.add(template + "-init.mp4");
+		
+		cmd.add("-hls_segment_filename");
+		cmd.add(template + "-%09d.m4s");
+		
+		cmd.add(template + ".m3u8");
 	}
 
 	@Override
@@ -742,7 +755,6 @@ public class DpornCoApiImpl implements DpornCoApi {
 		if (username.equals(MongoDpornCo.getEntry(username, permlink).getUsername())) {
 			return new CommentConfirmResponse(true);
 		}
-		;
 		Discussion content = SteemJInstance.get().getContent(username, permlink);
 		SJCommentMetadata metadata;
 		try {
