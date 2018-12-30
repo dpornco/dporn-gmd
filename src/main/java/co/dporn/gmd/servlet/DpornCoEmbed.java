@@ -112,6 +112,7 @@ public class DpornCoEmbed {
 		if (cached != null) {
 			return cached;
 		}
+		MongoDpornCo.migrationCheck();
 		BlogEntry entry = MongoDpornCo.getEntry(author, permlink);
 		if (entry == null) {
 			return null;

@@ -306,7 +306,7 @@ public class MongoDpornCo {
 		return list;
 	}
 
-	private static synchronized void migrationCheck() {
+	public static synchronized void migrationCheck() {
 		try (MongoClient client = MongoClients.create()) {
 			MongoDatabase db = client.getDatabase("dpdb");
 			try {
