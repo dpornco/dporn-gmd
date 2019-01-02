@@ -497,9 +497,20 @@ public class DpornCoApiImpl implements DpornCoApi {
 				});
 				IOUtils.closeQuietly(ffmpeg.getOutputStream());
 			}
-			while (ffmpeg.isAlive()) {
-				addSegmentsToIpfsAsTheyAppear(tmpDir, ipfsHash, alreadyAdded, response);
-				Thread.sleep(100);
+			if (useTempFile) {
+				TimeMark nextNotify = new TimeMark();
+				TimeMark nextAdd = new TimeMark();
+				while (ffmpeg.isAlive()) {
+					if (nextNotify.ms < System.currentTimeMillis()) {
+						Notifications.notify(username, "Converting to streaming format");
+						nextNotify.ms = System.currentTimeMillis() + 14000l;
+					}
+					if (nextAdd.ms < System.currentTimeMillis()) {
+						addSegmentsToIpfsAsTheyAppear(tmpDir, ipfsHash, alreadyAdded, response);
+						nextAdd.ms = System.currentTimeMillis() + 1000l;
+					}
+					Thread.sleep(250);
+				}
 			}
 			ffmpeg.waitFor();
 
