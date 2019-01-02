@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.apache.commons.collections4.map.LRUMap;
+import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
@@ -46,7 +47,7 @@ public class MongoDpornCo {
 	private static final Set<String> CACHED_TAGS = new TreeSet<>();
 	private static long cachedTagsExpire = 0;
 
-	private static Map<String, BlogEntry> ENTRY_CACHE = new LRUMap<>(128);
+	private static Map<String, BlogEntry> ENTRY_CACHE = new PassiveExpiringMap<>(30l*60l*1000l, new LRUMap<>(128));
 
 	private static final int MAX_TAG_SUGGEST = 20;
 	private static final String[] NO_TAG_SUGGEST = { "dporn", "dpornvideo", "dpornco", "dporncovideo", "nsfw" };

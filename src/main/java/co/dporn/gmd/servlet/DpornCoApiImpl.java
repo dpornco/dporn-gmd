@@ -66,7 +66,8 @@ import eu.bittrade.libs.steemj.apis.database.models.state.Discussion;
 @Path("1.0")
 public class DpornCoApiImpl implements DpornCoApi {
 
-	private static final String HLS_SPLIT_TIME_SECONDS = "1.5";
+	private static final BigDecimal HLS_SPLIT_TIME_SECONDS = new BigDecimal("1");
+	private static final BigDecimal FRAME_RATE = new BigDecimal("30");
 	private static final int MAX_CONCURRENT_UPLOADS = 8;
 	@Context
 	protected HttpServletRequest request;
@@ -291,8 +292,8 @@ public class DpornCoApiImpl implements DpornCoApi {
 		boolean do1080p = isDpornVerified;
 		boolean do720p = isDpornVerified;
 		boolean do480p = true;
-		boolean do360p = true;
-		boolean do240p = false;
+		boolean do360p = isDpornVerified;
+		boolean do240p = true;
 
 		System.out.println(
 				"ipfsPutVideo: " + username + ", " + filename + " [" + semaphore.availablePermits() + " slots]");
@@ -328,7 +329,6 @@ public class DpornCoApiImpl implements DpornCoApi {
 			System.out.println(" - upload slots remaining: " + semaphore.availablePermits());
 			System.out.println(" - using temporary file: " + useTempFile);
 
-			String frameRate = "29.97";
 			tmpDir = Files.createTempDirectory("hls-").toFile();
 			System.out.println(" --- VID TEMP: " + tmpDir.getAbsoluteFile());
 
@@ -371,9 +371,9 @@ public class DpornCoApiImpl implements DpornCoApi {
 			// 1080p
 			if (do1080p && height >= (1080 + 720) / 2) {
 //				new File(tmpDir, "1080p").mkdir();
-				ffmpegOptionsFor(isDpornVerified, frameRate, 1080, cmd);
+				ffmpegOptionsFor(isDpornVerified, 1080, cmd);
 				m3u8.append(
-						"#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE=29.97,AVERAGE-BANDWIDTH=4146000,BANDWIDTH=5390000,RESOLUTION=1920x1080\n");
+						"#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE="+FRAME_RATE.toPlainString()+",AVERAGE-BANDWIDTH=4500000,BANDWIDTH=5300000,RESOLUTION=1920x1080\n");
 				m3u8.append("1080p.m3u8\n");
 				String hlsPlayer = player;
 				hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
@@ -385,10 +385,9 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 			// 720p
 			if (do720p && height >= (720 + 480) / 2) {
-//				new File(tmpDir, "720p").mkdir();
-				ffmpegOptionsFor(isDpornVerified, frameRate, 720, cmd);
+				ffmpegOptionsFor(isDpornVerified, 720, cmd);
 				m3u8.append(
-						"#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE=29.97,AVERAGE-BANDWIDTH=2411000,BANDWIDTH=3135000,RESOLUTION=1280x720\n");
+						"#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE="+FRAME_RATE.toPlainString()+",AVERAGE-BANDWIDTH=2500000,BANDWIDTH=3200000,RESOLUTION=1280x720\n");
 				m3u8.append("720p.m3u8\n");
 				String hlsPlayer = player;
 				hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
@@ -400,10 +399,9 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 			// 480p
 			if (do480p && height >= (480 + 360) / 2) {
-//				new File(tmpDir, "480p").mkdir();
-				ffmpegOptionsFor(isDpornVerified, frameRate, 480, cmd);
+				ffmpegOptionsFor(isDpornVerified, 480, cmd);
 				m3u8.append(
-						"#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE=29.97,AVERAGE-BANDWIDTH=1205000,BANDWIDTH=1567000,RESOLUTION=854x480\n");
+						"#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE="+FRAME_RATE.toPlainString()+",AVERAGE-BANDWIDTH=1250000,BANDWIDTH=1600000,RESOLUTION=854x480\n");
 				m3u8.append("480p.m3u8\n");
 				String hlsPlayer = player;
 				hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
@@ -415,10 +413,9 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 			// 360p
 			if (do360p && height >= (360 + 240) / 2) {
-//				new File(tmpDir, "360p").mkdir();
-				ffmpegOptionsFor(isDpornVerified, frameRate, 360, cmd);
+				ffmpegOptionsFor(isDpornVerified, 360, cmd);
 				m3u8.append(
-						"#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE=29.97,AVERAGE-BANDWIDTH=676000,BANDWIDTH=880000,RESOLUTION=640x360\n");
+						"#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE="+FRAME_RATE.toPlainString()+",AVERAGE-BANDWIDTH=700000,BANDWIDTH=900000,RESOLUTION=640x360\n");
 				m3u8.append("360p.m3u8\n");
 				String hlsPlayer = player;
 				hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
@@ -430,10 +427,9 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 			// 240p
 			if (do240p) {
-//				new File(tmpDir, "240p").mkdir();
-				ffmpegOptionsFor(isDpornVerified, frameRate, 240, cmd);
+				ffmpegOptionsFor(isDpornVerified, 240, cmd);
 				m3u8.append(
-						"#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE=29.97,AVERAGE-BANDWIDTH=423000,BANDWIDTH=550000,RESOLUTION=426x240\n");
+						"#EXT-X-STREAM-INF:HDCP-LEVEL=NONE,FRAME-RATE="+FRAME_RATE.toPlainString()+",AVERAGE-BANDWIDTH=400000,BANDWIDTH=600000,RESOLUTION=426x240\n");
 				m3u8.append("240p.m3u8\n");
 				String hlsPlayer = player;
 				hlsPlayer = hlsPlayer.replace("__TITLE__", StringEscapeUtils.escapeHtml4(filename));
@@ -442,6 +438,9 @@ public class DpornCoApiImpl implements DpornCoApi {
 						"<source src=\"240p.m3u8\"/>");
 				FileUtils.write(new File(tmpDir, "240p-video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
 			}
+			
+//			cmd.add("-master_pl_name"); //not supported with current ffmpeg 4.x
+//			cmd.add("master.m3u8");
 
 			File video_m3u8 = new File(tmpDir, "video.m3u8");
 			FileUtils.write(video_m3u8, m3u8.toString(), StandardCharsets.UTF_8);
@@ -562,9 +561,8 @@ public class DpornCoApiImpl implements DpornCoApi {
 		}
 	}
 
-	private void ffmpegOptionsFor(boolean isDpornVerified, String frameRate, int size, List<String> cmd) {
-		BigDecimal hlsTime = new BigDecimal(HLS_SPLIT_TIME_SECONDS);
-		BigDecimal tsLength = new BigDecimal(frameRate).multiply(hlsTime);
+	private void ffmpegOptionsFor(boolean isDpornVerified, int size, List<String> cmd) {
+		BigDecimal tsLength = FRAME_RATE.multiply(HLS_SPLIT_TIME_SECONDS);
 
 		if (size >= (1080 + 720) / 2) {
 			size = 1080;
@@ -605,13 +603,13 @@ public class DpornCoApiImpl implements DpornCoApi {
 		}
 
 		cmd.add("-r");
-		cmd.add(frameRate);
+		cmd.add(FRAME_RATE.toPlainString());
 
 		cmd.add("-g");
 		cmd.add(tsLength.toPlainString());
 
 		cmd.add("-preset");
-		cmd.add("veryfast");
+		cmd.add("fast");
 
 		cmd.add("-tune");
 		cmd.add("film");
@@ -623,75 +621,53 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 		cmd.add("-c:v");
 		cmd.add("h264");
-		cmd.add("-profile:v");
-		cmd.add("main");
+//		cmd.add("-profile:v");
+//		cmd.add("main");
 
 		if (isDpornVerified) {
 			cmd.add("-crf");
-			cmd.add("28");
+			cmd.add("23");
 		} else {
 			cmd.add("-crf");
 			cmd.add("28");
 		}
-
-		/*
-		 * bitrates between low motion and high motion recommended settings
-		 */
-		cmd.add("-b:v");
-
-		switch (size) {
-		case 1080:
-			cmd.add("4900k");
-			break;
-		case 720:
-			cmd.add("2850k");
-			break;
-		case 480:
-			cmd.add("1425k");
-			break;
-		case 360:
-			cmd.add("800k");
-			break;
-		default:
-			cmd.add("500k");
-		}
-
-		// max 10% higher than wanted avg rate
+		
+		// Max target bitrates are set to high motion recommended settings
 		cmd.add("-maxrate");
 		switch (size) {
 		case 1080:
-			cmd.add("5390k");
+			cmd.add("5300k");
 			break;
 		case 720:
-			cmd.add("3135k");
+			cmd.add("3200k");
 			break;
 		case 480:
-			cmd.add("1567k");
+			cmd.add("1600k");
 			break;
 		case 360:
-			cmd.add("880k");
+			cmd.add("900k");
 			break;
 		default:
-			cmd.add("550k");
+			cmd.add("600k");
 		}
 
-		// same as max rate
+		// Must be set to same as max rate to prevent excessive bitrate spikes
 		cmd.add("-bufsize");
 		switch (size) {
 		case 1080:
-			cmd.add("5390k");
+			cmd.add("5300k");
 			break;
 		case 720:
-			cmd.add("3135k");
+			cmd.add("3200k");
 			break;
 		case 480:
-			cmd.add("1567k");
+			cmd.add("1600k");
 			break;
 		case 360:
-			cmd.add("880k");
+			cmd.add("900k");
 			break;
 		default:
-			cmd.add("550k");
+			cmd.add("600k");
 		}
 
 		cmd.add("-vf");
@@ -706,6 +682,12 @@ public class DpornCoApiImpl implements DpornCoApi {
 		} else {
 			cmd.add("scale=w=1920x1080:force_original_aspect_ratio=decrease,pad=w='iw+mod(iw,2)':h='ih+mod(ih,2)'");
 		}
+		
+		/*
+		 * For some Apple and other device compatibility
+		 */
+		cmd.add("-pix_fmt");
+		cmd.add("yuv420p");
 
 		cmd.add("-hls_allow_cache");
 		cmd.add("1");
@@ -714,7 +696,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		cmd.add("fmp4");
 		
 		cmd.add("-hls_time");
-		cmd.add(hlsTime.toPlainString());
+		cmd.add(HLS_SPLIT_TIME_SECONDS.toPlainString());
 		
 		cmd.add("-hls_playlist_type");
 		cmd.add("vod");
@@ -741,7 +723,14 @@ public class DpornCoApiImpl implements DpornCoApi {
 		cmd.add(template + "-init.mp4");
 		
 		cmd.add("-hls_segment_filename");
-		cmd.add(template + "-%09d.m4s");
+		cmd.add(template + "-%012d.mp4");
+		
+		cmd.add("-hls_flags");
+		cmd.add("independent_segments");
+		cmd.add("-hls_flags");
+		cmd.add("program_date_time");
+		cmd.add("-hls_flags");
+		cmd.add("temp_file");
 		
 		cmd.add(template + ".m3u8");
 	}
