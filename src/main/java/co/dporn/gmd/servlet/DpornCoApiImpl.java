@@ -471,7 +471,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			pb.redirectOutput(new File(tmpDir, "log.txt"));
 
 			if (useTempFile) {
-				Notifications.notify(username, "Copying upload to temporary file");
+				Notifications.notify(authorization, "Copying upload to temporary file");
 				FileOutputStream os = new FileOutputStream(new File(tmpDir, "tmp.mov"));
 				ServerUtils.copyStream(is, os);
 				IOUtils.closeQuietly(os);
@@ -487,7 +487,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 				TimeMark nextAdd = new TimeMark();
 				ServerUtils.copyStreamWithNotify(is, ffmpeg.getOutputStream(), () -> {
 					if (nextNotify.ms < System.currentTimeMillis()) {
-						Notifications.notify(username, "Converting to streaming format");
+						Notifications.notify(authorization, "Converting to streaming format");
 						nextNotify.ms = System.currentTimeMillis() + 14000l;
 					}
 					if (nextAdd.ms < System.currentTimeMillis()) {
@@ -502,7 +502,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 				TimeMark nextAdd = new TimeMark();
 				while (ffmpeg.isAlive()) {
 					if (nextNotify.ms < System.currentTimeMillis()) {
-						Notifications.notify(username, "Converting to streaming format");
+						Notifications.notify(authorization, "Converting to streaming format");
 						nextNotify.ms = System.currentTimeMillis() + 14000l;
 					}
 					if (nextAdd.ms < System.currentTimeMillis()) {
@@ -556,7 +556,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 				if (nextNotify < System.currentTimeMillis()) {
 					nextNotify = System.currentTimeMillis() + 6000l;
 					percent = 100 * count / size;
-					Notifications.notify(username, "Adding HLS video to IPFS: " + percent + "%");
+					Notifications.notify(authorization, "Adding HLS video to IPFS: " + percent + "%");
 				}
 				if (file.getName().equalsIgnoreCase("tmp.mov")) {
 					continue;
@@ -582,7 +582,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 					response.setLocation(locations.get(locations.size() - 1));
 				}
 			}
-			Notifications.notify(username, "HLS video added to IPFS.");
+			Notifications.notify(authorization, "HLS video added to IPFS.");
 			System.out.println(" VIDEO FOLDER: https://ipfs.dporn.co/ipfs/" + ipfsHash.hash);
 			return response;
 		} catch (Exception e) {
@@ -947,7 +947,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			setResponseAsUnauthorized();
 			return null;
 		}
-		return new NotificationsResponse(Notifications.getNotifications(username));
+		return new NotificationsResponse(Notifications.getNotifications(authorization));
 	}
 
 }
