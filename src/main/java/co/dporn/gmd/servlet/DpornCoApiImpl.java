@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -278,6 +279,16 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 	private static Semaphore semaphore = new Semaphore(MAX_CONCURRENT_UPLOADS, true);
 
+	private static class IpfsHash {
+		String hash;
+		@Override
+		public String toString() {
+			return hash;
+		}
+	}
+	private static class TimeMark {
+		long ms;
+	}
 	/**
 	 * 
 	 */
@@ -317,7 +328,13 @@ public class DpornCoApiImpl implements DpornCoApi {
 		}
 		IpfsHashResponse response = new IpfsHashResponse();
 		boolean acquired = false;
-		File tmpDir = null;
+		File tmpDir;
+		try {
+			tmpDir = Files.createTempDirectory("hls-").toFile();
+		} catch (IOException e) {
+			response.setError(e.getMessage());
+			return response;
+		}
 		Process ffmpeg = null;
 		final String player = DpornCoEmbed.htmlTemplateVideo();// .replace("video/mp4", "application/x-mpegurl");
 		try {
@@ -331,7 +348,6 @@ public class DpornCoApiImpl implements DpornCoApi {
 			System.out.println(" - upload slots remaining: " + semaphore.availablePermits());
 			System.out.println(" - using temporary file: " + useTempFile);
 
-			tmpDir = Files.createTempDirectory("hls-").toFile();
 			System.out.println(" --- VID TEMP: " + tmpDir.getAbsoluteFile());
 
 			List<String> cmd = new ArrayList<>();
@@ -461,16 +477,29 @@ public class DpornCoApiImpl implements DpornCoApi {
 				IOUtils.closeQuietly(os);
 			}
 
+			IpfsHash ipfsHash = new IpfsHash();
+			ipfsHash.hash=IPFS_EMPTY_DIR;
+			Set<File> alreadyAdded = new HashSet<>();
+			
 			ffmpeg = pb.start();
 			if (!useTempFile) {
-				long[] nextNotify = { 0l };
+				TimeMark nextNotify = new TimeMark();
+				TimeMark nextAdd = new TimeMark();
 				ServerUtils.copyStreamWithNotify(is, ffmpeg.getOutputStream(), () -> {
-					if (nextNotify[0] < System.currentTimeMillis()) {
-						nextNotify[0] = System.currentTimeMillis() + 12000l;
+					if (nextNotify.ms < System.currentTimeMillis()) {
 						Notifications.notify(username, "Converting to streaming format");
+						nextNotify.ms = System.currentTimeMillis() + 14000l;
+					}
+					if (nextAdd.ms < System.currentTimeMillis()) {
+						addSegmentsToIpfsAsTheyAppear(tmpDir, ipfsHash, alreadyAdded, response);
+						nextAdd.ms = System.currentTimeMillis() + 1000l;
 					}
 				});
 				IOUtils.closeQuietly(ffmpeg.getOutputStream());
+			}
+			while (ffmpeg.isAlive()) {
+				addSegmentsToIpfsAsTheyAppear(tmpDir, ipfsHash, alreadyAdded, response);
+				Thread.sleep(100);
 			}
 			ffmpeg.waitFor();
 
@@ -510,7 +539,6 @@ public class DpornCoApiImpl implements DpornCoApi {
 			int count = 0;
 			int size = files.size();
 			int percent = -1;
-			String IPFS_HASH = IPFS_EMPTY_DIR;
 			nextNotify = 0l;
 			for (File file : files) {
 				count++;
@@ -522,26 +550,29 @@ public class DpornCoApiImpl implements DpornCoApi {
 				if (file.getName().equalsIgnoreCase("tmp.mov")) {
 					continue;
 				}
+				if (alreadyAdded.contains(file)) {
+					continue;
+				}
 				if (Thread.interrupted()) {
 					System.out.println("IPFS POST INTERRUPTED");
 					throw new InterruptedException("IPFS POST INTERRUPTED");
 				}
 				String destFilename = StringUtils.substringAfter(file.getAbsolutePath(), tmpDir.getAbsolutePath());
 				System.out.println("   DEST FILE: " + destFilename);
-				ResponseWithHeaders putResponse = ServerUtils.putFile(IPFS_GATEWAY + IPFS_HASH + destFilename, file,
+				ResponseWithHeaders putResponse = ServerUtils.putFile(IPFS_GATEWAY + ipfsHash.hash + destFilename, file,
 						null);
 				List<String> ipfsHashes = putResponse.getHeaders().get("ipfs-hash");
 				List<String> locations = putResponse.getHeaders().get("location");
 				if (!ipfsHashes.isEmpty()) {
-					IPFS_HASH = ipfsHashes.get(ipfsHashes.size() - 1);
-					response.setIpfsHash(IPFS_HASH);
+					ipfsHash.hash = ipfsHashes.get(ipfsHashes.size() - 1);
+					response.setIpfsHash(ipfsHash.hash);
 				}
 				if (!locations.isEmpty()) {
 					response.setLocation(locations.get(locations.size() - 1));
 				}
 			}
 			Notifications.notify(username, "HLS video added to IPFS.");
-			System.out.println(" VIDEO FOLDER: https://ipfs.dporn.co/ipfs/" + IPFS_HASH);
+			System.out.println(" VIDEO FOLDER: https://ipfs.dporn.co/ipfs/" + ipfsHash.hash);
 			return response;
 		} catch (Exception e) {
 			response.setError(e.getMessage());
@@ -559,6 +590,52 @@ public class DpornCoApiImpl implements DpornCoApi {
 			}
 			if (tmpDir != null) {
 				FileUtils.deleteQuietly(tmpDir);
+			}
+		}
+	}
+
+	/**
+	 * Set to only add *.mp4, *.m4s, and *.ts.
+	 * @param tmpDir
+	 * @param ipfsHash
+	 * @param alreadyAdded
+	 * @param response
+	 */
+	private void addSegmentsToIpfsAsTheyAppear(File tmpDir,IpfsHash ipfsHash, Set<File> alreadyAdded,
+			IpfsHashResponse response) {
+		synchronized (alreadyAdded) {
+			List<File> files = new ArrayList<>(FileUtils.listFiles(tmpDir, null, true));
+			Collections.sort(files);
+			Iterator<File> iFiles = files.iterator();
+			while (iFiles.hasNext()) {
+				File next = iFiles.next();
+				if (alreadyAdded.contains(next)) {
+					continue;
+				}
+				String lcName = next.getName().toLowerCase();
+				if (!lcName.endsWith(".ts") && !lcName.endsWith(".mp4") && !lcName.endsWith(".m4s")) {
+					continue;
+				}
+				String destFilename = StringUtils.substringAfter(next.getAbsolutePath(), tmpDir.getAbsolutePath());
+				System.out.println("   DEST FILE [early IPFS add]: " + destFilename);
+				ResponseWithHeaders putResponse;
+				try {
+					putResponse = ServerUtils.putFile(IPFS_GATEWAY + ipfsHash.hash + destFilename, next,
+							null);
+				} catch (Exception e) {
+					e.printStackTrace();
+					continue;
+				}
+				List<String> ipfsHashes = putResponse.getHeaders().get("ipfs-hash");
+				List<String> locations = putResponse.getHeaders().get("location");
+				if (!ipfsHashes.isEmpty()) {
+					ipfsHash.hash = ipfsHashes.get(ipfsHashes.size() - 1);
+					response.setIpfsHash(ipfsHash.hash);
+				}
+				if (!locations.isEmpty()) {
+					response.setLocation(locations.get(locations.size() - 1));
+					alreadyAdded.add(next);
+				}
 			}
 		}
 	}
