@@ -4,17 +4,18 @@
 
 <!-- Configuration file for UrlRewriteFilter http://www.tuckey.org/urlrewrite/ -->
 <urlrewrite>
+	<rule>
+		<note>IPFS Gateway: Redirect servlet to nginx IPFS gateway proxy for
+			IPFS access (mainly for dev mode work)</note>
+		<from>^/vidcache/(.*)</from>
+		<to type="permanent-redirect">https://ipfs.dporn.co/ipfs/$1</to>
+	</rule>
 
 	<rule>
-		<note>IPFS Gateway: Redirect servlet to nginx IPFS gateway proxy for IPFS access (mainly for dev mode work)</note>
-		<from>^/vidcache/(.*)</from>
-		<to type="redirect">https://ipfs.dporn.co/ipfs/$1</to>
-	</rule>
-	
-	<rule>
-		<note>IPFS Gateway: Redirect servlet to nginx IPFS gateway proxy for IPFS access (mainly for dev mode work)</note>
+		<note>IPFS Gateway: Redirect servlet to nginx IPFS gateway proxy for
+			IPFS access (mainly for dev mode work)</note>
 		<from>^/ipfs/(.*)</from>
-		<to type="redirect">https://ipfs.dporn.co/ipfs/$1</to>
+		<to type="permanent-redirect">https://ipfs.dporn.co/ipfs/$1</to>
 	</rule>
 
 	<rule>
@@ -24,21 +25,9 @@
 	</rule>
 
 	<rule>
-		<note>Application assets</note>
-		<from>.+(/dpornco_application/.+)</from>
-		<to type="redirect">$1</to>
-	</rule>
-
-	<rule>
 		<note>View post</note>
 		<from>^/@[^/]+/[^/]+</from>
 		<to>/</to>
-	</rule>
-	
-	<rule>
-		<note>View tagged post redirect</note>
-		<from>^/[^/](/@[^/]+/[^/]+)</from>
-		<to type="redirect">$1</to>
 	</rule>
 
 	<rule>
@@ -81,5 +70,15 @@
 		<note>Show Client browser settings</note>
 		<from>^/settings</from>
 		<to>/</to>
+	</rule>
+	<rule>
+		<note>Application assets</note>
+		<from>.+(/dpornco_application/.+)</from>
+		<to type="permanent-redirect">$1</to>
+	</rule>
+	<rule>
+		<note>View tagged post redirect</note>
+		<from>^/.+(/@[^/]+/[^/]+)</from>
+		<to type="permanent-redirect">$1</to>
 	</rule>
 </urlrewrite>
