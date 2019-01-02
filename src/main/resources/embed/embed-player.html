@@ -9,8 +9,7 @@
 	href="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.4.1/video-js.min.css"
 	rel="stylesheet">
 <script
-	src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.4.1/video.min.js"></script>
-<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/videojs-contrib-hls/5.14.1/videojs-contrib-hls.min.js"></script> -->
+	src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.4.1/video.js"></script>
 <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js-chromecast/2.0.9/videojs-chromecast.min.js"></script> -->
 <style>
 html, body {
@@ -37,7 +36,6 @@ html, body {
 	position: absolute;
 }
 </style>
-<!-- TODO: Needs a timeout function added if the video gets hung loading or during playback to switch hosts. -->
 </head>
 <body class="video-container">
 	<video id="player" class="video-js vjs-default-skin" preload="none"
@@ -62,15 +60,13 @@ html, body {
 				"hls": {
 					"overrideNative": true,
 					"blacklistDuration": 1,
-					"bandwidth": 100000000,
+					"bandwidth": 500000000,
 					"useBandwidthFromLocalStorage": true,
-					"limitRenditionByPlayerDimensions": false
+					"limitRenditionByPlayerDimensions": true
 				}
 			}
-		}, function onPlayerReady() {
-			//console.log("Player Ready");
 		});
-		player.reloadSourceOnError({"errorInterval": 5});
+		//player.reloadSourceOnError({"errorInterval": 5});
 		//simplistic fail over to next host on 404 errors		
 // 		player.on('error', function(event) {
 // 			try {
