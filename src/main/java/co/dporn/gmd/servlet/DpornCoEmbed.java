@@ -19,6 +19,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.collections4.map.LRUMap;
+import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
@@ -38,13 +39,14 @@ public class DpornCoEmbed {
 	public static String htmlTemplateVideo() {
 		if (htmlTemplateVideo == null) {
 			try {
-				htmlTemplateVideo = IOUtils.toString(DpornCoEmbed.class.getResourceAsStream("/embed/embed-player.html"));
+				htmlTemplateVideo = IOUtils
+						.toString(DpornCoEmbed.class.getResourceAsStream("/embed/embed-player.html"));
 			} catch (IOException e) {
 			}
 		}
 		return htmlTemplateVideo;
 	}
-	
+
 	private static String htmlTemplateBlog() {
 		if (htmlTemplateBlog == null) {
 			try {
@@ -61,7 +63,8 @@ public class DpornCoEmbed {
 	private HttpServletRequest request;
 	private static final long LAST_MODIFIED = System.currentTimeMillis();
 
-	private static final Map<String, String> CACHE = Collections.synchronizedMap(new LRUMap<>(16));
+	private static final Map<String, String> CACHE = Collections
+			.synchronizedMap(new PassiveExpiringMap<>(60000l, new LRUMap<>(256)));
 
 	@Produces(MediaType.TEXT_HTML)
 	@Path("@{authorname}/{permlink}")
@@ -121,16 +124,16 @@ public class DpornCoEmbed {
 			return null;
 		}
 		String embedHtml = null;
-		if (BlogEntryType.VIDEO == entry.getEntryType() || entry.getVideoPath()!=null) {
+		if (BlogEntryType.VIDEO == entry.getEntryType() || entry.getVideoPath() != null) {
 			embedHtml = getVideoEmbedHtml(entry);
 			if (entry.getVideoPath().toLowerCase().endsWith(".m3u8")) {
-				embedHtml = embedHtml.replace("video/mp4", "application/x-mpegurl");
+				embedHtml = embedHtml.replace("video/mp4", "application/x-mpegURL");
 			}
 		} else {
 			embedHtml = getGenericEmbedHtml(entry);
 		}
-		
-		if (embedHtml!=null) {
+
+		if (embedHtml != null) {
 			CACHE.put(key, embedHtml);
 		}
 		return embedHtml;
@@ -138,21 +141,21 @@ public class DpornCoEmbed {
 
 	private static String getGenericEmbedHtml(BlogEntry entry) {
 		String content = entry.getContent();
-		if (content==null) {
+		if (content == null) {
 			return null;
 		}
-		content=content.trim();
+		content = content.trim();
 		if (content.toLowerCase().startsWith("<html>")) {
 			content = content.substring("<html>".length());
 		}
 		if (content.toLowerCase().endsWith("</html>")) {
-			content = content.substring(0, content.length()-"</html>".length());
+			content = content.substring(0, content.length() - "</html>".length());
 		}
 		String html = htmlTemplateBlog();
 		String title = entry.getTitle();
-		html = html.replace("__TITLE__",StringEscapeUtils.escapeXml10(title==null?"":title));
-		html = html.replace("__CONTENT__",content);
-		
+		html = html.replace("__TITLE__", StringEscapeUtils.escapeXml10(title == null ? "" : title));
+		html = html.replace("__CONTENT__", content);
+
 		return html;
 	}
 
@@ -183,8 +186,7 @@ public class DpornCoEmbed {
 		embedHtml = embedHtml.replace("__VIDEOPATH__", StringEscapeUtils.escapeXml10(videoPath));
 		// hack to deal with non IPFS path images or videos
 		if (isHttp || isHttps) {
-			embedHtml = embedHtml.replace("https://steemitimages.com/400x400/https://ipfs.dporn.co/ipfs" + posterImagePath,
-					"https://steemitimages.com/640x360/" + posterImagePath);
+			embedHtml = embedHtml.replace("/https://ipfs.dporn.co/ipfs" + posterImagePath, "/" + posterImagePath);
 		}
 		return embedHtml;
 	}
