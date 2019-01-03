@@ -82,12 +82,13 @@ public class UploadEroticaImpl implements UploadErotica {
 
 	@Override
 	public void showPostBodyPreview(Double editorWidth, String html) {
+		html += "<p>Posted using <a href=\"https://dporn.co/\" target=\"_blank\">DPorn</a></p>";
 		double imgScaleWidth = Math.min( 640d / editorWidth, 1.0d);
 		GWT.log("SCALE: "+imgScaleWidth);
 		HtmlReformatter reformatter = new HtmlReformatter(imgScaleWidth);
 		String newHtml = reformatter.reformat(html);
 		view.showPreview(newHtml);
-		GWT.log(newHtml);
+//		GWT.log(newHtml);
 //		model.getHtmlSanitized(newHtml).thenAccept(response->{
 //			String sanitizedHtml = response.getSanitizedHtml();
 //			GWT.log(html);

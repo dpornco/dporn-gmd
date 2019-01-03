@@ -36,12 +36,12 @@ public class UploadVideoImpl implements UploadVideo {
 
 	@Override
 	public void setModel(AppControllerModel model) {
-		this.model=model;
+		this.model = model;
 	}
 
 	@Override
 	public void setView(UploadVideoView view) {
-		this.view=view;
+		this.view = view;
 		view.bindPresenter(this);
 	}
 
@@ -59,7 +59,7 @@ public class UploadVideoImpl implements UploadVideo {
 	@Override
 	public void execute() {
 		CompletableFuture<Boolean> future = model.isVerified();
-		future.thenAccept(verified->{
+		future.thenAccept(verified -> {
 			view.setVerified(verified);
 		});
 	}
@@ -72,33 +72,41 @@ public class UploadVideoImpl implements UploadVideo {
 	@Override
 	public CompletableFuture<String> postBlobToIpfs(String filename, Blob blob) {
 		OnprogressFn onprogressfn = view.getOnprogressFn(filename);
-		return model.postBlobToIpfsFile(filename, blob, (e)->onprogressfn.onInvoke(e));
+		return model.postBlobToIpfsFile(filename, blob, (e) -> onprogressfn.onInvoke(e));
 	}
-	
+
 	@Override
 	public CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob, OnprogressFn onprogressFn) {
-		return model.postBlobToIpfsFile(filename, blob, (e)->onprogressFn.onInvoke(e));
+		return model.postBlobToIpfsFile(filename, blob, (e) -> onprogressFn.onInvoke(e));
 	}
 
 	@Override
 	public Void viewRecentTagSets(String mustHaveTag) {
-		model.recentTagSets(mustHaveTag).thenAccept(sets->view.showTagSets(sets));
+		model.recentTagSets(mustHaveTag).thenAccept(sets -> view.showTagSets(sets));
 		return null;
 	}
 
 	@Override
-	public void showPostBodyPreview(Double editorWidth, String html) {
-		double imgScaleWidth = Math.min( 640d / editorWidth, 1.0d);
-		GWT.log("SCALE: "+imgScaleWidth);
+	public void showPostBodyPreview(Double editorWidth, String html, String posterImage, String videoLink) {
+		double imgScaleWidth = Math.min(640d / editorWidth, 1.0d);
+		GWT.log("SCALE: " + imgScaleWidth);
 		HtmlReformatter reformatter = new HtmlReformatter(imgScaleWidth);
+		html = "<div><center>" //
+				+ "<a href=\"https://dporn.co/\">" //
+				+ "<img src=\"https://steemitimages.com/1280x720/http://ipfs.dporn.co" + posterImage + "\">" //
+				+ "<h1>View video on DPorn</h1>" //
+				+ "</a>" //
+				+ "</center>" //
+				+ "</div>" + html;
+		html += "<p>View using IPFS <a href=\"https://ipfs.io"+videoLink+"/\" target=\"_blank\">IPFS</a></p>";
+		html += "<p>Posted using <a href=\"https://dporn.co/\" target=\"_blank\">DPORN</a></p>";
 		String newHtml = reformatter.reformat(html);
 		view.showPreview(newHtml);
 		GWT.log(newHtml);
 	}
 
 	@Override
-	public void createNewBlogEntry(BlogEntryType entryType, double width, String title,
-			List<? extends Suggestion> tags,
+	public void createNewBlogEntry(BlogEntryType entryType, double width, String title, List<? extends Suggestion> tags,
 			String content) {
 		if (tags == null || tags.isEmpty()) {
 			view.setErrorBadTags();
@@ -108,22 +116,22 @@ public class UploadVideoImpl implements UploadVideo {
 			view.setErrorBadTitle();
 			return;
 		}
-		GWT.log("Content: "+content.length()+"\n"+content);
-		if (content.length()<16) {
+		GWT.log("Content: " + content.length() + "\n" + content);
+		if (content.length() < 16) {
 			view.setErrorBadContent();
 			return;
 		}
 		Set<String> _tags = new LinkedHashSet<>();
-		for (Suggestion tag: tags) {
+		for (Suggestion tag : tags) {
 			_tags.add(tag.getReplacementString());
 		}
-		model.sortTagsByNetVoteDesc(new ArrayList<>(_tags)).thenAccept(t->{
-			model.newBlogEntry(entryType, width, title, t, content).thenAccept(permlink->{
+		model.sortTagsByNetVoteDesc(new ArrayList<>(_tags)).thenAccept(t -> {
+			model.newBlogEntry(entryType, width, title, t, content).thenAccept(permlink -> {
 				view.reset();
 			});
-		}).exceptionally(ex->{
+		}).exceptionally(ex -> {
 			GWT.log(ex.getMessage(), ex);
-			model.newBlogEntry(entryType, width, title, new ArrayList<>(_tags), content).thenAccept(permlink->{
+			model.newBlogEntry(entryType, width, title, new ArrayList<>(_tags), content).thenAccept(permlink -> {
 				view.reset();
 			});
 			return null;
@@ -131,7 +139,8 @@ public class UploadVideoImpl implements UploadVideo {
 	}
 
 	@Override
-	public CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, int videoWidth, int videoHeight, OnprogressFn onprogress) {
+	public CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, int videoWidth, int videoHeight,
+			OnprogressFn onprogress) {
 		return model.postBlobToIpfsHlsVideo(filename, blob, videoWidth, videoHeight, onprogress);
 	}
 

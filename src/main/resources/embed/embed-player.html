@@ -9,7 +9,7 @@
 	href="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.4.1/video-js.min.css"
 	rel="stylesheet">
 <script
-	src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.4.1/video.js"></script>
+	src="https://cdnjs.cloudflare.com/ajax/libs/video.js/7.4.1/video.min.js"></script>
 <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/video.js-chromecast/2.0.9/videojs-chromecast.min.js"></script> -->
 <style>
 html, body {
@@ -39,46 +39,45 @@ html, body {
 </head>
 <body class="video-container">
 	<video id="player" class="video-js vjs-default-skin" preload="none"
-		poster="https://steemitimages.com/640x360/https://ipfs.dporn.co__POSTERPATH__"
+		poster="https://steemitimages.com/1280x720/https://ipfs.dporn.co__POSTERPATH__"
 		style="max-width: 100%; max-height: 100%; width: 1920px; height: 1080px;"
 		playsinline="playsinline">
-		<source src="https://ipfs.dporn.co__VIDEOPATH__" type="video/mp4" />
-		<source src="https://cloudflare-ipfs.com__VIDEOPATH__"
-			type="video/mp4" />
-		<source src="https://ipfs.io__VIDEOPATH__" type="video/mp4" />
-		<source src="https://gateway.ipfs.io__VIDEOPATH__" type="video/mp4" />
 	</video>
+	<!-- https://stackoverflow.com/questions/47626983/videojs-hls-m3u8-files-are-not-playing-in-ios-devices-and-safari-browser -->
 	<script>
+		var overrideNative = true;
 		var player = videojs('player', {
 			"autoplay" : false,
 			"controls" : true,
 			"preload" : "none",
 			"loop" : false,
-			"fluid": true,
-			"nativeVideoTracks": false,
-			"html5": {
-				"hls": {
-					"overrideNative": true,
-					"blacklistDuration": 1,
-					"bandwidth": 500000000,
-					"useBandwidthFromLocalStorage": true,
-					"limitRenditionByPlayerDimensions": true
+			"fluid" : true,
+			"html5" : {
+				"nativeVideoTracks" : !overrideNative,
+				"nativeAudioTracks" : !overrideNative,
+				"nativeTextTracks" : !overrideNative,
+				"hls" : {
+					"debug": true,
+					"overrideNative" : overrideNative
 				}
 			}
 		});
-		//player.reloadSourceOnError({"errorInterval": 5});
-		//simplistic fail over to next host on 404 errors		
-// 		player.on('error', function(event) {
-// 			try {
-// 				console.log("ERROR: " + this.error().message);
-// 			} catch (e) {
-// 			}
-// 			var sources = this.cache_.sources;
-// 			sources.shift();
-// 			//sources.push(); //rotate
-// 			//this.reset();
-// 			this.src(sources);
-// 		});
+		player.reloadSourceOnError({
+			"errorInterval" : 5
+		});
+		player.src([ {
+			src : "https://ipfs.dporn.co__VIDEOPATH__",
+			type : "video/mp4"
+		}, {
+			src : "https://cloudflare-ipfs.com__VIDEOPATH__",
+			type : "video/mp4"
+		}, {
+			src : "https://ipfs.io__VIDEOPATH__",
+			type : "video/mp4"
+		}, {
+			src : "https://gateway.ipfs.io__VIDEOPATH__",
+			type : "video/mp4"
+		} ]);
 	</script>
 </body>
 </html>

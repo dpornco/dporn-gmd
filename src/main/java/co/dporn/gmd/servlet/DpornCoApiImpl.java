@@ -318,7 +318,12 @@ public class DpornCoApiImpl implements DpornCoApi {
 		if (filename == null) {
 			filename = "video.bin";
 		}
-		String guessedMimeType = request.getServletContext().getMimeType(filename).toLowerCase();
+		String guessedMimeType;
+		try {
+			guessedMimeType = request.getServletContext().getMimeType(filename).toLowerCase();
+		} catch (Exception e) {
+			guessedMimeType = "application/octect-stream";
+		}
 		System.out.println(" - contentType: " + contentType);
 		System.out.println(" - guessed content type: " + guessedMimeType);
 		boolean useTempFile = contentType.contains("quicktime") || guessedMimeType.contains("quicktime");

@@ -40,7 +40,7 @@ public interface UploadVideo extends IsChildPresenter<UploadVideoView>, Schedule
 	CompletableFuture<String> postBlobToIpfs(String filename, Blob blob);
 	CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, int videoWidth, int videoHeight, OnprogressFn onprogressFn);
 	Void viewRecentTagSets(String mustHaveTag);
-	void showPostBodyPreview(Double editorWidth, String html);
+	void showPostBodyPreview(Double editorWidth, String html, String posterImage, String videoLink);
 	void createNewBlogEntry(BlogEntryType entryType, double width, String value, List<? extends Suggestion> tags,
 			String value3);
 }

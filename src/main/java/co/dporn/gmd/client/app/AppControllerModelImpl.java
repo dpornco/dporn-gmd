@@ -652,6 +652,12 @@ public class AppControllerModelImpl implements AppControllerModel {
 	@Override
 	public CompletableFuture<String> newBlogEntry(BlogEntryType blogEntryType, double width, String title,
 			List<String> tags, String content) {
+		return newBlogEntry(blogEntryType, width, title,
+				tags, content, null, null, null);
+	}
+	@Override
+	public CompletableFuture<String> newBlogEntry(BlogEntryType blogEntryType, double width, String title,
+			List<String> tags, String content, String posterImage, String videoLink, List<String> photoGalleryImages) {
 
 		HtmlReformatter reformatter = new HtmlReformatter(width);
 		content = "<html>" + reformatter.reformat(content) + "</html>";
@@ -756,9 +762,19 @@ public class AppControllerModelImpl implements AppControllerModel {
 		dpornMetadata.put("app", new JSONString(DpornConsts.APP_ID_VERSION));
 		dpornMetadata.put("embed", new JSONString(Routes.embedVideo(username, permlink)));
 		dpornMetadata.put("entryType", new JSONString(blogEntryType.name()));
-		dpornMetadata.put("videoPath", null);
-		dpornMetadata.put("posterImagePath", null);
-		dpornMetadata.put("photoGalleryImagePaths", new JSONArray());
+		dpornMetadata.put("videoPath", videoLink==null?null:new JSONString(videoLink));
+		dpornMetadata.put("posterImagePath", posterImage==null?null:new JSONString(posterImage));
+		if (photoGalleryImages!=null) {
+			JSONArray paths = new JSONArray();
+			for (String galleryImage: photoGalleryImages) {
+				if (galleryImage!=null && !galleryImage.trim().isEmpty()) {
+					paths.set(paths.size(), new JSONString(galleryImage.trim()));
+				}
+			}
+			dpornMetadata.put("photoGalleryImagePaths", paths);
+		} else {
+			dpornMetadata.put("photoGalleryImagePaths", new JSONArray());
+		}
 
 		commentJsonMetadata.put("dpornMetadata", dpornMetadata);
 

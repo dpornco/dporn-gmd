@@ -40,7 +40,7 @@
 		text-overflow: ellipsis;
 	}
 	</ui:style>
-	<m:MaterialColumn grid="l3 m4 s12" addStyleNames="{style.column}">
+	<m:MaterialColumn grid="l3 m6 s12" addStyleNames="{style.column}">
 		<m:MaterialCard ui:field="card" addStyleNames="{style.no-overflow}">
 			<m:MaterialCardImage
 				addStyleNames="{style.image-card} {style.no-overflow}">

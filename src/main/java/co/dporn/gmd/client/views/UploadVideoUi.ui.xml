@@ -28,10 +28,10 @@
 	<m:MaterialContainer ui:field="mainContent"
 		addStyleNames="{style.container}">
 		<m:MaterialRow margin="8">
-			<m:MaterialColumn grid="s12 m7 l3">
+			<m:MaterialColumn grid="s12 m6 l4">
 				<m:MaterialVideo ui:field="video"></m:MaterialVideo>
 			</m:MaterialColumn>
-			<m:MaterialColumn grid="s12 m5 l9">
+			<m:MaterialColumn grid="s12 m6 l8">
 				<m:MaterialProgress style="margin: 8px;"
 					type="DETERMINATE" percent="0" ui:field="videoUploadProgress" />
 				<d:HiddenFileUpload ui:field="fileUploadVideo" />
@@ -42,7 +42,7 @@
 				<m:MaterialButton ui:field="previewVideoFile"
 					style="margin: 8px;" text="PREVIEW HLS VIDEO"></m:MaterialButton>
 				<m:MaterialButton ui:field="btnCancelUploadVideo"
-					style="margin: 8px;" text="CANCEL UPLOAD"></m:MaterialButton>
+					style="display: none; margin: 8px;" text="CANCEL UPLOAD"></m:MaterialButton>
 				<m:MaterialLabel
 					text="16:9 aspect ratio recommended. Video will be reencoded to HLS format. The original video will be discarded for storage space reasons! If the upload queue is full, the upload will be paused until a slot opens up." />
 				<m:MaterialLabel ui:field="maxLengthNotice"
@@ -50,11 +50,11 @@
 			</m:MaterialColumn>
 		</m:MaterialRow>
 		<m:MaterialRow margin="8">
-			<m:MaterialColumn grid="s12 m7 l3">
+			<m:MaterialColumn grid="s12 m6 l4">
 				<d:MaterialSteemitImage
 					ui:field="posterImage" />
 			</m:MaterialColumn>
-			<m:MaterialColumn grid="s12 m5 l9">
+			<m:MaterialColumn grid="s12 m6 l8">
 				<m:MaterialProgress style="margin: 8px;"
 					type="DETERMINATE" percent="0" ui:field="posterUploadProgress" />
 				<d:HiddenFileUpload ui:field="fileUploadImage" />

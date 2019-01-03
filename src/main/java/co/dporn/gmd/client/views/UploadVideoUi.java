@@ -110,7 +110,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		btnTagSets.addClickHandler(e -> presenter.viewRecentTagSets("dporncovideo"));
 		btnClear.addClickHandler((e) -> reset());
 		btnPreview.addClickHandler(e -> {
-			presenter.showPostBodyPreview((double) editor.getEditor().width(), editor.getValue());
+			presenter.showPostBodyPreview((double) editor.getEditor().width(), editor.getValue(), "", "");
 		});
 		btnSubmit.addClickHandler(e -> {
 			title.clearErrorText();
@@ -141,6 +141,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		previewVideoFile.setEnabled(false);
 		previewVideoFile.addClickHandler(this::showVideoPreviewDialog);
 		btnSubmit.setEnabled(false);
+		btnPreview.setEnabled(false);
 	}
 
 	private Object showVideoPreviewDialog(ClickEvent e) {
