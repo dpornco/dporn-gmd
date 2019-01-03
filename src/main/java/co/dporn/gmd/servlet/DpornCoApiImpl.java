@@ -281,14 +281,17 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 	private static class IpfsHash {
 		String hash;
+
 		@Override
 		public String toString() {
 			return hash;
 		}
 	}
+
 	private static class TimeMark {
 		long ms;
 	}
+
 	/**
 	 * 
 	 */
@@ -312,6 +315,9 @@ public class DpornCoApiImpl implements DpornCoApi {
 				"ipfsPutVideo: " + username + ", " + filename + " [" + semaphore.availablePermits() + " slots]");
 		String contentType = String.valueOf(request.getContentType() == null ? "" : request.getContentType())
 				.toLowerCase();
+		if (filename == null) {
+			filename = "video.bin";
+		}
 		String guessedMimeType = request.getServletContext().getMimeType(filename).toLowerCase();
 		System.out.println(" - contentType: " + contentType);
 		System.out.println(" - guessed content type: " + guessedMimeType);
@@ -383,8 +389,8 @@ public class DpornCoApiImpl implements DpornCoApi {
 			StringBuilder m3u8 = new StringBuilder();
 			m3u8.append("#EXTM3U\n");
 			m3u8.append("#EXT-X-VERSION:7\n");
-			m3u8.append("#EXT-X-ALLOW-CACHE:YES");
-			m3u8.append("#EXT-X-PLAYLIST-TYPE:VOD");
+			m3u8.append("#EXT-X-ALLOW-CACHE:YES\n");
+			m3u8.append("#EXT-X-PLAYLIST-TYPE:VOD\n");
 
 			// 1080p
 			if (do1080p && height >= (1080 + 720) / 2) {
@@ -399,6 +405,8 @@ public class DpornCoApiImpl implements DpornCoApi {
 				hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"[^>]*>",
 						"<source src=\"1080p.m3u8\"/>");
 				FileUtils.write(new File(tmpDir, "1080p-video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
+			} else {
+				do1080p=false;
 			}
 
 			// 720p
@@ -413,6 +421,8 @@ public class DpornCoApiImpl implements DpornCoApi {
 				hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"[^>]*>",
 						"<source src=\"720p.m3u8\"/>");
 				FileUtils.write(new File(tmpDir, "720p-video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
+			} else {
+				do720p=false;
 			}
 
 			// 480p
@@ -427,6 +437,8 @@ public class DpornCoApiImpl implements DpornCoApi {
 				hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"[^>]*>",
 						"<source src=\"480p.m3u8\"/>");
 				FileUtils.write(new File(tmpDir, "480p-video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
+			} else {
+				do480p=false;
 			}
 
 			// 360p
@@ -441,6 +453,8 @@ public class DpornCoApiImpl implements DpornCoApi {
 				hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"[^>]*>",
 						"<source src=\"360p.m3u8\"/>");
 				FileUtils.write(new File(tmpDir, "360p-video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
+			} else {
+				do360p=false;
 			}
 
 			// 240p
@@ -455,6 +469,8 @@ public class DpornCoApiImpl implements DpornCoApi {
 				hlsPlayer = hlsPlayer.replaceAll("<source src=\"[^\"]*?__VIDEOPATH__\"[^>]*>",
 						"<source src=\"240p.m3u8\"/>");
 				FileUtils.write(new File(tmpDir, "240p-video.html"), hlsPlayer.toString(), StandardCharsets.UTF_8);
+			} else {
+				do240p=false;
 			}
 
 			// cmd.add("-master_pl_name"); //not supported with current ffmpeg 4.x
@@ -478,9 +494,9 @@ public class DpornCoApiImpl implements DpornCoApi {
 			}
 
 			IpfsHash ipfsHash = new IpfsHash();
-			ipfsHash.hash=IPFS_EMPTY_DIR;
+			ipfsHash.hash = IPFS_EMPTY_DIR;
 			Set<File> alreadyAdded = new HashSet<>();
-			
+
 			ffmpeg = pb.start();
 			if (!useTempFile) {
 				TimeMark nextNotify = new TimeMark();
@@ -607,12 +623,13 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 	/**
 	 * Set to only add *.mp4, *.m4s, and *.ts.
+	 * 
 	 * @param tmpDir
 	 * @param ipfsHash
 	 * @param alreadyAdded
 	 * @param response
 	 */
-	private void addSegmentsToIpfsAsTheyAppear(File tmpDir,IpfsHash ipfsHash, Set<File> alreadyAdded,
+	private void addSegmentsToIpfsAsTheyAppear(File tmpDir, IpfsHash ipfsHash, Set<File> alreadyAdded,
 			IpfsHashResponse response) {
 		synchronized (alreadyAdded) {
 			List<File> files = new ArrayList<>(FileUtils.listFiles(tmpDir, null, true));
@@ -631,8 +648,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 				System.out.println("   DEST FILE [early IPFS add]: " + destFilename);
 				ResponseWithHeaders putResponse;
 				try {
-					putResponse = ServerUtils.putFile(IPFS_GATEWAY + ipfsHash.hash + destFilename, next,
-							null);
+					putResponse = ServerUtils.putFile(IPFS_GATEWAY + ipfsHash.hash + destFilename, next, null);
 				} catch (Exception e) {
 					e.printStackTrace();
 					continue;
@@ -711,53 +727,61 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 		cmd.add("-c:v");
 		cmd.add("h264");
+		/*
+		 * https://trac.ffmpeg.org/wiki/Encode/H.264
+		 * 
+		 * If you want your videos to have highest compatibility with ancient devices
+		 * (e.g., old Android phones): -profile:v baseline -level 3.0
+		 */
 		cmd.add("-profile:v");
-		cmd.add("main");
+		cmd.add("baseline");
+		cmd.add("-level");
+		cmd.add("3.0");
 
 		if (isDpornVerified) {
 			cmd.add("-crf");
-			cmd.add("21");
+			cmd.add("23");
 		} else {
 			cmd.add("-crf");
-			cmd.add("24");
+			cmd.add("28");
 		}
 
-		// Max target bitrates are set to high motion recommended settings
+		// Max target bitrates are set the middle between high motion and low motion recommended settings
 		cmd.add("-maxrate");
 		switch (size) {
 		case 1080:
-			cmd.add("5300k");
+			cmd.add("4900k");
 			break;
 		case 720:
-			cmd.add("3200k");
+			cmd.add("2850k");
 			break;
 		case 480:
-			cmd.add("1600k");
+			cmd.add("1425k");
 			break;
 		case 360:
-			cmd.add("900k");
+			cmd.add("800k");
 			break;
 		default:
-			cmd.add("600k");
+			cmd.add("500k");
 		}
 
 		// Must be set to same as max rate to prevent excessive bitrate spikes
 		cmd.add("-bufsize");
 		switch (size) {
 		case 1080:
-			cmd.add("5300k");
+			cmd.add("4900k");
 			break;
 		case 720:
-			cmd.add("3200k");
+			cmd.add("2850k");
 			break;
 		case 480:
-			cmd.add("1600k");
+			cmd.add("1425k");
 			break;
 		case 360:
-			cmd.add("900k");
+			cmd.add("800k");
 			break;
 		default:
-			cmd.add("600k");
+			cmd.add("500k");
 		}
 
 		cmd.add("-vf");
@@ -774,10 +798,30 @@ public class DpornCoApiImpl implements DpornCoApi {
 		}
 
 		/*
-		 * For some Apple and other device compatibility
+		 * https://trac.ffmpeg.org/wiki/Encode/H.264
+		 * 
+		 * QuickTime
+		 * 
+		 * Although other pixel formats may be supported, YUV planar color space with
+		 * 4:2:0 chroma subsampling is a safe pixel format for H.264 video; use -vf
+		 * format=yuv420p or -pix_fmt yuv420p.
 		 */
 		cmd.add("-pix_fmt");
 		cmd.add("yuv420p");
+
+		/*
+		 * faststart for web video
+		 * 
+		 * 
+		 * You can add -movflags +faststart as an output option if your videos are going
+		 * to be viewed in a browser. This will move some information to the beginning
+		 * of your file and allow the video to begin playing before it is completely
+		 * downloaded by the viewer. It is not required if you are going to use a video
+		 * service such as YouTube. YouTube ​recommends using faststart, so they can
+		 * begin re-encoding before uploads complete.
+		 */
+		cmd.add("-movflags");
+		cmd.add("+faststart");
 
 		cmd.add("-hls_allow_cache");
 		cmd.add("1");
