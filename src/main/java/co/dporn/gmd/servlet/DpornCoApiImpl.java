@@ -527,6 +527,12 @@ public class DpornCoApiImpl implements DpornCoApi {
 				}
 			}
 			ffmpeg.waitFor();
+			
+			if (ffmpeg.exitValue()!=0) {
+				Notifications.notify(authorization, "CAN'T PROCESS THAT FILE - 'FAST START' NOT USED WHEN CREATING FILE OR UNKNOWN FILE TYPE.");
+				response.setError("CAN'T PROCESS THAT FILE - 'FAST START' NOT USED WHEN CREATING FILE OR UNKNOWN FILE TYPE.");
+				return response;
+			}
 
 			/*
 			 * Supply a basic player for direct IPFS playback
