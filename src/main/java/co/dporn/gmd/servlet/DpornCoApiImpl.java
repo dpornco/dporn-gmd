@@ -640,7 +640,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 				this.response.getOutputStream().write('\n');
 				this.response.getOutputStream().flush();
 				String destFilename = StringUtils.substringAfter(file.getAbsolutePath(), tmpDir.getAbsolutePath());
-				System.out.println("   DEST FILE: " + destFilename);
+				System.out.println("   IPFS DEST FILE: " + destFilename);
 				ResponseWithHeaders putResponse = ServerUtils.putFile(IPFS_GATEWAY + ipfsHash.hash + destFilename, file,
 						null);
 				List<String> ipfsHashes = putResponse.getHeaders().get("ipfs-hash");
@@ -657,6 +657,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			System.out.println(" VIDEO FOLDER: https://ipfs.dporn.co/ipfs/" + ipfsHash.hash);
 			return response;
 		} catch (Exception e) {
+			System.err.println(e.getMessage());
 			response.setError(e.getMessage());
 			return response;
 		} finally {
