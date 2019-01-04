@@ -795,12 +795,41 @@ public class DpornCoApiImpl implements DpornCoApi {
 		cmd.add("-level");
 		cmd.add("3.0");
 
+		cmd.add("-crf");
 		if (isDpornVerified) {
-			cmd.add("-crf");
-			cmd.add("24");
+			switch (size) {
+			case 1080:
+				cmd.add("22");
+				break;
+			case 720:
+				cmd.add("21");
+				break;
+			case 480:
+				cmd.add("20");
+				break;
+			case 360:
+				cmd.add("19");
+				break;
+			default:
+				cmd.add("18");
+			}
 		} else {
-			cmd.add("-crf");
-			cmd.add("28");
+			switch (size) {
+			case 1080:
+				cmd.add("24");
+				break;
+			case 720:
+				cmd.add("23");
+				break;
+			case 480:
+				cmd.add("22");
+				break;
+			case 360:
+				cmd.add("21");
+				break;
+			default:
+				cmd.add("20");
+			}
 		}
 
 		// Max target bitrates are set the middle between high motion and low motion
