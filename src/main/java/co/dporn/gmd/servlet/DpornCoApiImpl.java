@@ -575,7 +575,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 					}
 					if (nextAdd.ms < System.currentTimeMillis()) {
 						addSegmentsToIpfsAsTheyAppear(tmpDir, ipfsHash, alreadyAdded, response);
-						nextAdd.ms = System.currentTimeMillis() + 500l;
+						nextAdd.ms = System.currentTimeMillis() + 1000l;
 					}
 					Thread.sleep(500);
 				}
@@ -771,6 +771,9 @@ public class DpornCoApiImpl implements DpornCoApi {
 		cmd.add("-g");
 		cmd.add(tsLength.toPlainString());
 
+		/*
+		 * https://superuser.com/questions/490683/cheat-sheets-and-presets-settings-that-actually-work-with-ffmpeg-1-0
+		 */
 		cmd.add("-preset");
 		cmd.add("veryfast");
 
