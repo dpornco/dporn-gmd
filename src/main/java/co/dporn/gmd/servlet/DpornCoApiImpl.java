@@ -67,6 +67,8 @@ import eu.bittrade.libs.steemj.apis.database.models.state.Discussion;
 @Path("1.0")
 public class DpornCoApiImpl implements DpornCoApi {
 
+	private static final String TMP_VIDEO_NAME = "video.tmp";
+
 	private static final boolean USE_FMP4 = false;
 
 	private static final BigDecimal HLS_SPLIT_TIME_SECONDS = new BigDecimal("1");
@@ -318,16 +320,9 @@ public class DpornCoApiImpl implements DpornCoApi {
 		if (filename == null) {
 			filename = "video.bin";
 		}
-		String guessedMimeType;
-		try {
-			guessedMimeType = request.getServletContext().getMimeType(filename).toLowerCase();
-		} catch (Exception e) {
-			guessedMimeType = "application/octect-stream";
-		}
 		System.out.println(" - contentType: " + contentType);
-		System.out.println(" - guessed content type: " + guessedMimeType);
-		boolean useTempFile = contentType.contains("quicktime") || guessedMimeType.contains("quicktime");
-
+		boolean useTempFile = false; //contentType.contains("quicktime");
+		
 		if (width <= 0 || height <= 0) {
 			System.out.println("ipfsPutVideo - bad dimensions: " + width + "x" + height);
 			if (width <= 0) {
@@ -355,9 +350,62 @@ public class DpornCoApiImpl implements DpornCoApi {
 				response.setError("UPLOAD QUEUE FULL - PLEASE TRY AGAIN LATER");
 				return response;
 			}
+			
+			/*
+			 * Is this a basic mp4 and that has the moov atom up front?
+			 */
+			int n = 0;
+			byte[] buffer = new byte[512];
+			moovCheck: if (!useTempFile) {
+				n = is.read(buffer);
+				if (n>0) {
+					if (buffer[4]!='f') {
+						useTempFile=true;
+						break moovCheck;
+					}
+					if (buffer[5]!='t') {
+						useTempFile=true;
+						break moovCheck;
+					}
+					if (buffer[6]!='y') {
+						useTempFile=true;
+						break moovCheck;
+					}
+					if (buffer[7]!='p') {
+						useTempFile=true;
+						break moovCheck;
+					}
+					int skip = 0;
+					for (int i = 0; i < 4; i++) {
+					   skip = (skip << 8) + (buffer[i] & 0xff);
+					}
+					if (skip > n-8 || skip < 8) {
+						useTempFile=true;
+						break moovCheck;
+					}
+					if (buffer[skip+4]!='m') {
+						useTempFile=true;
+						break moovCheck;
+					}
+					if (buffer[skip+5]!='o') {
+						useTempFile=true;
+						break moovCheck;
+					}
+					if (buffer[skip+6]!='o') {
+						useTempFile=true;
+						break moovCheck;
+					}
+					if (buffer[skip+7]!='v') {
+						useTempFile=true;
+						break moovCheck;
+					}
+				}
+			}
+			
+			System.out.println(" - using temporary file: " + useTempFile);
+			
 			System.out.println("ipfsPutVideo - semaphore acquired: " + username + ", " + filename);
 			System.out.println(" - upload slots remaining: " + semaphore.availablePermits());
-			System.out.println(" - using temporary file: " + useTempFile);
 
 			System.out.println(" --- VID TEMP: " + tmpDir.getAbsoluteFile());
 
@@ -375,7 +423,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 
 			if (useTempFile) {
 				cmd.add("-i");
-				cmd.add("tmp.mov");
+				cmd.add(TMP_VIDEO_NAME);
 			} else {
 				cmd.add("-i");
 				cmd.add("pipe:0");
@@ -483,10 +531,13 @@ public class DpornCoApiImpl implements DpornCoApi {
 			pb.directory(tmpDir);
 			pb.redirectErrorStream(true);
 			pb.redirectOutput(new File(tmpDir, "log.txt"));
-
+			
 			if (useTempFile) {
 				Notifications.notify(authorization, "Copying upload to temporary file");
-				FileOutputStream os = new FileOutputStream(new File(tmpDir, "tmp.mov"));
+				FileOutputStream os = new FileOutputStream(new File(tmpDir, TMP_VIDEO_NAME));
+				if (n>0) {
+					os.write(buffer, 0, n);
+				}
 				ServerUtils.copyStream(is, os);
 				IOUtils.closeQuietly(os);
 			}
@@ -499,6 +550,9 @@ public class DpornCoApiImpl implements DpornCoApi {
 			if (!useTempFile) {
 				TimeMark nextNotify = new TimeMark();
 				TimeMark nextAdd = new TimeMark();
+				if (n>0) {
+					ffmpeg.getOutputStream().write(buffer, 0, n);
+				}
 				ServerUtils.copyStreamWithNotify(is, ffmpeg.getOutputStream(), () -> {
 					if (nextNotify.ms < System.currentTimeMillis()) {
 						Notifications.notify(authorization, "Converting to streaming format");
@@ -529,8 +583,8 @@ public class DpornCoApiImpl implements DpornCoApi {
 			ffmpeg.waitFor();
 			
 			if (ffmpeg.exitValue()!=0) {
-				Notifications.notify(authorization, "CAN'T PROCESS THAT FILE - 'FAST START' NOT USED WHEN CREATING FILE OR UNKNOWN FILE TYPE.");
-				response.setError("CAN'T PROCESS THAT FILE - 'FAST START' NOT USED WHEN CREATING FILE OR UNKNOWN FILE TYPE.");
+				Notifications.notify(authorization, "PROCESS ERROR - FFMPEG CAN'T PROCESS THAT FILE TYPE.");
+				response.setError("PROCESS ERROR - FFMPEG CAN'T PROCESS THAT FILE TYPE.");
 				return response;
 			}
 
@@ -577,7 +631,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 					percent = 100 * count / size;
 					Notifications.notify(authorization, "Adding HLS video to IPFS: " + percent + "%");
 				}
-				if (file.getName().equalsIgnoreCase("tmp.mov")) {
+				if (file.getName().equalsIgnoreCase(TMP_VIDEO_NAME)) {
 					continue;
 				}
 				if (alreadyAdded.contains(file)) {
