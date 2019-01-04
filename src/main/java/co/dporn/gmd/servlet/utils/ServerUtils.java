@@ -234,7 +234,7 @@ public class ServerUtils {
 	 * @since 2.2
 	 */
 	public static long copyStreamWithNotify(final InputStream input, final OutputStream output, final Runnable notify) throws IOException {
-		byte[] buffer = new byte[32 * 1024];
+		byte[] buffer = new byte[1024];
 		long count = 0;
 		int n;
 		while (EOF != (n = input.read(buffer))) {

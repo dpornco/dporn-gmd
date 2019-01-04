@@ -637,10 +637,8 @@ public class DpornCoApiImpl implements DpornCoApi {
 				if (alreadyAdded.contains(file)) {
 					continue;
 				}
-				if (Thread.interrupted()) {
-					System.out.println("IPFS POST INTERRUPTED");
-					throw new InterruptedException("IPFS POST INTERRUPTED");
-				}
+				this.response.getOutputStream().write('\n');
+				this.response.getOutputStream().flush();
 				String destFilename = StringUtils.substringAfter(file.getAbsolutePath(), tmpDir.getAbsolutePath());
 				System.out.println("   DEST FILE: " + destFilename);
 				ResponseWithHeaders putResponse = ServerUtils.putFile(IPFS_GATEWAY + ipfsHash.hash + destFilename, file,
@@ -685,6 +683,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 	 * @param ipfsHash
 	 * @param alreadyAdded
 	 * @param response
+	 * @throws IOException 
 	 */
 	private void addSegmentsToIpfsAsTheyAppear(File tmpDir, IpfsHash ipfsHash, Set<File> alreadyAdded,
 			IpfsHashResponse response) {
@@ -692,6 +691,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 			List<File> files = new ArrayList<>(FileUtils.listFiles(tmpDir, null, true));
 			Collections.sort(files);
 			Iterator<File> iFiles = files.iterator();
+			int count = 0;
 			while (iFiles.hasNext()) {
 				File next = iFiles.next();
 				if (alreadyAdded.contains(next)) {
@@ -701,8 +701,14 @@ public class DpornCoApiImpl implements DpornCoApi {
 				if (!lcName.endsWith(".ts") && !lcName.endsWith(".mp4") && !lcName.endsWith(".m4s")) {
 					continue;
 				}
+				try {
+					this.response.getOutputStream().write('\n');
+					this.response.getOutputStream().flush();
+				} catch (IOException e) {
+					return;
+				}
 				String destFilename = StringUtils.substringAfter(next.getAbsolutePath(), tmpDir.getAbsolutePath());
-				System.out.println("   DEST FILE [early IPFS add]: " + destFilename);
+				count++;
 				ResponseWithHeaders putResponse;
 				try {
 					putResponse = ServerUtils.putFile(IPFS_GATEWAY + ipfsHash.hash + destFilename, next, null);
@@ -720,6 +726,9 @@ public class DpornCoApiImpl implements DpornCoApi {
 					response.setLocation(locations.get(locations.size() - 1));
 					alreadyAdded.add(next);
 				}
+			}
+			if (count>0) {
+				System.out.println("   DEST FILE [early IPFS add]: " + count + " segments.");
 			}
 		}
 	}
