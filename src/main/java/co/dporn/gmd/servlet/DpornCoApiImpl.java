@@ -772,7 +772,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 		cmd.add(tsLength.toPlainString());
 
 		cmd.add("-preset");
-		cmd.add("fast");
+		cmd.add("veryfast");
 
 		cmd.add("-tune");
 		cmd.add("film");
