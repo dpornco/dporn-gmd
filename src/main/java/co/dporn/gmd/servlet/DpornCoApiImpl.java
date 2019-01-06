@@ -300,10 +300,15 @@ public class DpornCoApiImpl implements DpornCoApi {
 	@Override
 	public IpfsHashResponse ipfsPutVideo(InputStream is, String username, String authorization, String filename,
 			int width, int height) {
+		
+		
 		if (!isAuthorized(username, authorization)) {
 			setResponseAsUnauthorized();
 			return null;
 		}
+		
+		this.response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+		this.response.setContentType(MediaType.APPLICATION_JSON);
 
 		boolean isDpornVerified = SteemJInstance.get().getDpornVerifiedSet().contains(username);
 
@@ -812,23 +817,6 @@ public class DpornCoApiImpl implements DpornCoApi {
 		if (isDpornVerified) {
 			switch (size) {
 			case 1080:
-				cmd.add("22");
-				break;
-			case 720:
-				cmd.add("21");
-				break;
-			case 480:
-				cmd.add("20");
-				break;
-			case 360:
-				cmd.add("19");
-				break;
-			default:
-				cmd.add("18");
-			}
-		} else {
-			switch (size) {
-			case 1080:
 				cmd.add("24");
 				break;
 			case 720:
@@ -842,6 +830,23 @@ public class DpornCoApiImpl implements DpornCoApi {
 				break;
 			default:
 				cmd.add("20");
+			}
+		} else {
+			switch (size) {
+			case 1080:
+				cmd.add("28");
+				break;
+			case 720:
+				cmd.add("27");
+				break;
+			case 480:
+				cmd.add("26");
+				break;
+			case 360:
+				cmd.add("25");
+				break;
+			default:
+				cmd.add("24");
 			}
 		}
 
