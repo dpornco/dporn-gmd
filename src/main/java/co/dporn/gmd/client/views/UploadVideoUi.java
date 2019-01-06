@@ -13,6 +13,7 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.SuggestOracle;
@@ -47,6 +48,7 @@ import gwt.material.design.client.ui.MaterialRow;
 import gwt.material.design.client.ui.MaterialTextBox;
 import gwt.material.design.client.ui.MaterialToast;
 import gwt.material.design.client.ui.MaterialVideo;
+import gwt.material.design.client.ui.animate.MaterialAnimation;
 import gwt.material.design.jquery.client.api.JQuery;
 import gwt.material.design.jquery.client.api.JQueryElement;
 import jsinterop.base.Js;
@@ -685,7 +687,6 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		ac.reset();
 		title.reset();
 		editor.reset();
-		title.setFocus(true);
 		posterImage.setUrl(null);
 		videoLocation = "";
 		video.setUrl("");
@@ -710,6 +711,8 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		btnUploadVideo.setEnabled(true);
 		btnPreview.setEnabled(false);
 		btnSubmit.setEnabled(false);
+		btnUploadVideo.setFocus(true);
+		Window.scrollTo(0, 0);
 	}
 
 	@Override
