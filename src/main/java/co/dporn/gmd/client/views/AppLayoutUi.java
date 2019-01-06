@@ -164,7 +164,6 @@ public class AppLayoutUi extends Composite implements AppLayoutView {
 		linkSearch.setEnabled(enabled);
 		linkVerified.setEnabled(enabled);
 		linkUploadPhotos.setEnabled(enabled);
-		linkUploadVideo.setEnabled(enabled);
 		linkSettings.setEnabled(enabled);
 	}
 
