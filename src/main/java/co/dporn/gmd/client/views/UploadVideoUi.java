@@ -85,7 +85,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 	@UiField
 	protected MaterialLink lnkCoverImage;
 	@UiField
-	protected MaterialButton previewVideoFile;
+	protected MaterialButton btnPreviewVideoFile;
 	@UiField
 	protected TagAutoComplete ac;
 	@UiField
@@ -139,8 +139,8 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		btnTakeSnap.setEnabled(false);
 		btnUploadImage.setEnabled(false);
 		videoLocation = "";
-		previewVideoFile.setEnabled(false);
-		previewVideoFile.addClickHandler(this::showVideoPreviewDialog);
+		btnPreviewVideoFile.setEnabled(false);
+		btnPreviewVideoFile.addClickHandler(this::showVideoPreviewDialog);
 		btnSubmit.setEnabled(false);
 		btnPreview.setEnabled(false);
 	}
@@ -273,7 +273,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		btnUploadImage.setEnabled(false);
 		btnTakeSnap.setEnabled(false);
 		btnUploadVideo.setEnabled(false);
-		previewVideoFile.setEnabled(false);
+		btnPreviewVideoFile.setEnabled(false);
 		btnPreview.setEnabled(false);
 		videoLocation = "";
 		OnprogressFn videoOnprogressFn = new OnprogressFn() {
@@ -371,7 +371,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 				btnUploadVideo.setEnabled(true);
 				videoUploadProgress.setType(ProgressType.DETERMINATE);
 				videoUploadProgress.setPercent(100);
-				previewVideoFile.setEnabled(true);
+				btnPreviewVideoFile.setEnabled(true);
 				btnPreview.setEnabled(true);
 				videoLocation = location;
 			}).exceptionally(ex -> {
@@ -575,7 +575,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 	@Override
 	protected void onLoad() {
 		super.onLoad();
-		title.setFocus(true);
+		btnUploadVideo.setFocus(true);
 	}
 
 	@Override
@@ -704,6 +704,12 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		posterUploadProgress.setType(ProgressType.DETERMINATE);	
 		videoUploadProgress.setPercent(0);
 		posterUploadProgress.setPercent(0);
+		btnTakeSnap.setEnabled(false);
+		btnPreviewVideoFile.setEnabled(false);
+		btnUploadImage.setEnabled(true);
+		btnUploadVideo.setEnabled(true);
+		btnPreview.setEnabled(false);
+		btnSubmit.setEnabled(false);
 	}
 
 	@Override
