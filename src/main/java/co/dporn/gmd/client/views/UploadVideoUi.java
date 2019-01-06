@@ -1,11 +1,15 @@
 package co.dporn.gmd.client.views;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -52,8 +56,8 @@ import gwt.material.design.jquery.client.api.JQueryElement;
 import jsinterop.base.Js;
 
 public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoView {
-	private static final String MAX_NOT_VERIFIED = "Max video length: 15 minutes. Stream max quality is 480p. If you would like to upload longer higher quality videos, \"Get Verified\".";
-	private static final String MAX_VERIFIED = "Max video length: 60 minutes. Max quality is 1080p.";
+	private static final String MAX_NOT_VERIFIED = "Max video length: 15 minutes. If you would like to upload longer higher quality videos, \"Get Verified\".";
+	private static final String MAX_VERIFIED = "Max video length: 60 minutes.";
 
 	interface ThisUiBinder extends UiBinder<Widget, UploadVideoUi> {
 	}
@@ -110,7 +114,8 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		btnTagSets.addClickHandler(e -> presenter.viewRecentTagSets("dporncovideo"));
 		btnClear.addClickHandler((e) -> reset());
 		btnPreview.addClickHandler(e -> {
-			presenter.showPostBodyPreview((double) editor.getEditor().width(), editor.getValue(), "", "");
+			presenter.showPostBodyPreview((double) editor.getEditor().width(), editor.getValue(), posterImage.getUrl(),
+					videoLocation);
 		});
 		btnSubmit.addClickHandler(e -> {
 			title.clearErrorText();
@@ -129,7 +134,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		btnUploadImage.addClickHandler((e) -> fileUploadImage.click());
 		btnUploadVideo.addClickHandler((e) -> fileUploadVideo.click());
 		fileUploadImage.setAccept(".jpg,.jpeg,.png,.gif");
-		fileUploadVideo.setAccept("video/mp4,video/mp2t,video/x-msvideo,video/x-ms-wmv");
+		fileUploadVideo.setAccept("video/*");
 		fileUploadImage.addChangeHandler(this::loadImageAndResize);
 		fileUploadVideo.addChangeHandler(this::uploadVideo);
 		btnTakeSnap.addClickHandler((e) -> {
@@ -149,7 +154,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		dialog.addCloseHandler((d) -> dialog.removeFromParent());
 		dialog.setFullscreen(true);
 		MaterialDialogContent content = new MaterialDialogContent();
-		MaterialVideo video = new MaterialVideo("https://ipfs.dporn.co"+videoLocation.replaceAll(".m3u8$", ".html"));
+		MaterialVideo video = new MaterialVideo("https://ipfs.dporn.co" + videoLocation.replaceAll(".m3u8$", ".html"));
 		video.setFullscreen(true);
 		content.add(video);
 		dialog.add(content);
@@ -269,14 +274,15 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			GWT.log("uploadVideo: NO FILES");
 			return;
 		}
-		this.maxLengthNotice.setText("");
 		btnUploadImage.setEnabled(false);
 		btnTakeSnap.setEnabled(false);
 		btnUploadVideo.setEnabled(false);
 		previewVideoFile.setEnabled(false);
+		btnPreview.setEnabled(false);
 		videoLocation = "";
 		OnprogressFn videoOnprogressFn = new OnprogressFn() {
 			private long start = 0;
+
 			@Override
 			public void onInvoke(ProgressEvent p0) {
 				if (!p0.lengthComputable) {
@@ -286,15 +292,15 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 				}
 				if (p0.loaded == p0.total) {
 					videoUploadProgress.setType(ProgressType.INDETERMINATE);
-					start=System.currentTimeMillis();
+					start = System.currentTimeMillis();
 					return;
 				}
 				double percent = Math.ceil(100d * p0.loaded / p0.total);
 				videoUploadProgress.setType(ProgressType.DETERMINATE);
 				videoUploadProgress.setPercent(percent);
-				if (System.currentTimeMillis()-start>15000) {
-					start=System.currentTimeMillis();
-					MaterialToast.fireToast("Video upload: "+percent+"%");
+				if (System.currentTimeMillis() - start > 15000) {
+					start = System.currentTimeMillis();
+					MaterialToast.fireToast("Video upload: " + percent + "%");
 				}
 			}
 		};
@@ -359,8 +365,8 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			setMaxVideoLengthNotice(vid);
 			vid.onseeked = e1 -> {
 				vid.pause();
-				//only take snap if there isn't one already
-				if (posterImage.getUrl()==null || posterImage.getUrl().trim().isEmpty()) {
+				// only take snap if there isn't one already
+				if (posterImage.getUrl() == null || posterImage.getUrl().trim().isEmpty()) {
 					log("AUTO SNAP!");
 					takeVideoSnap();
 				}
@@ -375,6 +381,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 						videoUploadProgress.setType(ProgressType.DETERMINATE);
 						videoUploadProgress.setPercent(100);
 						previewVideoFile.setEnabled(true);
+						btnPreview.setEnabled(true);
 						videoLocation = location;
 					}).exceptionally(ex -> {
 						MaterialToast.fireToast("Waiting for upload slot", 3000);
@@ -394,32 +401,91 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 	}
 
 	private void setMaxVideoLengthNotice(HTMLVideoElement vid) {
+		StringBuilder sb = new StringBuilder();
+		
+		if (verified) {
+			sb.append(MAX_VERIFIED);
+		} else {
+			sb.append(MAX_NOT_VERIFIED);
+		}
+		
 		int totalSeconds = (int) vid.duration;
 		int seconds = totalSeconds % 60;
-		int minutes = (totalSeconds/60) % 60;
-		int hours = (totalSeconds/(60*60));
-		StringBuilder sb = new StringBuilder();
-		if (hours<10) {
+		int minutes = (totalSeconds / 60) % 60;
+		int hours = (totalSeconds / (60 * 60));
+
+		sb.append("<strong>Video Length: ");
+		if (hours < 10) {
 			sb.append("0");
 		}
 		sb.append(hours);
 		sb.append(":");
-		if (minutes<10) {
+		if (minutes < 10) {
 			sb.append("0");
 		}
 		sb.append(minutes);
 		sb.append(":");
-		if (seconds<10) {
+		if (seconds < 10) {
 			sb.append("0");
 		}
 		sb.append(seconds);
-		maxLengthNotice.setText(sb.toString());
+		sb.append("<br/>");
+
+		sb.append("Video size: ");
+		sb.append(vid.videoWidth);
+		sb.append("x");
+		sb.append(vid.videoHeight);
+
+		sb.append("<br/>");
+		sb.append("Max stream quality: " + getQualityIndicator(vid.videoHeight));
+
+		sb.append("</strong>");
+
+		sb.append("<br/>");
+
+		maxLengthNotice.getElement().setInnerHTML(sb.toString());
+	}
+
+	/**
+	 * Logic must match the ipfs put video api call for quality selection for
+	 * encoding!
+	 * 
+	 * @param height
+	 * @return
+	 */
+	private String getQualityIndicator(int height) {
+		boolean do1080p = verified;
+		boolean do720p = verified;
+		boolean do480p = true;
+		boolean do360p = verified;
+		// 1080p
+		if (do1080p && height >= (1080 + 720) / 2) {
+			return "1080p";
+		}
+
+		// 720p
+		if (do720p && height >= (720 + 480) / 2) {
+			return "720p";
+		}
+
+		// 480p
+		if (do480p && height >= (480 + 360) / 2) {
+			return "480p";
+		}
+
+		// 360p
+		if (do360p && height >= (360 + 240) / 2) {
+			return "360p";
+		}
+
+		return "240p";
 	}
 
 	private String videoLocation = "";
+	private Boolean verified;
 
 	private void setMetadata(HTMLVideoElement vid) {
-		log("VIDEO SIZE: "+vid.videoWidth+"x"+vid.videoHeight);
+		log("VIDEO SIZE: " + vid.videoWidth + "x" + vid.videoHeight);
 	}
 
 	private void takeVideoSnap() {
@@ -427,7 +493,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		if (jvid.length() == 0) {
 			return;
 		}
-//		posterImage.setUrl("");
+		// posterImage.setUrl("");
 		lnkCoverImage.setHref("");
 		lnkCoverImage.setText("");
 		HTMLVideoElement vid = Js.cast(jvid.asElement());
@@ -624,11 +690,24 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		editor.reset();
 		title.setFocus(true);
 		posterImage.setUrl(null);
+		videoLocation = "";
 		video.setUrl(null);
+		video.$this().find("iframe").css("display", "");
+		video.$this().find("video").each((o, e) -> {
+			try {
+				HTMLVideoElement vid = Js.cast(e);
+				vid.onseeked = null;
+				URL.revokeObjectURL(vid.src);
+			} catch (Exception e1) {
+				log(e1);
+			}
+			e.removeFromParent();
+		});
 	}
 
 	@Override
 	public void setVerified(Boolean verified) {
+		this.verified = verified;
 		if (verified) {
 			maxLengthNotice.setText(MAX_VERIFIED);
 		} else {

@@ -200,7 +200,7 @@ public class ClientRestClient {
 
 				@Override
 				public void onSuccess(Method method, T response) {
-					GWT.log(" [api] onSuccess");
+//					GWT.log(" [api] onSuccess");
 					future.complete(response);
 				}
 			};

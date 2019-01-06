@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="/dpornco_application/css/animation.min.css">
 <link rel="stylesheet"
 	href="/dpornco_application/css/materialize.min.css">
-	<!-- polyfill for missing toBlob for ios 10.x and others -->
+<!-- polyfill for missing toBlob for ios 10.x and others -->
 <script
 	src="https://cdnjs.cloudflare.com/ajax/libs/javascript-canvas-to-blob/3.14.0/js/canvas-to-blob.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/steemconnect@latest"></script>
@@ -23,6 +23,167 @@
 			+ Date.now() //
 			+ "'><\/script>");
 </script>
+<!-- styles for preview post to steemit display, based on markdown specific styles used at steemit.com/busy.org -->
+<style type="text/css">
+.show-border {
+	box-sizing: content-box;
+	border-color: black;
+	border-width: 0.2rem;
+	border-style: dashed;
+	padding: 0.4rem;
+}
+
+.clear-both {
+	clear: both;
+}
+
+.Markdown {
+	font-family: 'Source Serif Pro', serif;
+	font-size: 120%;
+	line-height: 150%;
+}
+
+.Markdown hr {
+	box-sizing: content-box;
+	height: 0;
+	overflow: visible;
+	clear: both; max-width : 75rem; height : 0; margin : 1.25rem auto;
+	border-top : 0; border-right : 0;
+	border-bottom: 1px solid;
+	border-left: 0;
+	max-width: 75rem;
+	height: 0;
+	margin: 1.25rem auto;
+	border-top: 0;
+	border-right: 0;
+}
+
+.Markdown h1, .Markdown h2, .Markdown h3, .Markdown h4, .Markdown h5,
+	.Markdown h6 {
+	font-weight: 600;
+}
+
+.Markdown h1 {
+	margin: 2.5rem 0 .3rem;
+	font-size: 160%;
+}
+
+.Markdown h2 {
+	margin: 2.5rem 0 .3rem;
+	font-size: 140%;
+}
+
+.Markdown h3 {
+	margin: 2rem 0 0.3rem;
+	font-size: 120%;
+}
+
+.Markdown h4 {
+	margin: 1.5rem 0 0.2rem;
+	font-size: 110%;
+}
+
+.Markdown h5 {
+	margin: 1rem 0 0.2rem;
+	font-size: 100%;
+}
+
+.Markdown h6 {
+	margin: 1rem 0 0.2rem;
+	font-size: 90%;
+}
+
+.Markdown a {
+	text-decoration: none;
+}
+
+.Markdown code {
+	padding: 0.2rem;
+	font-size: 85%;
+	border-radius: 3px;
+	border: none;
+	background-color: #F4F4F4;
+	font-weight: inherit;
+	overflow: scroll;
+}
+
+.Markdown pre>code {
+	display: block;
+}
+
+.Markdown strong {
+	font-weight: 600;
+}
+
+.Markdown ol {
+	margin-left: 2rem;
+}
+
+.Markdown table td {
+	word-break: normal;
+}
+
+.Markdown p {
+	font-size: 100%;
+	line-height: 150%;
+	margin: 0 0 1.5rem 0;
+}
+
+.Markdown img {
+	width: auto;
+	max-width: 100%;
+	height: auto;
+	max-height: none;
+}
+
+.Markdown iframe {
+	max-width: 100%;
+	max-height: 75vw;
+}
+
+.Markdown div.pull-right {
+	float: right;
+	padding-left: 1rem;
+	max-width: 50%;
+}
+
+.Markdown div.pull-left {
+	float: left;
+	padding-right: 1rem;
+	max-width: 50%;
+}
+
+.Markdown div.text-justify {
+	text-align: justify;
+}
+
+.Markdown div.text-right {
+	text-align: right;
+}
+
+.Markdown div.text-center {
+	text-align: center;
+}
+
+.Markdown div.text-rtl {
+	direction: rtl;
+}
+
+.Markdown div.videoWrapper {
+	width: 100%;
+	height: 0;
+	padding-bottom: 56.2%;
+	position: relative;
+}
+
+.Markdown div.videoWrapper iframe {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	left: 0;
+	top: 0;
+}
+</style>
 </head>
 <body>
 	<iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1'

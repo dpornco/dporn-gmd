@@ -88,18 +88,47 @@ public class UploadVideoImpl implements UploadVideo {
 
 	@Override
 	public void showPostBodyPreview(Double editorWidth, String html, String posterImage, String videoLink) {
+		String lcPosterImage = posterImage.toLowerCase();
+		if (lcPosterImage.startsWith("http:") || lcPosterImage.startsWith("https:")) {
+			posterImage = "https://steemitimages.com/1280x720/"+posterImage;
+		} else {
+			posterImage = "https://steemitimages.com/1280x720/https://ipfs.dporn.co"+posterImage;
+		}
 		double imgScaleWidth = Math.min(640d / editorWidth, 1.0d);
 		GWT.log("SCALE: " + imgScaleWidth);
 		HtmlReformatter reformatter = new HtmlReformatter(imgScaleWidth);
+		/*
+		 * prepend
+		 */
 		html = "<div><center>" //
-				+ "<a href=\"https://dporn.co/\">" //
-				+ "<img src=\"https://steemitimages.com/1280x720/http://ipfs.dporn.co" + posterImage + "\">" //
-				+ "<h1>View video on DPorn</h1>" //
+				+ "<a href=\"https://dporn.co/\" target=\"_blank\">" //
+				+ "<img style='max-width: 100%; width: auto; height: auto; max-height: none;' src=\"" + posterImage + "\">" //
+				+ "<h3>View video on DPorn</h3>" //
 				+ "</a>" //
 				+ "</center>" //
-				+ "</div>" + html;
-		html += "<p>View using IPFS <a href=\"https://ipfs.io"+videoLink+"/\" target=\"_blank\">IPFS</a></p>";
-		html += "<p>Posted using <a href=\"https://dporn.co/\" target=\"_blank\">DPORN</a></p>";
+				+ "</div><p><br/></p>" + html;
+		
+		/*
+		 * append
+		 */
+		if (!html.trim().isEmpty()) {
+			html += "<p><br/></p>";
+		}
+		html += "<div>";
+		html += "<div class='pull-left' style='max-width: 50%; float: left; padding-right: 1rem;'>";
+		html += "<h5>Posted using <a href=\"https://dporn.co/\" target=\"_blank\">DPORN</a></h5>";
+		html += "</div>";
+		html += "<div class='pull-right' style='max-width: 50%; float: right; padding-left: 1rem;'>";
+		html += "<div class='text-right' style='text-algn: right;'>";
+		html += "<h5>View using <a href=\"https://ipfs.io"+videoLink.replaceAll(".m3u8$", ".html")+"\" target=\"_blank\">IPFS.IO</a></h5>";
+		html += "</div>";
+		html += "</div>";
+		html += "<p><br/></p>";
+		html += "</div>";
+		/*
+		 * wrap
+		 */
+		html = "<div class='Markdown show-border'>"+html+"<div class='clear-both'></div></div>";
 		String newHtml = reformatter.reformat(html);
 		view.showPreview(newHtml);
 		GWT.log(newHtml);
