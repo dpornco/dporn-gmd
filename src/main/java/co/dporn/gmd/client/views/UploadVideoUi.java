@@ -1,15 +1,11 @@
 package co.dporn.gmd.client.views;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringEscapeUtils;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ChangeEvent;
@@ -204,7 +200,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 							posterUploadProgress.setPercent(100d);
 							posterImage.setMaxHeight("240px");
 							posterImage.setUrl("https://ipfs.dporn.co" + location);
-							lnkCoverImage.setText(location);
+							lnkCoverImage.setText("IPFS COVER IMAGE");
 							lnkCoverImage.setHref("https://ipfs.dporn.co" + location);
 							lnkCoverImage.setTarget("_blank");
 							btnUploadVideo.setEnabled(true);
@@ -326,7 +322,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		HTMLVideoElement vid = Js.cast(DomGlobal.document.createElement("video"));
 		vid.setAttribute("playsinline", "playsinline");
 		vid.autobuffer = true;
-		vid.autoplay = true;
+		vid.autoplay = false;
 		vid.controls = true;
 		vid.loop = false;
 		vid.muted = true;
@@ -353,18 +349,13 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			return e;
 		};
 		vid.onloadedmetadata = e -> {
-			log("onloadedmetadata");
-			setMetadata(vid);
+			log("vid.onloadedmetadata");
 			btnUploadImage.setEnabled(true);
 			btnTakeSnap.setEnabled(true);
-			return e;
-		};
-		// only submit file for recoding and posting to IPFS if the browser accepts it
-		// as a video file
-		vid.onloadeddata = e -> {
+			setMetadata(vid);
 			setMaxVideoLengthNotice(vid);
 			vid.onseeked = e1 -> {
-				vid.pause();
+				log("vid.onseeked: "+(int)vid.currentTime);
 				// only take snap if there isn't one already
 				if (posterImage.getUrl() == null || posterImage.getUrl().trim().isEmpty()) {
 					log("AUTO SNAP!");
@@ -375,26 +366,32 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			};
 			vid.currentTime = 4.0;
 			presenter.postBlobToIpfsHlsVideo(file.name, file, vid.videoWidth, vid.videoHeight, videoOnprogressFn)
-					.thenAccept((location) -> {
-						GWT.log("UPLOADED VIDEO: " + location);
-						btnUploadVideo.setEnabled(true);
-						videoUploadProgress.setType(ProgressType.DETERMINATE);
-						videoUploadProgress.setPercent(100);
-						previewVideoFile.setEnabled(true);
-						btnPreview.setEnabled(true);
-						videoLocation = location;
-					}).exceptionally(ex -> {
-						MaterialToast.fireToast("Waiting for upload slot", 3000);
-						new Timer() {
-							@Override
-							public void run() {
-								uploadVideo(event);
-							}
-						}.schedule(5000 + new Random().nextInt(5000));
-						GWT.log("UPLOADED VIDEO FAIL: " + ex.getMessage());
-						videoUploadProgress.setType(ProgressType.INDETERMINATE);
-						return null;
-					});
+			.thenAccept((location) -> {
+				GWT.log("UPLOADED VIDEO: " + location);
+				btnUploadVideo.setEnabled(true);
+				videoUploadProgress.setType(ProgressType.DETERMINATE);
+				videoUploadProgress.setPercent(100);
+				previewVideoFile.setEnabled(true);
+				btnPreview.setEnabled(true);
+				videoLocation = location;
+			}).exceptionally(ex -> {
+				MaterialToast.fireToast("Waiting for upload slot", 4000);
+				new Timer() {
+					@Override
+					public void run() {
+						uploadVideo(event);
+					}
+				}.schedule(5000 + new Random().nextInt(5000));
+				GWT.log("UPLOADED VIDEO FAIL: " + ex.getMessage());
+				videoUploadProgress.setType(ProgressType.INDETERMINATE);
+				return null;
+			});
+			return e;
+		};
+		// only submit file for recoding and posting to IPFS if the browser accepts it
+		// as a video file
+		vid.onloadeddata = e -> {
+			log("vid.onloadeddata");
 			return e;
 		};
 		vid.src = URL.createObjectURL(file);
@@ -414,7 +411,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		int minutes = (totalSeconds / 60) % 60;
 		int hours = (totalSeconds / (60 * 60));
 
-		sb.append("<strong>Video Length: ");
+		sb.append("<br/><strong>Video length: ");
 		if (hours < 10) {
 			sb.append("0");
 		}
@@ -510,7 +507,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 					posterUploadProgress.setPercent(100d);
 					posterImage.setMaxHeight("240px");
 					posterImage.setUrl("https://ipfs.dporn.co" + location);
-					lnkCoverImage.setText(location);
+					lnkCoverImage.setText("IPFS COVER IMAGE");
 					lnkCoverImage.setHref("https://ipfs.dporn.co" + location);
 					lnkCoverImage.setTarget("_blank");
 					btnUploadImage.setEnabled(true);
@@ -691,7 +688,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		title.setFocus(true);
 		posterImage.setUrl(null);
 		videoLocation = "";
-		video.setUrl(null);
+		video.setUrl("");
 		video.$this().find("iframe").css("display", "");
 		video.$this().find("video").each((o, e) -> {
 			try {
@@ -703,6 +700,10 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			}
 			e.removeFromParent();
 		});
+		videoUploadProgress.setType(ProgressType.DETERMINATE);
+		posterUploadProgress.setType(ProgressType.DETERMINATE);	
+		videoUploadProgress.setPercent(0);
+		posterUploadProgress.setPercent(0);
 	}
 
 	@Override
