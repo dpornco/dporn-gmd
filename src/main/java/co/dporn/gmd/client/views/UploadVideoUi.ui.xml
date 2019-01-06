@@ -39,7 +39,7 @@
 					style="margin: 8px;" text="UPLOAD VIDEO"></m:MaterialButton>
 				<m:MaterialButton ui:field="btnTakeSnap"
 					style="margin: 8px;" text="TAKE SNAPSHOT"></m:MaterialButton>
-				<m:MaterialButton ui:field="previewVideoFile"
+				<m:MaterialButton ui:field="btnPreviewVideoFile"
 					style="margin: 8px;" text="PREVIEW HLS VIDEO"></m:MaterialButton>
 				<m:MaterialButton ui:field="btnCancelUploadVideo"
 					style="display: none; margin: 8px;" text="CANCEL UPLOAD"></m:MaterialButton>
