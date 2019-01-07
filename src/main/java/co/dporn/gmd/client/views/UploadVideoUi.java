@@ -113,6 +113,8 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		btnPreview.addClickHandler(e -> {
 			presenter.showPostBodyPreview((double) editor.getEditor().width(), editor.getValue(), posterLocation,
 					videoLocation);
+			GWT.log("Video location: "+videoLocation);
+			GWT.log("Poster location: "+posterLocation);
 		});
 		btnSubmit.addClickHandler(e -> {
 			title.clearErrorText();

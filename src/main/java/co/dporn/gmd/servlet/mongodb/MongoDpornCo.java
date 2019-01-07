@@ -313,14 +313,14 @@ public class MongoDpornCo {
 			MongoDatabase db = client.getDatabase("dpdb");
 			entry = getEntry(entry.getUsername(), entry.getPermlink());
 			Document legacyEntry = new Document();
-			legacyEntry.put("_id", entry.getId());
+			legacyEntry.put("_id", new ObjectId(entry.getId().getOid()));
 			legacyEntry.put("title", entry.getTitle());
 			legacyEntry.put("permlink", entry.getPermlink());
 			legacyEntry.put("content", entry.getContent());
-			legacyEntry.put("originalHash", entry.getVideoPath());
-			legacyEntry.put("posterHash", entry.getPosterImagePath());
+			legacyEntry.put("originalHash", StringUtils.substringAfter(entry.getVideoPath(), "/ipfs/"));
+			legacyEntry.put("posterHash", StringUtils.substringAfter(entry.getPosterImagePath(), "/ipfs/"));
 			legacyEntry.put("username", entry.getUsername());
-			legacyEntry.put("posteddate", entry.getCreated());
+			legacyEntry.put("posteddate", entry.getCreated().getDate());
 			legacyEntry.put("tags", StringUtils.join(entry.getPostTags(), ","));
 			legacyEntry.put("migrated", true);
 			MongoCollection<Document> videos_old = db.getCollection(TABLE_VIDEOS);
@@ -394,10 +394,12 @@ public class MongoDpornCo {
 			try (MongoClient client = MongoClients.create()) {
 				MongoDatabase db = client.getDatabase("dpdb");
 				MongoCollection<Document> blogEntries = db.getCollection(TABLE_BLOG_ENTRIES_V2);
+				MongoCollection<Document> videosOld = db.getCollection(TABLE_VIDEOS);
 				Bson eqUsername = Filters.eq("username", username);
 				Bson eqPermlink = Filters.eq("permlink", permlink);
 				Bson filter = Filters.and(eqUsername, eqPermlink);
 				blogEntries.deleteOne(filter);
+				videosOld.deleteOne(filter);
 			}
 		}
 	}

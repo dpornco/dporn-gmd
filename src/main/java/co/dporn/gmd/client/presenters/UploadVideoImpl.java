@@ -10,7 +10,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import com.wallissoftware.pushstate.client.PushStateHistorian;
-import com.wallissoftware.pushstate.client.PushStateHistorianImpl;
 
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.views.IsView;
@@ -123,7 +122,7 @@ public class UploadVideoImpl implements UploadVideo {
 		 */
 		boolean havePermlink = permlink != null && !permlink.trim().isEmpty();
 		html = "<div><center>" //
-				+ (havePermlink ? "<a href=\"https://dporn.co/"+username +"/" + permlink +"\" target=\"_blank\">" : "") //
+				+ (havePermlink ? "<a href=\"https://dporn.co/dporn/"+username +"/" + permlink +"\" target=\"_blank\">" : "") //
 				+ "<img style='max-width: 100%; width: auto; height: auto; max-height: none;' src=\"" + posterImage
 				+ "\">" //
 				+ "<h3>View video on DPorn</h3>" //
@@ -139,7 +138,7 @@ public class UploadVideoImpl implements UploadVideo {
 		}
 		html += "<div>";
 		html += "<div class='pull-left' style='max-width: 50%; float: left; padding-right: 1rem;'>";
-		html += "<h5>Posted using <a href=\"https://dporn.co/\" target=\"_blank\">DPORN</a></h5>";
+		html += "<h5>My DPorn channel: <a href=\"https://dporn.co/@"+model.getUsername()+"\" target=\"_blank\">@"+model.getUsername()+"</a></h5>";
 		html += "</div>";
 		html += "<div class='pull-right' style='max-width: 50%; float: right; padding-left: 1rem;'>";
 		html += "<div class='text-right' style='text-algn: right;'>";
@@ -172,33 +171,21 @@ public class UploadVideoImpl implements UploadVideo {
 			view.setErrorBadTitle();
 			return;
 		}
-		String posterImage;
-		if (posterImageLocation.toLowerCase().startsWith("/")) {
-			posterImage = "https://steemitimages.com/1280x720/https://ipfs.dporn.co"+posterImageLocation;
-		} else {
-			posterImage = posterImageLocation;
-		}
-		String videoLink;
-		if (videoLocation.toLowerCase().startsWith("/")) {
-			videoLink = "https://ipfs.dporn.co"+videoLocation;
-		} else {
-			videoLink = videoLocation;
-		}
 		String permlink = model.getTimestampedPermlink(title);
-		String newHtml = generatePostHtml(editorWidth, posterImage, videoLink, content, //
+		String newHtml = generatePostHtml(editorWidth, posterImageLocation, videoLocation, content, //
 				model.getUsername(), permlink);
 		Set<String> _tags = new LinkedHashSet<>();
 		for (Suggestion tag : tags) {
 			_tags.add(tag.getReplacementString());
 		}
 		model.sortTagsByNetVoteDesc(new ArrayList<>(_tags)).thenAccept(t -> {
-			model.newBlogEntry(entryType, editorWidth, title, new ArrayList<>(_tags), newHtml, posterImage, videoLink, new ArrayList<>(), permlink).thenAccept(p -> {
+			model.newBlogEntry(entryType, editorWidth, title, new ArrayList<>(_tags), newHtml, posterImageLocation, videoLocation, new ArrayList<>(), permlink).thenAccept(p -> {
 				view.reset();
 				new PushStateHistorian().newItem("@"+model.getUsername()+"/"+p, true);
 			});
 		}).exceptionally(ex -> {
 			GWT.log(ex.getMessage(), ex);
-			model.newBlogEntry(entryType, editorWidth, title, new ArrayList<>(_tags), newHtml, posterImage, videoLink, null, permlink).thenAccept(p -> {
+			model.newBlogEntry(entryType, editorWidth, title, new ArrayList<>(_tags), newHtml, posterImageLocation, videoLocation, null, permlink).thenAccept(p -> {
 				view.reset();
 				new PushStateHistorian().newItem("@"+model.getUsername()+"/"+p, true);
 			});
