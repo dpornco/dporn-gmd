@@ -47,7 +47,7 @@ public class MongoDpornCo {
 	private static final Set<String> CACHED_TAGS = new TreeSet<>();
 	private static long cachedTagsExpire = 0;
 
-	private static Map<String, BlogEntry> ENTRY_CACHE = new PassiveExpiringMap<>(30l*60l*1000l, new LRUMap<>(128));
+	private static Map<String, BlogEntry> ENTRY_CACHE = new PassiveExpiringMap<>(30l * 60l * 1000l, new LRUMap<>(128));
 
 	private static final int MAX_TAG_SUGGEST = 20;
 	private static final String[] NO_TAG_SUGGEST = { "dporn", "dpornvideo", "dpornco", "dporncovideo", "nsfw" };
@@ -212,18 +212,19 @@ public class MongoDpornCo {
 		String json;
 		try {
 			json = MongoJsonMapper.get().writeValueAsString(entry);
-			System.out.println("INSERT JSON: " + json);
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 			return false;
 		}
 		Document doc = Document.parse(json);
-		System.out.println("INSERT DOC: " + doc.toJson());
 		try (MongoClient client = MongoClients.create()) {
 			MongoDatabase db = client.getDatabase("dpdb");
 			MongoCollection<Document> collection = db.getCollection(TABLE_BLOG_ENTRIES_V2);
 			try {
 				collection.insertOne(doc);
+				if (entry.getEntryType()==BlogEntryType.VIDEO) {
+					insertLegacyEntry(entry);
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 				return false;
@@ -305,6 +306,26 @@ public class MongoDpornCo {
 			find.close();
 		}
 		return list;
+	}
+
+	private static synchronized void insertLegacyEntry(BlogEntry entry) {
+		try (MongoClient client = MongoClients.create()) {
+			MongoDatabase db = client.getDatabase("dpdb");
+			entry = getEntry(entry.getUsername(), entry.getPermlink());
+			Document legacyEntry = new Document();
+			legacyEntry.put("_id", entry.getId());
+			legacyEntry.put("title", entry.getTitle());
+			legacyEntry.put("permlink", entry.getPermlink());
+			legacyEntry.put("content", entry.getContent());
+			legacyEntry.put("originalHash", entry.getVideoPath());
+			legacyEntry.put("posterHash", entry.getPosterImagePath());
+			legacyEntry.put("username", entry.getUsername());
+			legacyEntry.put("posteddate", entry.getCreated());
+			legacyEntry.put("tags", StringUtils.join(entry.getPostTags(), ","));
+			legacyEntry.put("migrated", true);
+			MongoCollection<Document> videos_old = db.getCollection(TABLE_VIDEOS);
+			videos_old.insertOne(legacyEntry);
+		} 
 	}
 
 	public static synchronized void migrationCheck() {

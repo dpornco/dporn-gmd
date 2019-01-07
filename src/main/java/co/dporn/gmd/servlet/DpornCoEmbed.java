@@ -22,6 +22,7 @@ import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.collections4.map.PassiveExpiringMap;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import co.dporn.gmd.servlet.mongodb.MongoDpornCo;
 import co.dporn.gmd.shared.BlogEntry;
@@ -123,7 +124,7 @@ public class DpornCoEmbed {
 		if (!author.equals(entry.getUsername())) {
 			return null;
 		}
-		String embedHtml = null;
+		String embedHtml = "";
 		if (BlogEntryType.VIDEO == entry.getEntryType() || entry.getVideoPath() != null) {
 			embedHtml = getVideoEmbedHtml(entry);
 			if (entry.getVideoPath().toLowerCase().endsWith(".m3u8")) {
@@ -162,7 +163,7 @@ public class DpornCoEmbed {
 	private static String getVideoEmbedHtml(BlogEntry entry) {
 		String posterImagePath = entry.getPosterImagePath();
 		if (posterImagePath == null) {
-			return null;
+			posterImagePath = "/ipfs/QmTTtAi3ZwLdGpEzy2LHpFKQHFqLUrHy61miko9LSbVp72";
 		}
 		posterImagePath = posterImagePath.trim();
 		String lcPosterImageIpfs = posterImagePath.toLowerCase();
@@ -172,13 +173,18 @@ public class DpornCoEmbed {
 		if (!isPath && !isHttp && !isHttps) {
 			posterImagePath = "/ipfs/QmTTtAi3ZwLdGpEzy2LHpFKQHFqLUrHy61miko9LSbVp72";
 		}
+		if (!posterImagePath.startsWith("/ipfs/") && posterImagePath.contains("/ipfs/")) {
+			posterImagePath = "/ipfs/"+StringUtils.substringAfter(posterImagePath, "/ipfs/");
+		}
 		String videoPath = entry.getVideoPath();
 		if (videoPath == null) {
-			return null;
+			return "";
 		}
 		videoPath = videoPath.trim();
 		if (!videoPath.startsWith("/ipfs/")) {
-			return null;
+			if (videoPath.contains("/ipfs/")) {
+				videoPath = "/ipfs/"+StringUtils.substringAfter(videoPath, "/ipfs/");
+			}
 		}
 		String embedHtml = htmlTemplateVideo();
 		embedHtml = embedHtml.replace("__TITLE__", StringEscapeUtils.escapeXml10(entry.getTitle()));
