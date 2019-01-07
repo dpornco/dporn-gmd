@@ -113,8 +113,8 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		btnPreview.addClickHandler(e -> {
 			presenter.showPostBodyPreview((double) editor.getEditor().width(), editor.getValue(), posterLocation,
 					videoLocation);
-			GWT.log("Video location: "+videoLocation);
-			GWT.log("Poster location: "+posterLocation);
+			GWT.log("Video location: " + videoLocation);
+			GWT.log("Poster location: " + posterLocation);
 		});
 		btnSubmit.addClickHandler(e -> {
 			title.clearErrorText();
@@ -326,11 +326,12 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		HTMLVideoElement vid = Js.cast(DomGlobal.document.createElement("video"));
 		vid.setAttribute("playsinline", "playsinline");
 		vid.autobuffer = true;
-		vid.autoplay = false;
+		// only true because of ios
+		vid.autoplay = true;
 		vid.controls = true;
 		vid.loop = false;
-		vid.muted = true;
 		vid.volume = 0.1;
+		vid.muted = true;
 		JQueryElement jvid = JQuery.$(vid);
 		video.$this().find("iframe").before(jvid);
 		jvid.css("position", "absolute");
@@ -358,8 +359,35 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			btnTakeSnap.setEnabled(true);
 			setMetadata(vid);
 			setMaxVideoLengthNotice(vid);
+			presenter.postBlobToIpfsHlsVideo(file.name, file, vid.videoWidth, vid.videoHeight, videoOnprogressFn)
+					.thenAccept((location) -> {
+						GWT.log("UPLOADED VIDEO: " + location);
+						btnUploadVideo.setEnabled(true);
+						videoUploadProgress.setType(ProgressType.DETERMINATE);
+						videoUploadProgress.setPercent(100);
+						btnPreviewVideoFile.setEnabled(true);
+						btnPreview.setEnabled(true);
+						btnSubmit.setEnabled(true);
+						videoLocation = location;
+					}).exceptionally(ex -> {
+						MaterialToast.fireToast("Waiting for upload slot", 4000);
+						new Timer() {
+							@Override
+							public void run() {
+								uploadVideo(event);
+							}
+						}.schedule(5000 + new Random().nextInt(5000));
+						GWT.log("UPLOADED VIDEO FAIL: " + ex.getMessage());
+						videoUploadProgress.setType(ProgressType.INDETERMINATE);
+						return null;
+					});
 			vid.onseeked = e1 -> {
-				log("vid.onseeked: "+(int)vid.currentTime);
+				// ios hack
+				if (vid.currentTime < 4.0 && vid.currentTime < vid.duration) {
+					return e1;
+				}
+				vid.pause();
+				log("vid.onseeked: " + (int) vid.currentTime);
 				// only take snap if there isn't one already
 				if (posterImage.getUrl() == null || posterImage.getUrl().trim().isEmpty()) {
 					log("AUTO SNAP!");
@@ -368,49 +396,44 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 				vid.onseeked = null;
 				return e1;
 			};
-			vid.currentTime = 4.0;
-			presenter.postBlobToIpfsHlsVideo(file.name, file, vid.videoWidth, vid.videoHeight, videoOnprogressFn)
-			.thenAccept((location) -> {
-				GWT.log("UPLOADED VIDEO: " + location);
-				btnUploadVideo.setEnabled(true);
-				videoUploadProgress.setType(ProgressType.DETERMINATE);
-				videoUploadProgress.setPercent(100);
-				btnPreviewVideoFile.setEnabled(true);
-				btnPreview.setEnabled(true);
-				btnSubmit.setEnabled(true);
-				videoLocation = location;
-			}).exceptionally(ex -> {
-				MaterialToast.fireToast("Waiting for upload slot", 4000);
-				new Timer() {
-					@Override
-					public void run() {
-						uploadVideo(event);
-					}
-				}.schedule(5000 + new Random().nextInt(5000));
-				GWT.log("UPLOADED VIDEO FAIL: " + ex.getMessage());
-				videoUploadProgress.setType(ProgressType.INDETERMINATE);
-				return null;
-			});
+			/*
+			 * iOS hack
+			 */
+			try {
+				vid.play();
+				vid.currentTime = 4.0;
+				vid.pause();
+			} catch (Exception e1) {
+				vid.oncanplaythrough = e3 -> {
+					// ios hack
+					vid.onprogress = (e2) -> {
+						vid.currentTime = 4.0;
+						return e2;
+					};
+					return e3;
+				};
+			}
 			return e;
 		};
 		// only submit file for recoding and posting to IPFS if the browser accepts it
 		// as a video file
 		vid.onloadeddata = e -> {
-			log("vid.onloadeddata");
 			return e;
 		};
 		vid.src = URL.createObjectURL(file);
+		vid.play();
+		vid.pause();
 	}
 
 	private void setMaxVideoLengthNotice(HTMLVideoElement vid) {
 		StringBuilder sb = new StringBuilder();
-		
+
 		if (verified) {
 			sb.append(MAX_VERIFIED);
 		} else {
 			sb.append(MAX_NOT_VERIFIED);
 		}
-		
+
 		int totalSeconds = (int) vid.duration;
 		int seconds = totalSeconds % 60;
 		int minutes = (totalSeconds / 60) % 60;
@@ -491,6 +514,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 	}
 
 	private String posterLocation = "";
+
 	private void takeVideoSnap() {
 		JQueryElement jvid = video.$this().find("video").first();
 		if (jvid.length() == 0) {
@@ -708,7 +732,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			e.removeFromParent();
 		});
 		videoUploadProgress.setType(ProgressType.DETERMINATE);
-		posterUploadProgress.setType(ProgressType.DETERMINATE);	
+		posterUploadProgress.setType(ProgressType.DETERMINATE);
 		videoUploadProgress.setPercent(0);
 		posterUploadProgress.setPercent(0);
 		btnTakeSnap.setEnabled(false);
@@ -738,6 +762,6 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 
 	@Override
 	public void setErrorVideoFile() {
-		MaterialToast.fireToast("You must upload a video.", 5000);		
+		MaterialToast.fireToast("You must upload a video.", 5000);
 	}
 }

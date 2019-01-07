@@ -724,7 +724,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 					HTMLAnchorElement anchor = Js.cast(anchors.get(ix));
 					String href = anchor.href;
 					if (href != null && !href.isEmpty() && !href.startsWith("#")) {
-						jsonImageArray.set(linksArray.size(), new JSONString(href));
+						linksArray.set(linksArray.size(), new JSONString(href));
 					}
 				}
 			}
