@@ -565,7 +565,7 @@ public class DpornCoApiImpl implements DpornCoApi {
 					}
 					if (nextAdd.ms < System.currentTimeMillis()) {
 						addSegmentsToIpfsAsTheyAppear(tmpDir, ipfsHash, alreadyAdded, response);
-						nextAdd.ms = System.currentTimeMillis() + 500l;
+						nextAdd.ms = System.currentTimeMillis() + 1100l;
 					}
 				});
 				IOUtils.closeQuietly(ffmpeg.getOutputStream());
@@ -577,10 +577,12 @@ public class DpornCoApiImpl implements DpornCoApi {
 					if (nextNotify.ms < System.currentTimeMillis()) {
 						Notifications.notify(authorization, "Converting to streaming format");
 						nextNotify.ms = System.currentTimeMillis() + 14000l;
+						this.response.getOutputStream().write('\n');
+						this.response.getOutputStream().flush();
 					}
 					if (nextAdd.ms < System.currentTimeMillis()) {
 						addSegmentsToIpfsAsTheyAppear(tmpDir, ipfsHash, alreadyAdded, response);
-						nextAdd.ms = System.currentTimeMillis() + 1000l;
+						nextAdd.ms = System.currentTimeMillis() + 1100l;
 					}
 					Thread.sleep(500);
 				}
@@ -693,6 +695,12 @@ public class DpornCoApiImpl implements DpornCoApi {
 	 */
 	private void addSegmentsToIpfsAsTheyAppear(File tmpDir, IpfsHash ipfsHash, Set<File> alreadyAdded,
 			IpfsHashResponse response) {
+		try {
+			this.response.getOutputStream().write('\n');
+			this.response.getOutputStream().flush();
+		} catch (IOException e) {
+			return;
+		}
 		synchronized (alreadyAdded) {
 			List<File> files = new ArrayList<>(FileUtils.listFiles(tmpDir, null, true));
 			Collections.sort(files);
@@ -706,12 +714,6 @@ public class DpornCoApiImpl implements DpornCoApi {
 				String lcName = next.getName().toLowerCase();
 				if (!lcName.endsWith(".ts") && !lcName.endsWith(".mp4") && !lcName.endsWith(".m4s")) {
 					continue;
-				}
-				try {
-					this.response.getOutputStream().write('\n');
-					this.response.getOutputStream().flush();
-				} catch (IOException e) {
-					return;
 				}
 				String destFilename = StringUtils.substringAfter(next.getAbsolutePath(), tmpDir.getAbsolutePath());
 				count++;
@@ -817,19 +819,19 @@ public class DpornCoApiImpl implements DpornCoApi {
 		if (isDpornVerified) {
 			switch (size) {
 			case 1080:
-				cmd.add("24");
+				cmd.add("26");
 				break;
 			case 720:
-				cmd.add("23");
+				cmd.add("25");
 				break;
 			case 480:
-				cmd.add("22");
+				cmd.add("24");
 				break;
 			case 360:
-				cmd.add("21");
+				cmd.add("23");
 				break;
 			default:
-				cmd.add("20");
+				cmd.add("22");
 			}
 		} else {
 			switch (size) {
