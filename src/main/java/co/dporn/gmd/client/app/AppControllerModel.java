@@ -1,3 +1,4 @@
+
 package co.dporn.gmd.client.app;
 
 import java.util.List;
@@ -73,5 +74,9 @@ public interface AppControllerModel {
 			String content, String posterImage, String videoLink, List<String> photoGalleryImages);
 	CompletableFuture<NotificationsResponse> getNotifications();
 	CompletableFuture<Boolean> isVerified();
+	CompletableFuture<String> newBlogEntry(BlogEntryType blogEntryType, double width, String title, List<String> tags,
+			String content, String posterImage, String videoLink, List<String> photoGalleryImages, String permlink);
+	String getTimestampedPermlink(String title);
+	String getUsername();
 	
 }

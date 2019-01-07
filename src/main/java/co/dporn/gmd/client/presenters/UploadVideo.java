@@ -29,6 +29,8 @@ public interface UploadVideo extends IsChildPresenter<UploadVideoView>, Schedule
 		void setErrorBadTags();
 		void reset();
 		void setVerified(Boolean verified);
+		void setErrorPosterImage();
+		void setErrorVideoFile();
 	}
 	void reset();
 	/**
@@ -41,6 +43,6 @@ public interface UploadVideo extends IsChildPresenter<UploadVideoView>, Schedule
 	CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, int videoWidth, int videoHeight, OnprogressFn onprogressFn);
 	Void viewRecentTagSets(String mustHaveTag);
 	void showPostBodyPreview(Double editorWidth, String html, String posterImage, String videoLink);
-	void createNewBlogEntry(BlogEntryType entryType, double width, String value, List<? extends Suggestion> tags,
-			String value3);
+	void createNewBlogEntry(BlogEntryType entryType, double width, String title, List<? extends Suggestion> tags, 
+			String content, String posterImageLocation, String videoLocation);
 }

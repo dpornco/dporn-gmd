@@ -292,6 +292,11 @@ public class AppControllerModelImpl implements AppControllerModel {
 	public void onRouteChange(ValueChangeEvent<String> routeEvent) {
 		onRouteChange(routeEvent.getValue());
 	}
+	
+	@Override
+	public String getUsername() {
+		return appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
+	}
 
 	@Override
 	public CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob, OnprogressFn onprogress) {
@@ -621,7 +626,8 @@ public class AppControllerModelImpl implements AppControllerModel {
 		return future;
 	}
 
-	private String getTimestampedPermlink(String title) {
+	@Override
+	public String getTimestampedPermlink(String title) {
 		if (title == null || title.trim().isEmpty()) {
 			title = "dporn";
 		}
@@ -655,9 +661,18 @@ public class AppControllerModelImpl implements AppControllerModel {
 		return newBlogEntry(blogEntryType, width, title,
 				tags, content, null, null, null);
 	}
+	
 	@Override
 	public CompletableFuture<String> newBlogEntry(BlogEntryType blogEntryType, double width, String title,
 			List<String> tags, String content, String posterImage, String videoLink, List<String> photoGalleryImages) {
+		String permlink = getTimestampedPermlink(title);
+		return newBlogEntry(blogEntryType, width, title, tags, content, posterImage, videoLink, photoGalleryImages, permlink);
+	}
+	
+	
+	@Override
+	public CompletableFuture<String> newBlogEntry(BlogEntryType blogEntryType, double width, String title,
+			List<String> tags, String content, String posterImage, String videoLink, List<String> photoGalleryImages, String permlink) {
 
 		HtmlReformatter reformatter = new HtmlReformatter(width);
 		content = "<html>" + reformatter.reformat(content) + "</html>";
@@ -669,7 +684,6 @@ public class AppControllerModelImpl implements AppControllerModel {
 			future.completeExceptionally(new IllegalStateException("You must be logged in to post"));
 			return future;
 		}
-		String permlink = getTimestampedPermlink(title);
 
 		JSONArray comment = new JSONArray();
 		JSONObject commentData = new JSONObject();

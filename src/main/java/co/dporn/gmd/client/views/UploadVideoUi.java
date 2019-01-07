@@ -48,7 +48,6 @@ import gwt.material.design.client.ui.MaterialRow;
 import gwt.material.design.client.ui.MaterialTextBox;
 import gwt.material.design.client.ui.MaterialToast;
 import gwt.material.design.client.ui.MaterialVideo;
-import gwt.material.design.client.ui.animate.MaterialAnimation;
 import gwt.material.design.jquery.client.api.JQuery;
 import gwt.material.design.jquery.client.api.JQueryElement;
 import jsinterop.base.Js;
@@ -112,20 +111,20 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		btnTagSets.addClickHandler(e -> presenter.viewRecentTagSets("dporncovideo"));
 		btnClear.addClickHandler((e) -> reset());
 		btnPreview.addClickHandler(e -> {
-			presenter.showPostBodyPreview((double) editor.getEditor().width(), editor.getValue(), posterImage.getUrl(),
+			presenter.showPostBodyPreview((double) editor.getEditor().width(), editor.getValue(), posterLocation,
 					videoLocation);
 		});
 		btnSubmit.addClickHandler(e -> {
 			title.clearErrorText();
 			editor.clearErrorText();
 			ac.clearErrorText();
-			presenter.createNewBlogEntry( //
-					BlogEntryType.VIDEO, //
-					editor.getEditor().width(), //
+			presenter.createNewBlogEntry(BlogEntryType.VIDEO, //
+					(double) editor.getEditor().width(), //
 					title.getValue(), //
 					ac.getValue(), //
-					editor.getValue() //
-			);
+					editor.getValue(), //
+					posterLocation, //
+					videoLocation);
 		});
 		ac.setSuggestions(suggestOracle);
 		ac.setMandatoryTags(mandatorySuggestions);
@@ -143,8 +142,8 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		videoLocation = "";
 		btnPreviewVideoFile.setEnabled(false);
 		btnPreviewVideoFile.addClickHandler(this::showVideoPreviewDialog);
-		btnSubmit.setEnabled(false);
 		btnPreview.setEnabled(false);
+		btnSubmit.setEnabled(false);
 	}
 
 	private Object showVideoPreviewDialog(ClickEvent e) {
@@ -203,7 +202,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 							posterImage.setMaxHeight("240px");
 							posterImage.setUrl("https://ipfs.dporn.co" + location);
 							lnkCoverImage.setText("IPFS COVER IMAGE");
-							lnkCoverImage.setHref("https://ipfs.dporn.co" + location);
+							lnkCoverImage.setHref("https://ipfs.io" + location);
 							lnkCoverImage.setTarget("_blank");
 							btnUploadVideo.setEnabled(true);
 							btnUploadImage.setEnabled(true);
@@ -277,6 +276,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		btnUploadVideo.setEnabled(false);
 		btnPreviewVideoFile.setEnabled(false);
 		btnPreview.setEnabled(false);
+		btnSubmit.setEnabled(false);
 		videoLocation = "";
 		OnprogressFn videoOnprogressFn = new OnprogressFn() {
 			private long start = 0;
@@ -375,6 +375,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 				videoUploadProgress.setPercent(100);
 				btnPreviewVideoFile.setEnabled(true);
 				btnPreview.setEnabled(true);
+				btnSubmit.setEnabled(true);
 				videoLocation = location;
 			}).exceptionally(ex -> {
 				MaterialToast.fireToast("Waiting for upload slot", 4000);
@@ -487,6 +488,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		log("VIDEO SIZE: " + vid.videoWidth + "x" + vid.videoHeight);
 	}
 
+	private String posterLocation = "";
 	private void takeVideoSnap() {
 		JQueryElement jvid = video.$this().find("video").first();
 		if (jvid.length() == 0) {
@@ -505,6 +507,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			posterImage.setUrl(resized.src);
 			imgUtils.toBlob(resized).thenAccept(blob -> {
 				presenter.postBlobToIpfsFile("snap.jpg", blob, this::imageOnprogressFn).thenAccept(location -> {
+					posterLocation = location;
 					posterUploadProgress.setType(ProgressType.DETERMINATE);
 					posterUploadProgress.setPercent(100d);
 					posterImage.setMaxHeight("240px");
@@ -687,7 +690,8 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		ac.reset();
 		title.reset();
 		editor.reset();
-		posterImage.setUrl(null);
+		posterImage.setUrl("");
+		posterLocation = "";
 		videoLocation = "";
 		video.setUrl("");
 		video.$this().find("iframe").css("display", "");
@@ -723,5 +727,15 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 		} else {
 			maxLengthNotice.setText(MAX_NOT_VERIFIED);
 		}
+	}
+
+	@Override
+	public void setErrorPosterImage() {
+		MaterialToast.fireToast("You must supply a poster image.", 5000);
+	}
+
+	@Override
+	public void setErrorVideoFile() {
+		MaterialToast.fireToast("You must upload a video.", 5000);		
 	}
 }

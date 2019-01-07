@@ -9,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
+import com.wallissoftware.pushstate.client.PushStateHistorian;
 
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.utils.HtmlReformatter;
@@ -121,13 +122,15 @@ public class UploadEroticaImpl implements UploadErotica {
 			_tags.add(tag.getReplacementString());
 		}
 		model.sortTagsByNetVoteDesc(new ArrayList<>(_tags)).thenAccept(t->{
-			model.newBlogEntry(entryType, width, title, t, content).thenAccept(permlink->{
+			model.newBlogEntry(entryType, width, title, t, content).thenAccept(p->{
 				view.reset();
+				new PushStateHistorian().newItem("@"+model.getUsername()+"/"+p, true);
 			});
 		}).exceptionally(ex->{
 			GWT.log(ex.getMessage(), ex);
-			model.newBlogEntry(entryType, width, title, new ArrayList<>(_tags), content).thenAccept(permlink->{
+			model.newBlogEntry(entryType, width, title, new ArrayList<>(_tags), content).thenAccept(p->{
 				view.reset();
+				new PushStateHistorian().newItem("@"+model.getUsername()+"/"+p, true);
 			});
 			return null;
 		});

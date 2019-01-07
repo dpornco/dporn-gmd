@@ -9,9 +9,10 @@ import java.util.concurrent.CompletableFuture;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
+import com.wallissoftware.pushstate.client.PushStateHistorian;
+import com.wallissoftware.pushstate.client.PushStateHistorianImpl;
 
 import co.dporn.gmd.client.app.AppControllerModel;
-import co.dporn.gmd.client.utils.HtmlReformatter;
 import co.dporn.gmd.client.views.IsView;
 import co.dporn.gmd.shared.BlogEntryType;
 import elemental2.dom.Blob;
@@ -88,26 +89,48 @@ public class UploadVideoImpl implements UploadVideo {
 
 	@Override
 	public void showPostBodyPreview(Double editorWidth, String html, String posterImage, String videoLink) {
+		String permlink = "";
+
+		String newHtml = generatePostHtml(editorWidth, posterImage, videoLink, html, "", permlink);
+		/*
+		 * wrap
+		 */
+		newHtml = "<div class='Markdown show-border'>" + newHtml + "<div class='clear-both'></div></div>";
+		view.showPreview(newHtml);
+		GWT.log(newHtml);
+	}
+
+	private String generatePostHtml(Double editorWidth, String posterImage, String videoLink, String html,
+			String username, String permlink) {
+		if (username==null) {
+			username="";
+		}
+		if (!username.startsWith("@")) {
+			username = "@" + username;
+		}
 		String lcPosterImage = posterImage.toLowerCase();
 		if (lcPosterImage.startsWith("http:") || lcPosterImage.startsWith("https:")) {
-			posterImage = "https://steemitimages.com/1280x720/"+posterImage;
+			if (!lcPosterImage.matches("^https://steemitimages.com/\\d+x\\d+/.*")){
+				posterImage = "https://steemitimages.com/1280x720/" + posterImage;
+			}
 		} else {
-			posterImage = "https://steemitimages.com/1280x720/https://ipfs.dporn.co"+posterImage;
+			posterImage = "https://steemitimages.com/1280x720/https://ipfs.dporn.co" + posterImage;
 		}
 		double imgScaleWidth = Math.min(640d / editorWidth, 1.0d);
 		GWT.log("SCALE: " + imgScaleWidth);
-		HtmlReformatter reformatter = new HtmlReformatter(imgScaleWidth);
 		/*
 		 * prepend
 		 */
+		boolean havePermlink = permlink != null && !permlink.trim().isEmpty();
 		html = "<div><center>" //
-				+ "<a href=\"https://dporn.co/\" target=\"_blank\">" //
-				+ "<img style='max-width: 100%; width: auto; height: auto; max-height: none;' src=\"" + posterImage + "\">" //
+				+ (havePermlink ? "<a href=\"https://dporn.co/"+username +"/" + permlink +"\" target=\"_blank\">" : "") //
+				+ "<img style='max-width: 100%; width: auto; height: auto; max-height: none;' src=\"" + posterImage
+				+ "\">" //
 				+ "<h3>View video on DPorn</h3>" //
-				+ "</a>" //
+				+ (havePermlink ? "</a>" : "") //
 				+ "</center>" //
 				+ "</div><p><br/></p>" + html;
-		
+
 		/*
 		 * append
 		 */
@@ -120,23 +143,27 @@ public class UploadVideoImpl implements UploadVideo {
 		html += "</div>";
 		html += "<div class='pull-right' style='max-width: 50%; float: right; padding-left: 1rem;'>";
 		html += "<div class='text-right' style='text-algn: right;'>";
-		html += "<h5>View using <a href=\"https://ipfs.io"+videoLink.replaceAll(".m3u8$", ".html")+"\" target=\"_blank\">IPFS.IO</a></h5>";
+		html += "<h5>View using <a href=\"https://ipfs.io" + videoLink.replaceAll(".m3u8$", ".html")
+				+ "\" target=\"_blank\">IPFS.IO</a></h5>";
 		html += "</div>";
 		html += "</div>";
 		html += "<p><br/></p>";
 		html += "</div>";
-		/*
-		 * wrap
-		 */
-		html = "<div class='Markdown show-border'>"+html+"<div class='clear-both'></div></div>";
-		String newHtml = reformatter.reformat(html);
-		view.showPreview(newHtml);
-		GWT.log(newHtml);
+		
+		return html;
 	}
 
 	@Override
-	public void createNewBlogEntry(BlogEntryType entryType, double width, String title, List<? extends Suggestion> tags,
-			String content) {
+	public void createNewBlogEntry(BlogEntryType entryType, double editorWidth, String title, List<? extends Suggestion> tags,
+			String content, String posterImageLocation, String videoLocation) {
+		if (posterImageLocation == null || posterImageLocation.trim().isEmpty()) {
+			view.setErrorPosterImage();
+			return;
+		}
+		if (videoLocation == null || videoLocation.trim().isEmpty()) {
+			view.setErrorVideoFile();
+			return;
+		}
 		if (tags == null || tags.isEmpty()) {
 			view.setErrorBadTags();
 			return;
@@ -145,23 +172,35 @@ public class UploadVideoImpl implements UploadVideo {
 			view.setErrorBadTitle();
 			return;
 		}
-		GWT.log("Content: " + content.length() + "\n" + content);
-		if (content.length() < 16) {
-			view.setErrorBadContent();
-			return;
+		String posterImage;
+		if (posterImageLocation.toLowerCase().startsWith("/")) {
+			posterImage = "https://steemitimages.com/1280x720/https://ipfs.dporn.co"+posterImageLocation;
+		} else {
+			posterImage = posterImageLocation;
 		}
+		String videoLink;
+		if (videoLocation.toLowerCase().startsWith("/")) {
+			videoLink = "https://ipfs.dporn.co"+videoLocation;
+		} else {
+			videoLink = videoLocation;
+		}
+		String permlink = model.getTimestampedPermlink(title);
+		String newHtml = generatePostHtml(editorWidth, posterImage, videoLink, content, //
+				model.getUsername(), permlink);
 		Set<String> _tags = new LinkedHashSet<>();
 		for (Suggestion tag : tags) {
 			_tags.add(tag.getReplacementString());
 		}
 		model.sortTagsByNetVoteDesc(new ArrayList<>(_tags)).thenAccept(t -> {
-			model.newBlogEntry(entryType, width, title, t, content).thenAccept(permlink -> {
+			model.newBlogEntry(entryType, editorWidth, title, new ArrayList<>(_tags), newHtml, posterImage, videoLink, new ArrayList<>(), permlink).thenAccept(p -> {
 				view.reset();
+				new PushStateHistorian().newItem("@"+model.getUsername()+"/"+p, true);
 			});
 		}).exceptionally(ex -> {
 			GWT.log(ex.getMessage(), ex);
-			model.newBlogEntry(entryType, width, title, new ArrayList<>(_tags), content).thenAccept(permlink -> {
+			model.newBlogEntry(entryType, editorWidth, title, new ArrayList<>(_tags), newHtml, posterImage, videoLink, null, permlink).thenAccept(p -> {
 				view.reset();
+				new PushStateHistorian().newItem("@"+model.getUsername()+"/"+p, true);
 			});
 			return null;
 		});
