@@ -219,7 +219,7 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 					return;
 				} else {
 					if (!coverImage.startsWith("https://steemitimages.com/")) {
-						coverImage = "https://steemitimages.com/500x500/" + coverImage;
+						coverImage = "https://steemitimages.com/1280x720/" + coverImage;
 					}
 				}
 				card.setImageUrl(coverImage);
