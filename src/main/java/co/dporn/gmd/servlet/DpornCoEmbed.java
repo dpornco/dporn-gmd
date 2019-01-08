@@ -125,7 +125,7 @@ public class DpornCoEmbed {
 			return null;
 		}
 		String embedHtml = "";
-		if (BlogEntryType.VIDEO == entry.getEntryType() || entry.getVideoPath() != null) {
+		if (entry.getVideoPath() != null) {
 			embedHtml = getVideoEmbedHtml(entry);
 			if (entry.getVideoPath().toLowerCase().endsWith(".m3u8")) {
 				embedHtml = embedHtml.replace("video/mp4", "application/x-mpegURL");
