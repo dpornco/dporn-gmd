@@ -125,7 +125,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 			Iterator<BlogEntry> iter = entries.iterator();
 			while (iter.hasNext()) {
 				BlogEntry next = iter.next();
-				if (BlogEntryType.VIDEO != next.getEntryType()) {
+				if (BlogEntryType.VIDEO != next.getEntryType() || next.getVideoPath()==null || next.getVideoPath().trim().isEmpty()) {
 					iter.remove();
 					continue;
 				}
