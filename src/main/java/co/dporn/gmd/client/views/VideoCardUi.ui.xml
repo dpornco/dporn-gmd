@@ -50,7 +50,7 @@
 		margin: 0px;
 	}
 	</ui:style>
-	<m:MaterialColumn grid="l3 m4 s12"
+	<m:MaterialColumn grid="l3 m6 s12"
 		addStyleNames="{style.column}">
 		<m:MaterialCard ui:field="card"
 			addStyleNames="{style.no-overflow}">
