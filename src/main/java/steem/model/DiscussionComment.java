@@ -36,6 +36,7 @@ public class DiscussionComment {
 	private String parentPermlink;
 	private String pendingPayoutValue;
 	private String permlink;
+	private BigInteger netVotes;
 	private String rootAuthor;
 	private String rootPermlink;
 	private String rootTitle;
@@ -83,6 +84,7 @@ public class DiscussionComment {
 	public String getParentPermlink() {
 		return parentPermlink;
 	}
+	@JsonProperty("pending_payout_value")
 	public String getPendingPayoutValue() {
 		return pendingPayoutValue;
 	}
@@ -101,6 +103,7 @@ public class DiscussionComment {
 	public String getTitle() {
 		return title;
 	}
+	@JsonProperty("total_payout_value")
 	public String getTotalPayoutValue() {
 		return totalPayoutValue;
 	}
@@ -226,6 +229,13 @@ public class DiscussionComment {
 		builder.append(activeVotes);
 		builder.append("]");
 		return builder.toString();
+	}
+	@JsonProperty("net_votes")
+	public BigInteger getNetVotes() {
+		return netVotes;
+	}
+	public void setNetVotes(BigInteger netVotes) {
+		this.netVotes = netVotes;
 	}
 	
 }

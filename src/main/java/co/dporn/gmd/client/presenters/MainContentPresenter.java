@@ -15,6 +15,7 @@ import com.google.gwt.user.client.ui.IsWidget;
 
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.app.Routes;
+import co.dporn.gmd.client.utils.SteemDataUtil;
 import co.dporn.gmd.client.views.BlogCardUi;
 import co.dporn.gmd.client.views.VideoCardUi;
 import co.dporn.gmd.shared.AccountInfo;
@@ -72,6 +73,7 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 				card.setVideoEmbedUrl(Routes.embedVideo(username, p.getPermlink()));
 				card.setViewLink(Routes.blogEntry(username, p.getPermlink()));
 				getContentView().getFeaturedPosts().add(card);
+				SteemDataUtil.updateCardMetadata(model, p.getUsername(), p.getPermlink(), card);
 			});
 		}).exceptionally(ex->{
 			GWT.log(ex.getMessage(), ex);
@@ -161,6 +163,7 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 					card.setViewLink(Routes.blogEntry(username, p.getPermlink()));
 					card.setVideoEmbedUrl(Routes.embedVideo(username, p.getPermlink()));
 					getContentView().getRecentPosts().add(card);
+					SteemDataUtil.updateCardMetadata(model, p.getUsername(), p.getPermlink(), card);
 					if (timer[0] != null) {
 						timer[0].cancel();
 					}
@@ -199,6 +202,7 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 			int[] showDelay = { 0 };
 			f.getAuthors().forEach((username) -> {
 				BlogCardUi card = new BlogCardUi();
+				card.setVoteBarVisible(false);
 				card.setViewLink(Routes.channel(username));
 				card.setDisplayName(username);
 				card.setChannelLinkVisible(false);

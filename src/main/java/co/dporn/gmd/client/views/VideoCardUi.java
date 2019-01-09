@@ -1,5 +1,7 @@
 package co.dporn.gmd.client.views;
 
+import java.math.BigDecimal;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
@@ -14,8 +16,9 @@ import gwt.material.design.client.ui.MaterialVideo;
 import gwt.material.design.client.ui.animate.MaterialAnimation;
 import gwt.material.design.client.ui.animate.Transition;
 
-public class VideoCardUi extends Composite implements VideoCardView {
+public class VideoCardUi extends Composite implements VideoCardView, HasPayoutValues {
 
+	@UiField VoteBarUI voteBarUi;
 	@UiField
 	protected MaterialVideo videoEmbedUrl;
 	@UiField
@@ -111,6 +114,16 @@ public class VideoCardUi extends Composite implements VideoCardView {
 	@Override
 	public void setViewLinkVisible(boolean visible) {
 		this.viewLink.setVisible(visible);
+	}
+
+	@Override
+	public void setEarnings(BigDecimal earnings) {
+		voteBarUi.setEarnings(earnings);
+	}
+
+	@Override
+	public void setVoteCount(long count) {
+		voteBarUi.setVoteCount(count);
 	}
 
 }

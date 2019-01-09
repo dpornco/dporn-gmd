@@ -14,6 +14,7 @@ import com.google.gwt.user.client.ui.IsWidget;
 
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.app.Routes;
+import co.dporn.gmd.client.utils.SteemDataUtil;
 import co.dporn.gmd.client.views.VideoCardUi;
 import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
@@ -98,6 +99,7 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 					card.setViewLink(Routes.blogEntry(entryUsername, p.getPermlink()));
 					card.setVideoEmbedUrl(Routes.embedVideo(entryUsername, p.getPermlink()));
 					getContentView().getRecentPosts().add(card);
+					SteemDataUtil.updateCardMetadata(model, p.getUsername(), p.getPermlink(), card);
 					if (timer[0] != null) {
 						timer[0].cancel();
 					}

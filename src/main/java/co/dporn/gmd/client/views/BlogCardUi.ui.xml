@@ -2,36 +2,42 @@
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
 	xmlns:m='urn:import:gwt.material.design.client.ui'
 	xmlns:ma="urn:import:gwt.material.design.addins.client"
-	xmlns:d="urn:import:co.dporn.gmd.client.views"
-	>
+	xmlns:d="urn:import:co.dporn.gmd.client.views">
 	<ui:style>
 	.no-overflow {
 		overflow: hidden;
 	}
+	
 	.column {
 		max-width: 400px;
 	}
+	
 	.image-card {
- 		width: 100%;
+		width: 100%;
 		height: 160px;
 		margin-bottom: -32px;
 	}
+	
 	.image {
 		width: 100%;
 	}
+	
 	.blog-card {
 		height: 120px;
 	}
+	
 	.avatar {
 		position: absolute;
 		margin-top: -18px;
 		width: 64px;
 		height: 64px;
 	}
+	
 	.author-name {
 		margin-top: 48px;
 		font-size: 1.25em;
 	}
+	
 	.blurb {
 		opacity: 0.6;
 		margin-top: 4;
@@ -40,8 +46,10 @@
 		text-overflow: ellipsis;
 	}
 	</ui:style>
-	<m:MaterialColumn grid="l3 m6 s12" addStyleNames="{style.column}">
-		<m:MaterialCard ui:field="card" addStyleNames="{style.no-overflow}">
+	<m:MaterialColumn grid="l3 m6 s12"
+		addStyleNames="{style.column}">
+		<m:MaterialCard ui:field="card"
+			addStyleNames="{style.no-overflow}">
 			<m:MaterialCardImage
 				addStyleNames="{style.image-card} {style.no-overflow}">
 				<m:MaterialImage ui:field="postImage"
@@ -55,12 +63,16 @@
 					url="/images/avatarImagePlaceholder.png" />
 				<m:MaterialLabel truncate="true"
 					ui:field="displayName" text="@" addStyleNames="{style.author-name}" />
-				<m:MaterialLabel addStyleNames="{style.blurb}" 
-				ui:field="authorBlurb" text="..." />
+				<m:MaterialLabel addStyleNames="{style.blurb}"
+					ui:field="authorBlurb" text="..." />
 			</m:MaterialCardContent>
 			<m:MaterialCardAction>
-				<d:DpornLink ui:field="viewLink" text="VIEW" />
-				<d:DpornLink ui:field="viewChannel" text="CHANNEL" float="RIGHT" />
+				<m:MaterialRow>
+					<d:DpornLink ui:field="viewLink" text="VIEW" />
+					<d:DpornLink ui:field="viewChannel" text="CHANNEL"
+						float="RIGHT" />
+				</m:MaterialRow>
+				<d:VoteBarUI ui:field="voteBarUi"></d:VoteBarUI>
 			</m:MaterialCardAction>
 		</m:MaterialCard>
 	</m:MaterialColumn>

@@ -30,6 +30,7 @@ import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
 import com.google.gwt.storage.client.Storage;
 import com.google.gwt.storage.client.StorageMap;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window.Location;
 import com.wallissoftware.pushstate.client.PushStateHistorian;
 
@@ -125,7 +126,8 @@ public class AppControllerModelImpl implements AppControllerModel {
 			Iterator<BlogEntry> iter = entries.iterator();
 			while (iter.hasNext()) {
 				BlogEntry next = iter.next();
-				if (BlogEntryType.VIDEO != next.getEntryType() || next.getVideoPath()==null || next.getVideoPath().trim().isEmpty()) {
+				if (BlogEntryType.VIDEO != next.getEntryType() || next.getVideoPath() == null
+						|| next.getVideoPath().trim().isEmpty()) {
 					iter.remove();
 					continue;
 				}
@@ -180,9 +182,56 @@ public class AppControllerModelImpl implements AppControllerModel {
 		onRouteChange(historian.getToken());
 	}
 
+	private static class UsernamePermlink {
+		CompletableFuture<DiscussionComment> future;
+		String username;
+		String permlink;
+	}
+
+	private static List<UsernamePermlink> getDiscussionCommentQueue = new ArrayList<>();
+	private static Timer discussionCommentQueueTimer = null;
+
 	@Override
 	public CompletableFuture<DiscussionComment> getDiscussionComment(String username, String permlink) {
-		return SteemApi.getContent(username, permlink);
+		UsernamePermlink upl = new UsernamePermlink();
+		upl.future = new CompletableFuture<DiscussionComment>();
+		upl.username = username;
+		upl.permlink = permlink;
+		synchronized (getDiscussionCommentQueue) {
+			GWT.log("gdc(queue): @"+username+"/"+permlink);
+			getDiscussionCommentQueue.add(upl);
+		}
+		if (discussionCommentQueueTimer != null) {
+			GWT.log("gdc(timer already running): @"+username+"/"+permlink);
+			return upl.future;
+		}
+		discussionCommentQueueTimer = new Timer() {
+			@Override
+			public void run() {
+				synchronized (getDiscussionCommentQueue) {
+					if (getDiscussionCommentQueue.isEmpty()) {
+						discussionCommentQueueTimer.schedule(500);
+						return;
+					}
+					UsernamePermlink lookup = getDiscussionCommentQueue.remove(0);
+					GWT.log("gdc(xhr): @"+lookup.username+"/"+lookup.permlink);
+					SteemApi.getContent(lookup.username, lookup.permlink).thenAccept(comment -> {
+						discussionCommentQueueTimer.schedule(10);
+						GWT.log("gdc(thenAccept): @"+lookup.username+"/"+lookup.permlink);
+						lookup.future.complete(comment);
+					}).exceptionally(ex -> {
+						discussionCommentQueueTimer.schedule(100);
+						GWT.log("gdc(exceptionally): @"+lookup.username+"/"+lookup.permlink);
+						GWT.log(ex.getMessage());
+						lookup.future.completeExceptionally(ex);
+						return null;
+					});
+				}
+			}
+		};
+		GWT.log("gdc(timer created and started): @"+username+"/"+permlink);
+		discussionCommentQueueTimer.schedule(100);
+		return upl.future;
 	}
 
 	@Override
@@ -292,7 +341,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 	public void onRouteChange(ValueChangeEvent<String> routeEvent) {
 		onRouteChange(routeEvent.getValue());
 	}
-	
+
 	@Override
 	public String getUsername() {
 		return appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
@@ -658,21 +707,21 @@ public class AppControllerModelImpl implements AppControllerModel {
 	@Override
 	public CompletableFuture<String> newBlogEntry(BlogEntryType blogEntryType, double width, String title,
 			List<String> tags, String content) {
-		return newBlogEntry(blogEntryType, width, title,
-				tags, content, null, null, null);
+		return newBlogEntry(blogEntryType, width, title, tags, content, null, null, null);
 	}
-	
+
 	@Override
 	public CompletableFuture<String> newBlogEntry(BlogEntryType blogEntryType, double width, String title,
 			List<String> tags, String content, String posterImage, String videoLink, List<String> photoGalleryImages) {
 		String permlink = getTimestampedPermlink(title);
-		return newBlogEntry(blogEntryType, width, title, tags, content, posterImage, videoLink, photoGalleryImages, permlink);
+		return newBlogEntry(blogEntryType, width, title, tags, content, posterImage, videoLink, photoGalleryImages,
+				permlink);
 	}
-	
-	
+
 	@Override
 	public CompletableFuture<String> newBlogEntry(BlogEntryType blogEntryType, double width, String title,
-			List<String> tags, String content, String posterImage, String videoLink, List<String> photoGalleryImages, String permlink) {
+			List<String> tags, String content, String posterImage, String videoLink, List<String> photoGalleryImages,
+			String permlink) {
 
 		HtmlReformatter reformatter = new HtmlReformatter(width);
 		content = "<html>" + reformatter.reformat(content) + "</html>";
@@ -776,12 +825,12 @@ public class AppControllerModelImpl implements AppControllerModel {
 		dpornMetadata.put("app", new JSONString(DpornConsts.APP_ID_VERSION));
 		dpornMetadata.put("embed", new JSONString(Routes.embedVideo(username, permlink)));
 		dpornMetadata.put("entryType", new JSONString(blogEntryType.name()));
-		dpornMetadata.put("videoPath", videoLink==null?null:new JSONString(videoLink));
-		dpornMetadata.put("posterImagePath", posterImage==null?null:new JSONString(posterImage));
-		if (photoGalleryImages!=null) {
+		dpornMetadata.put("videoPath", videoLink == null ? null : new JSONString(videoLink));
+		dpornMetadata.put("posterImagePath", posterImage == null ? null : new JSONString(posterImage));
+		if (photoGalleryImages != null) {
 			JSONArray paths = new JSONArray();
-			for (String galleryImage: photoGalleryImages) {
-				if (galleryImage!=null && !galleryImage.trim().isEmpty()) {
+			for (String galleryImage : photoGalleryImages) {
+				if (galleryImage != null && !galleryImage.trim().isEmpty()) {
 					paths.set(paths.size(), new JSONString(galleryImage.trim()));
 				}
 			}
@@ -894,7 +943,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 		ClientRestClient.get().getIsVerified(username).thenAccept(r -> {
 			boolean verified = r.isVerified();
 			VERIFIED_CACHE.put(username, verified);
-			VERIFIED_CACHE_EXPIRES = System.currentTimeMillis()+5l*60000l;
+			VERIFIED_CACHE_EXPIRES = System.currentTimeMillis() + 5l * 60000l;
 			future.complete(verified);
 		});
 		return future;

@@ -16,6 +16,8 @@ import gwt.material.design.client.ui.animate.Transition;
 
 public class BlogCardUi extends Composite implements BlogCardView {
 	@UiField
+	protected VoteBarUI voteBarUi;
+	@UiField
 	protected MaterialImage postImage;
 	@UiField
 	protected MaterialImage avatarImage;
@@ -106,5 +108,9 @@ public class BlogCardUi extends Composite implements BlogCardView {
 	@Override
 	public void setViewLinkVisible(boolean visible) {
 		this.viewLink.setVisible(visible);
+	}
+
+	public void setVoteBarVisible(boolean visible) {
+		voteBarUi.setVisible(visible);
 	}
 }
