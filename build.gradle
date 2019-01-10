@@ -18,6 +18,7 @@ apply plugin: 'eclipse-wtp'
 apply plugin: 'idea'
 apply plugin: 'net.ltgt.apt-eclipse'
 apply plugin: 'org.gretty'
+apply plugin: 'maven'
 
 version = '20181029'
 group = "dpornco"
@@ -160,6 +161,8 @@ dependencies {
 	testCompile 'org.testng:testng:6.+'
 }
 
+
+
 task "create-dirs" {
 	doLast{
 	sourceSets*.java.srcDirs*.each { it.mkdirs() }
@@ -252,3 +255,21 @@ test {
   maxHeapSize = "2048m"
 }
  
+ task createPom << {
+    pom {
+        project {
+            groupId 'co.dporn'
+            artifactId 'gmd'
+            version '1.0.0'
+
+            inceptionYear '2018'
+            licenses {
+                license {
+                    name 'The Apache Software License, Version 2.0'
+                    url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    distribution 'repo'
+                }
+            }
+        }
+    }.writeTo("pom.xml")
+}
