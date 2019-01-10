@@ -68,7 +68,7 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 			editor.clearErrorText();
 			ac.clearErrorText();
 			presenter.createNewBlogEntry( //
-					BlogEntryType.EROTICA, //
+					BlogEntryType.BLOG, //
 					editor.getEditor().width(), //
 					title.getValue(), //
 					ac.getValue(), //

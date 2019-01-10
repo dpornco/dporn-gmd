@@ -89,16 +89,6 @@ public class UploadEroticaImpl implements UploadErotica {
 		HtmlReformatter reformatter = new HtmlReformatter(imgScaleWidth);
 		String newHtml = reformatter.reformat(html);
 		view.showPreview(newHtml);
-//		GWT.log(newHtml);
-//		model.getHtmlSanitized(newHtml).thenAccept(response->{
-//			String sanitizedHtml = response.getSanitizedHtml();
-//			GWT.log(html);
-//			GWT.log(sanitizedHtml);
-//			view.showPreview(sanitizedHtml);
-//		}).exceptionally((ex)->{
-//			MaterialToast.fireToast(ex.getMessage());
-//			return null;
-//		});
 	}
 
 	@Override

@@ -42,7 +42,7 @@
 			<d:DpornLink ui:field="linkVerified" href="/verified"
 				text="Verified NSFW" iconType="PEOPLE" separator="true" />
 			<d:DpornLink ui:field="linkPostErotica"
-				href="/upload/erotica" enabled="false" text="Post Erotica"
+				href="/upload/erotica" enabled="false" text="Post Article"
 				iconType="FORMAT_ALIGN_JUSTIFY" separator="true" />
 			<d:DpornLink ui:field="linkUploadPhotos"
 				href="/upload/photos" enabled="false" text="Post Photogallery"

@@ -198,11 +198,9 @@ public class AppControllerModelImpl implements AppControllerModel {
 		upl.username = username;
 		upl.permlink = permlink;
 		synchronized (getDiscussionCommentQueue) {
-			GWT.log("gdc(queue): @"+username+"/"+permlink);
 			getDiscussionCommentQueue.add(upl);
 		}
 		if (discussionCommentQueueTimer != null) {
-			GWT.log("gdc(timer already running): @"+username+"/"+permlink);
 			return upl.future;
 		}
 		discussionCommentQueueTimer = new Timer() {
@@ -214,23 +212,19 @@ public class AppControllerModelImpl implements AppControllerModel {
 						return;
 					}
 					UsernamePermlink lookup = getDiscussionCommentQueue.remove(0);
-					GWT.log("gdc(xhr): @"+lookup.username+"/"+lookup.permlink);
 					SteemApi.getContent(lookup.username, lookup.permlink).thenAccept(comment -> {
 						discussionCommentQueueTimer.schedule(10);
-						GWT.log("gdc(thenAccept): @"+lookup.username+"/"+lookup.permlink);
 						lookup.future.complete(comment);
 					}).exceptionally(ex -> {
-						discussionCommentQueueTimer.schedule(100);
-						GWT.log("gdc(exceptionally): @"+lookup.username+"/"+lookup.permlink);
-						GWT.log(ex.getMessage());
+						discussionCommentQueueTimer.schedule(500);
+						DomGlobal.console.log(ex.getMessage());
 						lookup.future.completeExceptionally(ex);
 						return null;
 					});
 				}
 			}
 		};
-		GWT.log("gdc(timer created and started): @"+username+"/"+permlink);
-		discussionCommentQueueTimer.schedule(100);
+		discussionCommentQueueTimer.schedule(10);
 		return upl.future;
 	}
 
@@ -863,7 +857,13 @@ public class AppControllerModelImpl implements AppControllerModel {
 		JSONObject beneficiariesData = new JSONObject();
 		// TODO: support user specified post splits
 		JSONArray beneficiaryList = new JSONArray();
-		for (Beneficiary ben : DpornConsts.BENEFICIARIES) {
+		List<Beneficiary> bens;
+		if (BlogEntryType.BLOG == blogEntryType) {
+			bens = DpornConsts.BENEFICIARIES_BLOG_ENTRIES;
+		} else {
+			bens = DpornConsts.BENEFICIARIES_DEFAULT;
+		}
+		for (Beneficiary ben : bens) {
 			JSONObject beneficiary = new JSONObject();
 			beneficiary.put("account", new JSONString(ben.getAccount()));
 			beneficiary.put("weight", new JSONNumber(ben.getWeight()));
