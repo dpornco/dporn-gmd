@@ -181,7 +181,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 				GWT.log("Upload: Erotica");
 				deferred(() -> {
 					UploadEroticaView childView = new UploadEroticaUi(tagOracle,
-							new TreeSet<>(DpornConsts.MANDATORY_EROTICA_TAGS));
+							new TreeSet<>(DpornConsts.MANDATORY_BLOG_TAGS));
 					UploadErotica childPresenter = new UploadEroticaImpl(model, childView);
 					presenters.put(route, childPresenter);
 					GWT.log("activeChildPresenter = childPresenter;");

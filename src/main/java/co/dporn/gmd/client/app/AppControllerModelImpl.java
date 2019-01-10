@@ -646,7 +646,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 					t.setNetVotes(totalNetVotes.add(BigInteger.valueOf(2)));
 					continue;
 				}
-				if (DpornConsts.MANDATORY_EROTICA_TAGS.contains(t.getName())) {
+				if (DpornConsts.MANDATORY_BLOG_TAGS.contains(t.getName())) {
 					t.setNetVotes(totalNetVotes.add(BigInteger.valueOf(1)));
 					continue;
 				}

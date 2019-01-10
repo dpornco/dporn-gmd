@@ -10,7 +10,7 @@ import steem.model.Beneficiary;
 public interface DpornConsts {
 	Set<String> MANDATORY_TAGS = new TreeSet<>(Arrays.asList("dporn", "nsfw"));
 	Set<String> MANDATORY_VIDEO_TAGS = new TreeSet<>(Arrays.asList("dporn", "nsfw", "dporncovideo"));
-	Set<String> MANDATORY_EROTICA_TAGS = new TreeSet<>(Arrays.asList("dporn", "nsfw", "erotica"));
+	Set<String> MANDATORY_BLOG_TAGS = new TreeSet<>(Arrays.asList("dporn", "nsfw"));
 	Set<String> MANDATORY_PHOTO_GALLERY_TAGS = new TreeSet<>(Arrays.asList("dporn", "nsfw", "photos"));
 	List<Beneficiary> BENEFICIARIES_DEFAULT = Arrays.asList(//
 			new Beneficiary("dporn", 200), //
