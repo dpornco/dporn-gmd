@@ -113,9 +113,6 @@ public class AppControllerModelImpl implements AppControllerModel {
 		Scheduler.get().scheduleDeferred(cmd);
 	}
 
-	/**
-	 * TODO: Move this into the servlet and cache for at least 30 minutes.
-	 */
 	@Override
 	public CompletableFuture<BlogEntryListResponse> listFeaturedBlogEntries(int count) {
 		CompletableFuture<BlogEntryListResponse> finalFuture = new CompletableFuture<>();
@@ -639,36 +636,42 @@ public class AppControllerModelImpl implements AppControllerModel {
 			futures.add(futureTrendingTags);
 		}
 		CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[0])).thenRun(() -> {
-			BigInteger totalNetVotes = BigInteger.ZERO;
+			BigInteger totalCommentsCount = BigInteger.ZERO;
 			// get sum of weights and then pre-weight several special tags like "dporn" and
 			// "nsfw" to always be first in sorted list
 			for (TrendingTag t : trendingList) {
-				totalNetVotes = totalNetVotes.add(t.getNetVotes());
+				if (t.getComments()==null) {
+					t.setComments(t.getTopPosts());
+				}
+				if (t.getComments()==null) {
+					t.setComments(BigInteger.ZERO);
+				}
+				totalCommentsCount = totalCommentsCount.add(t.getComments());
 			}
 			for (TrendingTag t : trendingList) {
 				if (t.getName().equals("dporn")) {
-					t.setNetVotes(totalNetVotes.add(BigInteger.valueOf(5)));
+					t.setComments(totalCommentsCount.add(BigInteger.valueOf(5)));
 					continue;
 				}
 				if (t.getName().equals("nsfw")) {
-					t.setNetVotes(totalNetVotes.add(BigInteger.valueOf(4)));
+					t.setComments(totalCommentsCount.add(BigInteger.valueOf(4)));
 					continue;
 				}
 				if (DpornConsts.MANDATORY_VIDEO_TAGS.contains(t.getName())) {
-					t.setNetVotes(totalNetVotes.add(BigInteger.valueOf(3)));
+					t.setComments(totalCommentsCount.add(BigInteger.valueOf(3)));
 					continue;
 				}
 				if (DpornConsts.MANDATORY_PHOTO_GALLERY_TAGS.contains(t.getName())) {
-					t.setNetVotes(totalNetVotes.add(BigInteger.valueOf(2)));
+					t.setComments(totalCommentsCount.add(BigInteger.valueOf(2)));
 					continue;
 				}
 				if (DpornConsts.MANDATORY_BLOG_TAGS.contains(t.getName())) {
-					t.setNetVotes(totalNetVotes.add(BigInteger.valueOf(1)));
+					t.setComments(totalCommentsCount.add(BigInteger.valueOf(1)));
 					continue;
 				}
 			}
 			// sort, build simple string list, then sort desc and return list
-			Collections.sort(trendingList, (a, b) -> b.getNetVotes().compareTo(a.getNetVotes()));
+			Collections.sort(trendingList, (a, b) -> b.getComments().compareTo(a.getComments()));
 			List<String> result = new ArrayList<>();
 			for (TrendingTag t : trendingList) {
 				result.add(t.getName());
@@ -676,10 +679,11 @@ public class AppControllerModelImpl implements AppControllerModel {
 			future.complete(result);
 		}).exceptionally(ex -> {
 			if (ex == null) {
-				GWT.log("NULL EXCEPTION: CompletableFuture.allOf(...) in sortTagsByNetVoteDesc");
+				DomGlobal.console.log("NULL EXCEPTION: CompletableFuture.allOf(...) in sortTagsByNetVoteDesc");
 				return null;
 			}
-			GWT.log(ex.getMessage(), ex);
+			DomGlobal.console.log(ex.getMessage());
+			DomGlobal.console.log(ex);
 			return null;
 		});
 		return future;
