@@ -48,8 +48,8 @@ public class SteemJInstance {
 		} catch (SteemCommunicationException | SteemResponseException e) {
 			_steemJ = null;
 		}
-		cachedStringLists = Collections.synchronizedMap(new PassiveExpiringMap<>(30*MINUTE_ms, new LRUMap<>(16)));
-		cachedBlogDetailMaps = Collections.synchronizedMap(new PassiveExpiringMap<>(10*MINUTE_ms, new LRUMap<>(16)));
+		cachedStringLists = Collections.synchronizedMap(new PassiveExpiringMap<>(1*MINUTE_ms, new LRUMap<>(32)));
+		cachedBlogDetailMaps = Collections.synchronizedMap(new PassiveExpiringMap<>(1*MINUTE_ms, new LRUMap<>(32)));
 	}
 	
 	public Discussion getContent(String username, String permlink) {
@@ -58,7 +58,7 @@ public class SteemJInstance {
 				return _steemJ.getContent(new AccountName(username), new Permlink(permlink));
 			} catch (SteemCommunicationException | SteemResponseException e) {
 				try {
-					Thread.sleep(250);
+					Thread.sleep(500);
 				} catch (InterruptedException e1) {
 				}
 			}
@@ -84,7 +84,6 @@ public class SteemJInstance {
 		TreeSet<String> sortedActive = new TreeSet<>(active);
 		Map<String, AccountInfo> cached = cachedBlogDetailMaps.get(sortedActive.toString());
 		if (cached != null) {
-			System.out.println("getBlogDetail[multi]:cached");
 			return new HashMap<>(cached);
 		}
 		for (String a : sortedActive) {
@@ -125,7 +124,6 @@ public class SteemJInstance {
 	public synchronized List<String> getActiveDpornVerifiedList() {
 		List<String> cached = cachedStringLists.get(VERIFIED_ACTIVE_LIST_KEY);
 		if (cached != null) {
-			System.out.println("getActiveDpornVerifiedList:cached");
 			return new ArrayList<>(cached);
 		}
 		List<String> active = new ArrayList<>();
@@ -158,7 +156,6 @@ public class SteemJInstance {
 	public synchronized Set<String> getDpornVerifiedSet() {
 		List<String> cached = cachedStringLists.get(VERIFIED_FULL_LIST_KEY);
 		if (cached != null) {
-			System.out.println("getDpornVerifiedSet:cached");
 			return new TreeSet<>(cached);
 		}
 		Set<String> set = new TreeSet<>();

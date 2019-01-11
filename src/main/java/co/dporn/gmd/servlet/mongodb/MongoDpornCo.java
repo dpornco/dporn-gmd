@@ -47,7 +47,7 @@ public class MongoDpornCo {
 	private static final Set<String> CACHED_TAGS = new TreeSet<>();
 	private static long cachedTagsExpire = 0;
 
-	private static Map<String, BlogEntry> ENTRY_CACHE = new PassiveExpiringMap<>(30l * 60l * 1000l, new LRUMap<>(128));
+	private static Map<String, BlogEntry> ENTRY_CACHE = new PassiveExpiringMap<>(60l * 1000l, new LRUMap<>(128));
 
 	private static final int MAX_TAG_SUGGEST = 20;
 	private static final String[] NO_TAG_SUGGEST = { "dporn", "dpornvideo", "dpornco", "dporncovideo", "nsfw" };
@@ -146,12 +146,12 @@ public class MongoDpornCo {
 	}
 
 	public static BlogEntry getEntry(String authorname, String permlink) {
-		String key = authorname + "|" + permlink;
-		BlogEntry cached = ENTRY_CACHE.get(key);
-		if (cached != null) {
-			return cached;
-		}
 		synchronized (ENTRY_CACHE) {
+			String key = authorname + "|" + permlink;
+			BlogEntry cached = ENTRY_CACHE.get(key);
+			if (cached != null) {
+				return cached;
+			}
 			try (MongoClient client = MongoClients.create()) {
 				MongoDatabase db = client.getDatabase("dpdb");
 				MongoCollection<Document> collection = db.getCollection(TABLE_BLOG_ENTRIES_V2);
@@ -174,37 +174,40 @@ public class MongoDpornCo {
 		}
 	}
 
-	public static synchronized List<String> getMatchingTags(String prefix) {
+	public static List<String> getMatchingTags(String prefix) {
+		synchronized (CACHED_TAGS) {
+			if (CACHED_TAGS.isEmpty() || cachedTagsExpire < System.currentTimeMillis()) {
+				initCachedTags();
+			}
 
-		if (CACHED_TAGS.isEmpty() || cachedTagsExpire < System.currentTimeMillis()) {
-			initCachedTags();
-		}
+			prefix = prefix.trim().toLowerCase();
+			if (prefix.isEmpty()) {
+				return new ArrayList<>(CACHED_TAGS).subList(0, MAX_TAG_SUGGEST);
+			}
 
-		prefix = prefix.trim().toLowerCase();
-		if (prefix.isEmpty()) {
-			return new ArrayList<>(CACHED_TAGS).subList(0, MAX_TAG_SUGGEST);
-		}
-
-		Set<String> tags = new TreeSet<>();
-		for (String tag : CACHED_TAGS) {
-			if (tag.startsWith(prefix)) {
-				tags.add(tag);
-				if (tags.size() >= MAX_TAG_SUGGEST) {
-					break;
+			Set<String> tags = new TreeSet<>();
+			for (String tag : CACHED_TAGS) {
+				if (tag.startsWith(prefix)) {
+					tags.add(tag);
+					if (tags.size() >= MAX_TAG_SUGGEST) {
+						break;
+					}
 				}
 			}
+			return new ArrayList<>(tags);
 		}
-		return new ArrayList<>(tags);
 	};
 
-	private static synchronized void initCachedTags() {
-		CACHED_TAGS.clear();
-		_listBlogEntries(BlogEntryType.ANY, "", 250).forEach(p -> {
-			CACHED_TAGS.addAll(p.getCommunityTags());
-		});
-		CACHED_TAGS.removeAll(Arrays.asList(NO_TAG_SUGGEST));
-		if (!CACHED_TAGS.isEmpty()) {
-			cachedTagsExpire = System.currentTimeMillis() + TAGS_EXPIRE_TIME;
+	private static void initCachedTags() {
+		synchronized (CACHED_TAGS) {
+			CACHED_TAGS.clear();
+			_listBlogEntries(BlogEntryType.ANY, "", 100).forEach(p -> {
+				CACHED_TAGS.addAll(p.getCommunityTags());
+			});
+			CACHED_TAGS.removeAll(Arrays.asList(NO_TAG_SUGGEST));
+			if (!CACHED_TAGS.isEmpty()) {
+				cachedTagsExpire = System.currentTimeMillis() + TAGS_EXPIRE_TIME;
+			}
 		}
 	}
 
@@ -222,7 +225,7 @@ public class MongoDpornCo {
 			MongoCollection<Document> collection = db.getCollection(TABLE_BLOG_ENTRIES_V2);
 			try {
 				collection.insertOne(doc);
-				if (entry.getEntryType()==BlogEntryType.VIDEO) {
+				if (entry.getEntryType() == BlogEntryType.VIDEO) {
 					insertLegacyEntry(entry);
 				}
 			} catch (Exception e) {
@@ -325,7 +328,7 @@ public class MongoDpornCo {
 			legacyEntry.put("migrated", true);
 			MongoCollection<Document> videos_old = db.getCollection(TABLE_VIDEOS);
 			videos_old.insertOne(legacyEntry);
-		} 
+		}
 	}
 
 	public static synchronized void migrationCheck() {
