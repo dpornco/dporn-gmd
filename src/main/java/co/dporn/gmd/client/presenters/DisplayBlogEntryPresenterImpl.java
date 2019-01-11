@@ -1,5 +1,7 @@
 package co.dporn.gmd.client.presenters;
 
+import com.google.gwt.user.client.Window;
+
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.app.Routes;
 import co.dporn.gmd.shared.AccountInfo;
@@ -115,5 +117,8 @@ public class DisplayBlogEntryPresenterImpl implements DisplayBlogEntryPresenter 
 		// TODO Auto-generated method stub
 
 	}
-
+	@Override
+	public void scrollToTop() {
+		Window.scrollTo(0, 0);
+	}
 }

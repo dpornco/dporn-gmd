@@ -138,4 +138,8 @@ public class UploadEroticaImpl implements UploadErotica {
 		completableFuture.completeExceptionally(new RuntimeException("Not Implemented."));
 		return completableFuture;
 	}
+	@Override
+	public void scrollToTop() {
+		Window.scrollTo(0, 0);
+	}
 }

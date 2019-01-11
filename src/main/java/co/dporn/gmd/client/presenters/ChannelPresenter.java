@@ -188,4 +188,8 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 	public void restoreScrollPosition() {
 		Window.scrollTo(posX, posY);
 	}
+	@Override
+	public void scrollToTop() {
+		Window.scrollTo(0, 0);
+	}
 }

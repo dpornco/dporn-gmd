@@ -93,6 +93,8 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 					activeChildPresenter = presenters.get(route);
 					view.setChildPresenter(presenters.get(route));
 					deferred(() -> activeChildPresenter.restoreScrollPosition());
+				} else {
+					activeChildPresenter.scrollToTop();
 				}
 			});
 		} else {
@@ -335,5 +337,10 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 	@Override
 	public void toast(String message) {
 		view.toast(message);
+	}
+
+	@Override
+	public void scrollToTop() {
+		Window.scrollTo(0, 0);
 	}
 }

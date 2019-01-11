@@ -75,7 +75,7 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 				getContentView().getFeaturedPosts().add(card);
 				SteemDataUtil.updateCardMetadata(model, p.getUsername(), p.getPermlink(), card);
 			});
-		}).exceptionally(ex->{
+		}).exceptionally(ex -> {
 			GWT.log(ex.getMessage(), ex);
 			return null;
 		});
@@ -95,15 +95,19 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 
 	private String lastRecentId = null;
 	private int _recentVideosCounter = 0;
+
 	private synchronized int incRecentVideoCount() {
 		return ++_recentVideosCounter;
 	}
+
 	private synchronized int getRecentVideoCount() {
 		return _recentVideosCounter;
 	}
+
 	private void loadRecentVideos() {
 		loadRecentVideos(4);
 	}
+
 	private void loadRecentVideos(int count) {
 		showLoading(true);
 		Timer[] timer = { null };
@@ -112,10 +116,10 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 			listEntries = model.listBlogEntries(BlogEntryType.VIDEO, count);
 			getContentView().getRecentPosts().clear();
 		} else {
-			listEntries = model.listBlogEntries(BlogEntryType.VIDEO, lastRecentId, count+1);
+			listEntries = model.listBlogEntries(BlogEntryType.VIDEO, lastRecentId, count + 1);
 		}
 		listEntries.thenAccept((l) -> {
-			if (l.getBlogEntries().size()<2 && lastRecentId!=null) {
+			if (l.getBlogEntries().size() < 2 && lastRecentId != null) {
 				showLoading(false);
 				return;
 			}
@@ -129,7 +133,8 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 				}
 				newLastRecentId = next.getId().getOid();
 				if (BlogEntryType.VIDEO != next.getEntryType()) {
-					GWT.log("SKIPPING RECENT POST: "+next.getUsername()+" | "+next.getPermlink()+" | "+next.getEntryType());
+					GWT.log("SKIPPING RECENT POST: " + next.getUsername() + " | " + next.getPermlink() + " | "
+							+ next.getEntryType());
 					ilist.remove();
 					continue;
 				}
@@ -170,7 +175,7 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 					timer[0] = new Timer() {
 						@Override
 						public void run() {
-							if (Document.get().getBody().getScrollHeight()<=Window.getClientHeight()) {
+							if (Document.get().getBody().getScrollHeight() <= Window.getClientHeight()) {
 								loadRecentVideos();
 							} else {
 								activateScrollfire(card);
@@ -181,11 +186,11 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 					timer[0].schedule(500);
 				});
 			});
-			lastRecentId=newLastRecentId;
-			GWT.log("Have "+getRecentVideoCount()+" recent videos.");
-			if (getRecentVideoCount()%4 != 0) {
-				GWT.log("Loading extra recent videos: "+(4-getRecentVideoCount()%4));
-				loadRecentVideos(4-getRecentVideoCount()%4);
+			lastRecentId = newLastRecentId;
+			GWT.log("Have " + getRecentVideoCount() + " recent videos.");
+			if (getRecentVideoCount() % 4 != 0) {
+				GWT.log("Loading extra recent videos: " + (4 - getRecentVideoCount() % 4));
+				loadRecentVideos(4 - getRecentVideoCount() % 4);
 			}
 		});
 	}
@@ -244,7 +249,7 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 	public void setModel(AppControllerModel model) {
 		this.model = model;
 	}
-	
+
 	@Override
 	public void execute() {
 		GWT.log(this.getClass().getSimpleName() + "#execute");
@@ -253,15 +258,22 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 		loadFeaturedVideos();
 	}
 
-	private int posX=0;
-	private int posY=0;
+	private int posX = 0;
+	private int posY = 0;
+
 	@Override
 	public void saveScrollPosition() {
-		posX=Window.getScrollLeft();
-		posY=Window.getScrollTop();
+		posX = Window.getScrollLeft();
+		posY = Window.getScrollTop();
 	}
 
 	@Override
 	public void restoreScrollPosition() {
 		Window.scrollTo(posX, posY);
-	}}
+	}
+
+	@Override
+	public void scrollToTop() {
+		Window.scrollTo(0, 0);
+	}
+}

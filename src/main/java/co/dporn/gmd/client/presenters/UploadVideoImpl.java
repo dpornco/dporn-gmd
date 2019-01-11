@@ -203,4 +203,8 @@ public class UploadVideoImpl implements UploadVideo {
 	public CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, OnprogressFn onprogress) {
 		return null;
 	}
+	@Override
+	public void scrollToTop() {
+		Window.scrollTo(0, 0);
+	}
 }

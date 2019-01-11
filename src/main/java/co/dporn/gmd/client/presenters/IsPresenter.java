@@ -12,6 +12,7 @@ public interface IsPresenter<V extends IsView<?>> {
 	void setView(V view);
 	void saveScrollPosition();
 	void restoreScrollPosition();
+	void scrollToTop();
 	
 	default void deferred(ScheduledCommand cmd) {
 		Scheduler.get().scheduleDeferred(cmd);
