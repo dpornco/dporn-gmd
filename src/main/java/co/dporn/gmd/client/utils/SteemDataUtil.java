@@ -5,10 +5,12 @@ import java.math.BigDecimal;
 import com.google.gwt.core.client.GWT;
 
 import co.dporn.gmd.client.app.AppControllerModel;
+import co.dporn.gmd.client.views.CanBeDeleted;
 import co.dporn.gmd.client.views.HasPayoutValues;
+import co.dporn.gmd.shared.CommentNotFoundException;
 
 public class SteemDataUtil {
-	public static void updateCardMetadata(AppControllerModel model, String username, String permlink, HasPayoutValues card) {
+	public static <T extends HasPayoutValues & CanBeDeleted> void updateCardMetadata(AppControllerModel model, String username, String permlink, T card) {
 		model.getDiscussionComment(username, permlink).thenAccept((comment)->{
 			GWT.log("updateCardMetadata: "+comment.getNetVotes()+" net votes.");
 			card.setVoteCount(comment.getNetVotes().longValue());
@@ -36,6 +38,9 @@ public class SteemDataUtil {
 		}).exceptionally((ex)->{
 			GWT.log("updateCardMetadata: "+ex.getMessage());
 			card.setVoteCount(-1);
+			if (ex instanceof CommentNotFoundException) {
+				card.setDeleted(((CommentNotFoundException)ex).isDeleted());
+			}
 			return null;
 		});
 	}

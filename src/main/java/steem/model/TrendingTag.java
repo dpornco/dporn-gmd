@@ -6,13 +6,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TrendingTag {
 	private BigInteger comments;
-	private String name;
-	@JsonProperty("net_votes")
-	private BigInteger netVotes;
-	@JsonProperty("top_posts")
-	private BigInteger topPosts;
 	@JsonProperty("total_payouts")
 	private String totalPayouts;
+	@JsonProperty("top_posts")
+	private BigInteger topPosts;
+	private String name;
+	@JsonProperty("net_votes")
+	
+	@Deprecated
+	private BigInteger netVotes;
+	
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -42,6 +45,7 @@ public class TrendingTag {
 		return name;
 	}
 
+	@Deprecated
 	@JsonProperty("net_votes")
 	public BigInteger getNetVotes() {
 		return netVotes;
@@ -69,6 +73,7 @@ public class TrendingTag {
 		this.name = name;
 	}
 
+	@Deprecated
 	@JsonProperty("net_votes")
 	public void setNetVotes(BigInteger netVotes) {
 		this.netVotes = netVotes;

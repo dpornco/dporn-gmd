@@ -42,6 +42,7 @@ import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.BlogEntry;
 import co.dporn.gmd.shared.BlogEntryListResponse;
 import co.dporn.gmd.shared.BlogEntryType;
+import co.dporn.gmd.shared.CommentNotFoundException;
 import co.dporn.gmd.shared.DpornConsts;
 import co.dporn.gmd.shared.HtmlSanitizedResponse;
 import co.dporn.gmd.shared.IpfsHashResponse;
@@ -214,11 +215,26 @@ public class AppControllerModelImpl implements AppControllerModel {
 					UsernamePermlink lookup = getDiscussionCommentQueue.remove(0);
 					SteemApi.getContent(lookup.username, lookup.permlink).thenAccept(comment -> {
 						discussionCommentQueueTimer.schedule(10);
+						if (!lookup.username.equals(comment.getAuthor())) {
+							DomGlobal.console.log("Checking if deleted: @"+lookup.username+"/"+lookup.permlink);
+							ClientRestClient.get().check(lookup.username, lookup.permlink).thenAccept(d->{
+								lookup.future.completeExceptionally(new CommentNotFoundException(d.isDeleted()));
+							}).exceptionally(x->{
+								lookup.future.completeExceptionally(new CommentNotFoundException(false));
+								return null;
+							});
+							return;
+						}
 						lookup.future.complete(comment);
 					}).exceptionally(ex -> {
+						ClientRestClient.get().check(lookup.username, lookup.permlink).thenAccept(d->{
+							lookup.future.completeExceptionally(new CommentNotFoundException(d.isDeleted()));
+						}).exceptionally(x->{
+							lookup.future.completeExceptionally(ex);
+							return null;
+						});
 						discussionCommentQueueTimer.schedule(500);
 						DomGlobal.console.log(ex.getMessage());
-						lookup.future.completeExceptionally(ex);
 						return null;
 					});
 				}

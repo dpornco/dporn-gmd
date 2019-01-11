@@ -16,7 +16,7 @@ import gwt.material.design.client.ui.MaterialVideo;
 import gwt.material.design.client.ui.animate.MaterialAnimation;
 import gwt.material.design.client.ui.animate.Transition;
 
-public class VideoCardUi extends Composite implements VideoCardView, HasPayoutValues {
+public class VideoCardUi extends Composite implements VideoCardView, HasPayoutValues, CanBeDeleted {
 
 	@UiField VoteBarUI voteBarUi;
 	@UiField
@@ -124,6 +124,16 @@ public class VideoCardUi extends Composite implements VideoCardView, HasPayoutVa
 	@Override
 	public void setVoteCount(long count) {
 		voteBarUi.setVoteCount(count);
+	}
+
+	@Override
+	public void setDeleted(boolean deleted) {
+		MaterialAnimation animation = new MaterialAnimation();
+		animation.setTransition(Transition.ZOOMOUT);
+		animation.setDelay(250);
+		animation.setDuration(250+showDelay);
+		animation.animate(card);
+		animation.animate(()->removeFromParent());
 	}
 
 }

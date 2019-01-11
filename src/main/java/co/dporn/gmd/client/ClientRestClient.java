@@ -16,6 +16,7 @@ import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.BlogEntryListResponse;
 import co.dporn.gmd.shared.BlogEntryResponse;
 import co.dporn.gmd.shared.BlogEntryType;
+import co.dporn.gmd.shared.CheckEntryResponse;
 import co.dporn.gmd.shared.CommentConfirmResponse;
 import co.dporn.gmd.shared.DpornCoApi;
 import co.dporn.gmd.shared.HtmlSanitizedResponse;
@@ -207,9 +208,9 @@ public class ClientRestClient {
 		}
 	}
 
-	public CompletableFuture<Void> check(String username, String permlink) {
+	public CompletableFuture<CheckEntryResponse> check(String username, String permlink) {
 		GWT.log("-> embed html");
-		MethodCallbackAsFuture<Void> callback = new MethodCallbackAsFuture<>();
+		MethodCallbackAsFuture<CheckEntryResponse> callback = new MethodCallbackAsFuture<>();
 		call(callback).check(username, permlink);
 		return callback.getFuture();
 	}

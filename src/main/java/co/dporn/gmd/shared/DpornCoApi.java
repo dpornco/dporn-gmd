@@ -36,7 +36,7 @@ public interface DpornCoApi {
 
 	@Path("blog/check/{username}/{permlink}")
 	@GET
-	void check(@PathParam("username") String username, @PathParam("permlink") String permlink);
+	CheckEntryResponse check(@PathParam("username") String username, @PathParam("permlink") String permlink);
 
 	@Path("blog/confirm/{permlink}")
 	@POST

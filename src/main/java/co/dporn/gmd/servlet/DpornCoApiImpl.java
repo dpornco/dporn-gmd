@@ -51,6 +51,7 @@ import co.dporn.gmd.shared.BlogEntry;
 import co.dporn.gmd.shared.BlogEntryListResponse;
 import co.dporn.gmd.shared.BlogEntryResponse;
 import co.dporn.gmd.shared.BlogEntryType;
+import co.dporn.gmd.shared.CheckEntryResponse;
 import co.dporn.gmd.shared.CommentConfirmResponse;
 import co.dporn.gmd.shared.DpornCoApi;
 import co.dporn.gmd.shared.HtmlSanitizedResponse;
@@ -1038,32 +1039,34 @@ public class DpornCoApiImpl implements DpornCoApi {
 	}
 
 	@Override
-	public void check(String username, String permlink) {
+	public CheckEntryResponse check(String username, String permlink) {
 		if (username == null || permlink == null) {
-			return;
+			return new CheckEntryResponse(false);
 		}
 		if (username.trim().isEmpty() || permlink.trim().isEmpty()) {
-			return;
+			return new CheckEntryResponse(false);
 		}
 		username = username.toLowerCase().trim();
 		permlink = permlink.trim();
 		BlogEntry entry = MongoDpornCo.getEntry(username, permlink);
 		if (entry == null || !username.equals(entry.getUsername())) {
-			return;
+			return new CheckEntryResponse(true);
 		}
-		synchronized (DpornCoApiImpl.class) {
+		synchronized (SteemJInstance.get()) {
 			Discussion content;
 			try {
 				content = SteemJInstance.get().getContent(username, permlink);
 				if (content == null || content.getAuthor() == null || !username.equals(content.getAuthor().getName())) {
 					System.out.println("BAD ENTRY: " + username + " | " + permlink);
 					MongoDpornCo.deleteEntry(username, permlink);
+					return new CheckEntryResponse(true);
 				}
 
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
+		return new CheckEntryResponse(false);
 	}
 
 	@Override

@@ -10,6 +10,7 @@ import com.google.gwt.json.client.JSONNumber;
 import com.google.gwt.json.client.JSONObject;
 import com.google.gwt.json.client.JSONString;
 
+import elemental2.dom.DomGlobal;
 import jsinterop.annotations.JsMethod;
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsType;
@@ -78,6 +79,7 @@ public class SteemApi {
 			public void onResult(String error, DiscussionComment result) {
 				if (error != null && !error.trim().isEmpty()) {
 					future.getFuture().completeExceptionally(new RuntimeException(error));
+					DomGlobal.console.log("Steem API Error: @"+username+"/"+permlink);
 					return;
 				}
 				future.getFuture().complete(result);
