@@ -101,15 +101,15 @@ public class UploadVideoImpl implements UploadVideo {
 
 	private String generatePostHtml(Double editorWidth, String posterImage, String videoLink, String html,
 			String username, String permlink) {
-		if (username==null) {
-			username="";
+		if (username == null) {
+			username = "";
 		}
 		if (!username.startsWith("@")) {
 			username = "@" + username;
 		}
 		String lcPosterImage = posterImage.toLowerCase();
 		if (lcPosterImage.startsWith("http:") || lcPosterImage.startsWith("https:")) {
-			if (!lcPosterImage.matches("^https://steemitimages.com/\\d+x\\d+/.*")){
+			if (!lcPosterImage.matches("^https://steemitimages.com/\\d+x\\d+/.*")) {
 				posterImage = "https://steemitimages.com/1280x720/" + posterImage;
 			}
 		} else {
@@ -122,7 +122,9 @@ public class UploadVideoImpl implements UploadVideo {
 		 */
 		boolean havePermlink = permlink != null && !permlink.trim().isEmpty();
 		html = "<div><center>" //
-				+ (havePermlink ? "<a href=\"https://dporn.co/dporn/"+username +"/" + permlink +"\" target=\"_blank\">" : "") //
+				+ (havePermlink
+						? "<a href=\"https://dporn.co/dporn/" + username + "/" + permlink + "\" target=\"_blank\">"
+						: "") //
 				+ "<img style='max-width: 100%; width: auto; height: auto; max-height: none;' src=\"" + posterImage
 				+ "\">" //
 				+ "<h3>View video on DPorn</h3>" //
@@ -138,7 +140,8 @@ public class UploadVideoImpl implements UploadVideo {
 		}
 		html += "<div>";
 		html += "<div class='pull-left' style='max-width: 50%; float: left; padding-right: 1rem;'>";
-		html += "<h5>My DPorn channel: <a href=\"https://dporn.co/@"+model.getUsername()+"\" target=\"_blank\">@"+model.getUsername()+"</a></h5>";
+		html += "<h5>My DPorn channel: <a href=\"https://dporn.co/@" + model.getUsername() + "\" target=\"_blank\">@"
+				+ model.getUsername() + "</a></h5>";
 		html += "</div>";
 		html += "<div class='pull-right' style='max-width: 50%; float: right; padding-left: 1rem;'>";
 		html += "<div class='text-right' style='text-algn: right;'>";
@@ -148,13 +151,13 @@ public class UploadVideoImpl implements UploadVideo {
 		html += "</div>";
 		html += "<p><br/></p>";
 		html += "</div>";
-		
+
 		return html;
 	}
 
 	@Override
-	public void createNewBlogEntry(BlogEntryType entryType, double editorWidth, String title, List<? extends Suggestion> tags,
-			String content, String posterImageLocation, String videoLocation) {
+	public void createNewBlogEntry(BlogEntryType entryType, double editorWidth, String title,
+			List<? extends Suggestion> tags, String content, String posterImageLocation, String videoLocation) {
 		if (posterImageLocation == null || posterImageLocation.trim().isEmpty()) {
 			view.setErrorPosterImage();
 			return;
@@ -178,19 +181,11 @@ public class UploadVideoImpl implements UploadVideo {
 		for (Suggestion tag : tags) {
 			_tags.add(tag.getReplacementString());
 		}
-		model.sortTagsByNetVoteDesc(new ArrayList<>(_tags)).thenAccept(t -> {
-			model.newBlogEntry(entryType, editorWidth, title, new ArrayList<>(_tags), newHtml, posterImageLocation, videoLocation, new ArrayList<>(), permlink).thenAccept(p -> {
-				view.reset();
-				new PushStateHistorian().newItem("@"+model.getUsername()+"/"+p, true);
-			});
-		}).exceptionally(ex -> {
-			GWT.log(ex.getMessage(), ex);
-			model.newBlogEntry(entryType, editorWidth, title, new ArrayList<>(_tags), newHtml, posterImageLocation, videoLocation, null, permlink).thenAccept(p -> {
-				view.reset();
-				new PushStateHistorian().newItem("@"+model.getUsername()+"/"+p, true);
-			});
-			return null;
-		});
+		model.newBlogEntry(entryType, editorWidth, title, new ArrayList<>(_tags), newHtml, posterImageLocation,
+				videoLocation, new ArrayList<>(), permlink).thenAccept(p -> {
+					view.reset();
+					new PushStateHistorian().newItem("@" + model.getUsername() + "/" + p, true);
+				});
 	}
 
 	@Override
@@ -203,6 +198,7 @@ public class UploadVideoImpl implements UploadVideo {
 	public CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, OnprogressFn onprogress) {
 		return null;
 	}
+
 	@Override
 	public void scrollToTop() {
 		Window.scrollTo(0, 0);

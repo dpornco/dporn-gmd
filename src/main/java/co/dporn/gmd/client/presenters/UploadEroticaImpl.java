@@ -22,7 +22,7 @@ public class UploadEroticaImpl implements UploadErotica {
 
 	private AppControllerModel model;
 	private UploadEroticaView view;
-	
+
 	public UploadEroticaImpl(AppControllerModel model, UploadEroticaView view) {
 		setModel(model);
 		setView(view);
@@ -30,12 +30,12 @@ public class UploadEroticaImpl implements UploadErotica {
 
 	@Override
 	public void setModel(AppControllerModel model) {
-		this.model=model;
+		this.model = model;
 	}
 
 	@Override
 	public void setView(UploadEroticaView view) {
-		this.view=view;
+		this.view = view;
 		view.bindPresenter(this);
 	}
 
@@ -72,20 +72,20 @@ public class UploadEroticaImpl implements UploadErotica {
 	@Override
 	public CompletableFuture<String> postBlobToIpfs(String filename, Blob blob) {
 		OnprogressFn onprogressfn = view.getOnprogressFn(filename);
-		return model.postBlobToIpfsFile(filename, blob, (e)->onprogressfn.onInvoke(e));
+		return model.postBlobToIpfsFile(filename, blob, (e) -> onprogressfn.onInvoke(e));
 	}
 
 	@Override
 	public Void viewRecentTagSets(String mustHaveTag) {
-		model.recentTagSets(mustHaveTag).thenAccept(sets->view.showTagSets(sets));
+		model.recentTagSets(mustHaveTag).thenAccept(sets -> view.showTagSets(sets));
 		return null;
 	}
 
 	@Override
 	public void showPostBodyPreview(Double editorWidth, String html) {
 		html += "<p>Posted using <a href=\"https://dporn.co/\" target=\"_blank\">DPorn</a></p>";
-		double imgScaleWidth = Math.min( 640d / editorWidth, 1.0d);
-		GWT.log("SCALE: "+imgScaleWidth);
+		double imgScaleWidth = Math.min(640d / editorWidth, 1.0d);
+		GWT.log("SCALE: " + imgScaleWidth);
 		HtmlReformatter reformatter = new HtmlReformatter(imgScaleWidth);
 		String newHtml = reformatter.reformat(html);
 		view.showPreview(newHtml);
@@ -102,42 +102,34 @@ public class UploadEroticaImpl implements UploadErotica {
 			view.setErrorBadTitle();
 			return;
 		}
-		GWT.log("Content: "+content.length()+"\n"+content);
-		if (content.length()<16) {
+		GWT.log("Content: " + content.length() + "\n" + content);
+		if (content.length() < 16) {
 			view.setErrorBadContent();
 			return;
 		}
 		Set<String> _tags = new LinkedHashSet<>();
-		for (Suggestion tag: tags) {
+		for (Suggestion tag : tags) {
 			_tags.add(tag.getReplacementString());
 		}
-		model.sortTagsByNetVoteDesc(new ArrayList<>(_tags)).thenAccept(t->{
-			model.newBlogEntry(entryType, width, title, t, content).thenAccept(p->{
-				view.reset();
-				new PushStateHistorian().newItem("@"+model.getUsername()+"/"+p, true);
-			});
-		}).exceptionally(ex->{
-			GWT.log(ex.getMessage(), ex);
-			model.newBlogEntry(entryType, width, title, new ArrayList<>(_tags), content).thenAccept(p->{
-				view.reset();
-				new PushStateHistorian().newItem("@"+model.getUsername()+"/"+p, true);
-			});
-			return null;
+		model.newBlogEntry(entryType, width, title, new ArrayList<>(_tags), content).thenAccept(p -> {
+			view.reset();
+			new PushStateHistorian().newItem("@" + model.getUsername() + "/" + p, true);
 		});
 	}
 
 	@Override
 	public CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob, OnprogressFn onprogressFn) {
-		return model.postBlobToIpfsFile(filename, blob, (e)->onprogressFn.onInvoke(e));
+		return model.postBlobToIpfsFile(filename, blob, (e) -> onprogressFn.onInvoke(e));
 	}
 
 	@Override
 	public CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, OnprogressFn onprogress) {
 		CompletableFuture<String> completableFuture = new CompletableFuture<>();
-		//intentionally not implemented.
+		// intentionally not implemented.
 		completableFuture.completeExceptionally(new RuntimeException("Not Implemented."));
 		return completableFuture;
 	}
+
 	@Override
 	public void scrollToTop() {
 		Window.scrollTo(0, 0);

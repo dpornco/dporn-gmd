@@ -213,10 +213,10 @@ public class AppControllerModelImpl implements AppControllerModel {
 					SteemApi.getContent(lookup.username, lookup.permlink).thenAccept(comment -> {
 						discussionCommentQueueTimer.schedule(10);
 						if (!lookup.username.equals(comment.getAuthor())) {
-							DomGlobal.console.log("Checking if deleted: @"+lookup.username+"/"+lookup.permlink);
-							ClientRestClient.get().check(lookup.username, lookup.permlink).thenAccept(d->{
+							DomGlobal.console.log("Checking if deleted: @" + lookup.username + "/" + lookup.permlink);
+							ClientRestClient.get().check(lookup.username, lookup.permlink).thenAccept(d -> {
 								lookup.future.completeExceptionally(new CommentNotFoundException(d.isDeleted()));
-							}).exceptionally(x->{
+							}).exceptionally(x -> {
 								lookup.future.completeExceptionally(new CommentNotFoundException(false));
 								return null;
 							});
@@ -224,9 +224,9 @@ public class AppControllerModelImpl implements AppControllerModel {
 						}
 						lookup.future.complete(comment);
 					}).exceptionally(ex -> {
-						ClientRestClient.get().check(lookup.username, lookup.permlink).thenAccept(d->{
+						ClientRestClient.get().check(lookup.username, lookup.permlink).thenAccept(d -> {
 							lookup.future.completeExceptionally(new CommentNotFoundException(d.isDeleted()));
-						}).exceptionally(x->{
+						}).exceptionally(x -> {
 							lookup.future.completeExceptionally(ex);
 							return null;
 						});
@@ -591,8 +591,13 @@ public class AppControllerModelImpl implements AppControllerModel {
 		return future;
 	}
 
-	@Override
-	public CompletableFuture<List<String>> sortTagsByNetVoteDesc(List<String> tags) {
+	/**
+	 * Stop using. No longer working as expected with recent Steem API changes. Hivemind related? 2019-01-11.
+	 * @param tags
+	 * @return
+	 */
+	@SuppressWarnings("unused")
+	private CompletableFuture<List<String>> sortTagsByNetVoteDesc(List<String> tags) {
 		CompletableFuture<List<String>> future = new CompletableFuture<>();
 		if (tags == null) {
 			future.completeExceptionally(new NullPointerException("Tags to be sorted cannot be null"));
@@ -640,10 +645,10 @@ public class AppControllerModelImpl implements AppControllerModel {
 			// get sum of weights and then pre-weight several special tags like "dporn" and
 			// "nsfw" to always be first in sorted list
 			for (TrendingTag t : trendingList) {
-				if (t.getComments()==null) {
+				if (t.getComments() == null) {
 					t.setComments(t.getTopPosts());
 				}
-				if (t.getComments()==null) {
+				if (t.getComments() == null) {
 					t.setComments(BigInteger.ZERO);
 				}
 				totalCommentsCount = totalCommentsCount.add(t.getComments());

@@ -67,8 +67,6 @@ public interface AppControllerModel {
 	
 	CompletableFuture<List<TagSet>> recentTagSets(String mustHaveTag);
 	
-	CompletableFuture<List<String>> sortTagsByNetVoteDesc(List<String> tags);
-	
 	CompletableFuture<String> newBlogEntry(BlogEntryType blogEntryType, double width, String title, List<String> tags, String content);
 	CompletableFuture<String> newBlogEntry(BlogEntryType blogEntryType, double width, String title, List<String> tags,
 			String content, String posterImage, String videoLink, List<String> photoGalleryImages);
