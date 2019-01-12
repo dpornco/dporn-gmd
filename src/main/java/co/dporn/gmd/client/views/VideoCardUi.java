@@ -122,8 +122,8 @@ public class VideoCardUi extends Composite implements VideoCardView, HasPayoutVa
 	}
 
 	@Override
-	public void setVoteCount(long count) {
-		voteBarUi.setVoteCount(count);
+	public void setVoteCounts(long countUp, long countDown) {
+		voteBarUi.setVoteCounts(countUp, countDown);
 	}
 
 	@Override

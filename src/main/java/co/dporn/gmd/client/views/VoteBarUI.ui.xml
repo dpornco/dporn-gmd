@@ -9,10 +9,12 @@
 	<m:MaterialRow margin="0" padding="0">
 		<m:MaterialButton ui:field="btnThumbsUp"
 			type="FLOATING" float="LEFT" iconType="THUMB_UP" marginTop="-8" />
+			<m:MaterialLabel ui:field="lblVoteCountUp" text=""
+			float="LEFT" marginLeft="12" />
 		<m:MaterialButton ui:field="btnThumbsDown"
 			type="FLOATING" float="LEFT" iconType="THUMB_DOWN" marginTop="-8"
 			marginLeft="12" />
-		<m:MaterialLabel ui:field="lblVoteCount" text=""
+		<m:MaterialLabel ui:field="lblVoteCountDown" text=""
 			float="LEFT" marginLeft="12" />
 		<m:MaterialLabel ui:field="lblEarnings" text=""
 			float="RIGHT" marginRight="6" />

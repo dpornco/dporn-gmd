@@ -27,6 +27,7 @@ public class DiscussionComment {
 	private Date created;
 	private String curatorPayoutValue;
 	private BigInteger id;
+	
 	private String jsonMetadata;
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss", timezone="UTC")
 	private Date lastPayout;
@@ -44,6 +45,7 @@ public class DiscussionComment {
 	private String totalPayoutValue;
 	private String totalPendingPayoutValue;
 	private String url;
+	@JsonProperty("active_votes")
 	public List<Vote> getActiveVotes() {
 		return activeVotes;
 	}
@@ -62,6 +64,7 @@ public class DiscussionComment {
 	public Date getCreated() {
 		return created;
 	}
+	@JsonProperty("curator_payout_value")
 	public String getCuratorPayoutValue() {
 		return curatorPayoutValue;
 	}
@@ -72,15 +75,19 @@ public class DiscussionComment {
 	public String getJsonMetadata() {
 		return jsonMetadata;
 	}
+	@JsonProperty("last_payout")
 	public Date getLastPayout() {
 		return lastPayout;
 	}
+	@JsonProperty("last_update")
 	public Date getLastUpdate() {
 		return lastUpdate;
 	}
+	@JsonProperty("parent_author")
 	public String getParentAuthor() {
 		return parentAuthor;
 	}
+	@JsonProperty("parent_permlink")
 	public String getParentPermlink() {
 		return parentPermlink;
 	}
@@ -91,12 +98,15 @@ public class DiscussionComment {
 	public String getPermlink() {
 		return permlink;
 	}
+	@JsonProperty("root_author")
 	public String getRootAuthor() {
 		return rootAuthor;
 	}
+	@JsonProperty("root_permlink")
 	public String getRootPermlink() {
 		return rootPermlink;
 	}
+	@JsonProperty("root_title")
 	public String getRootTitle() {
 		return rootTitle;
 	}
@@ -107,6 +117,7 @@ public class DiscussionComment {
 	public String getTotalPayoutValue() {
 		return totalPayoutValue;
 	}
+	@JsonProperty("total_pending_payout_value")
 	public String getTotalPendingPayoutValue() {
 		return totalPendingPayoutValue;
 	}
@@ -137,7 +148,6 @@ public class DiscussionComment {
 	public void setId(BigInteger id) {
 		this.id = id;
 	}
-	@JsonProperty("json_metadata")
 	public void setJsonMetadata(String jsonMetadata) {
 		this.jsonMetadata = jsonMetadata;
 	}

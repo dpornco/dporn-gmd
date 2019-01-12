@@ -21,9 +21,11 @@ public class VoteBarUI extends Composite implements HasPayoutValues {
 	@UiField
 	protected MaterialButton btnThumbsUp;
 	@UiField
+	MaterialLabel lblVoteCountUp;
+	@UiField
 	MaterialButton btnThumbsDown;
 	@UiField
-	MaterialLabel lblVoteCount;
+	MaterialLabel lblVoteCountDown;
 	@UiField
 	MaterialLabel lblEarnings;
 
@@ -58,7 +60,7 @@ public class VoteBarUI extends Composite implements HasPayoutValues {
 		voteCountFormatter = NF.getDecimalFormat().overrideFractionDigits(0);
 		sbdValueFormatter = NF.getDecimalFormat().overrideFractionDigits(3, 3);
 		setEarnings(BigDecimal.ZERO);
-		setVoteCount(0);
+		setVoteCounts(0, 0);
 		btnThumbsUp.setEnabled(false);
 		btnThumbsDown.setEnabled(false);
 	}
@@ -69,8 +71,9 @@ public class VoteBarUI extends Composite implements HasPayoutValues {
 	}
 
 	@Override
-	public void setVoteCount(long count) {
-		lblVoteCount.setText(voteCountFormatter.format(count));
+	public void setVoteCounts(long countUp, long countDown) {
+		lblVoteCountUp.setText(voteCountFormatter.format(countUp));
+		lblVoteCountDown.setText(voteCountFormatter.format(countDown));
 	}
 
 	public void setThumbsUpClickHandler(ClickHandler handler) {
