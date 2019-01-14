@@ -27,6 +27,8 @@ import gwt.material.design.addins.client.scrollfire.MaterialScrollfire;
 public class MainContentPresenter implements ContentPresenter, ScheduledCommand {
 
 	private static final int FEATURED_VIDEO_COUNT = 4;
+	private static final int RECENT_VIDEO_COUNT = 4;
+	private static final int FEATURED_BLOG_COUNT = 4;
 	private ContentView view;
 	private AppControllerModel model;
 
@@ -82,10 +84,8 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 	}
 
 	private void activateScrollfire(IsWidget widget) {
-		GWT.log("activateScrollfire");
 		MaterialScrollfire scrollfire = new MaterialScrollfire();
 		scrollfire.setCallback(() -> {
-			GWT.log("activateScrollfire#callback");
 			loadRecentVideos();
 		});
 		scrollfire.setOffset(0);
@@ -94,6 +94,10 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 	}
 
 	private String lastRecentId = null;
+	/**
+	 * The presenter is requesting same data twice... sometimes. This is a work around until a proper fix can be done.
+	 */
+	private String pendingRecentId = null;
 	private int _recentVideosCounter = 0;
 
 	private synchronized int incRecentVideoCount() {
@@ -105,7 +109,7 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 	}
 
 	private void loadRecentVideos() {
-		loadRecentVideos(4);
+		loadRecentVideos(RECENT_VIDEO_COUNT);
 	}
 
 	private void loadRecentVideos(int count) {
@@ -113,10 +117,16 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 		Timer[] timer = { null };
 		CompletableFuture<BlogEntryListResponse> listEntries;
 		if (lastRecentId == null) {
+			pendingRecentId = null;
 			listEntries = model.listBlogEntries(BlogEntryType.VIDEO, count);
 			getContentView().getRecentPosts().clear();
 		} else {
-			listEntries = model.listBlogEntries(BlogEntryType.VIDEO, lastRecentId, count + 1);
+			if (pendingRecentId==lastRecentId || (pendingRecentId!=null && pendingRecentId.equals(lastRecentId))){
+				return;
+			} else {
+				listEntries = model.listBlogEntries(BlogEntryType.VIDEO, lastRecentId, count + 1);
+				pendingRecentId = lastRecentId;
+			}
 		}
 		listEntries.thenAccept((l) -> {
 			if (l.getBlogEntries().size() < 2 && lastRecentId != null) {
@@ -188,9 +198,9 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 			});
 			lastRecentId = newLastRecentId;
 			GWT.log("Have " + getRecentVideoCount() + " recent videos.");
-			if (getRecentVideoCount() % 4 != 0) {
-				GWT.log("Loading extra recent videos: " + (4 - getRecentVideoCount() % 4));
-				loadRecentVideos(4 - getRecentVideoCount() % 4);
+			if (getRecentVideoCount() % RECENT_VIDEO_COUNT != 0) {
+				GWT.log("Loading extra recent videos: " + (RECENT_VIDEO_COUNT - getRecentVideoCount() % RECENT_VIDEO_COUNT));
+				loadRecentVideos(RECENT_VIDEO_COUNT - getRecentVideoCount() % RECENT_VIDEO_COUNT);
 			}
 		});
 	}
@@ -234,7 +244,7 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 				card.setImageUrl(coverImage);
 				cards.add(card);
 			});
-			cards.subList(0, Math.min(4, cards.size())).forEach((w) -> {
+			cards.subList(0, Math.min(FEATURED_BLOG_COUNT, cards.size())).forEach((w) -> {
 				deferred(() -> getContentView().getFeaturedChannels().add(w));
 			});
 		});

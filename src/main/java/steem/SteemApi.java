@@ -34,7 +34,6 @@ public class SteemApi {
 	
 	@JsOverlay
 	public static CompletableFuture<List<TrendingTag>> getTrendingTags(String afterTag, int limit) {
-		GWT.log("SteemApi#getTrendingTags: " + afterTag + " [" + limit+"]");
 		SteemCallbackAsFuture<List<TrendingTag>> future = new SteemCallbackAsFuture<>();
 		SteemTypedCallback<List<TrendingTag>, ObjectMapper<List<TrendingTag>>> typed = new SteemTypedCallback<List<TrendingTag>, ObjectMapper<List<TrendingTag>>>() {
 			@Override
@@ -72,7 +71,6 @@ public class SteemApi {
 
 	@JsOverlay
 	public static CompletableFuture<DiscussionComment> getContent(String username, String permlink) {
-		GWT.log("SteemApi#getContent: @" + username + "/" + permlink);
 		SteemCallbackAsFuture<DiscussionComment> future = new SteemCallbackAsFuture<>();
 		SteemTypedCallback<DiscussionComment, ObjectMapper<DiscussionComment>> typed = new SteemTypedCallback<DiscussionComment, ObjectMapper<DiscussionComment>>() {
 			@Override
@@ -110,7 +108,6 @@ public class SteemApi {
 		if (limit < 1) {
 			limit = 1;
 		}
-		GWT.log("SteemApi#getDiscussionsByBlog: @" + username + " [" + limit + "]");
 		SteemCallbackAsFuture<List<DiscussionComment>> future = new SteemCallbackAsFuture<>();
 		SteemTypedCallback<List<DiscussionComment>, ObjectMapper<List<DiscussionComment>>> typed = new SteemTypedCallback<List<DiscussionComment>, ObjectMapper<List<DiscussionComment>>>() {
 			@Override
@@ -120,7 +117,6 @@ public class SteemApi {
 					future.getFuture().completeExceptionally(new RuntimeException(error));
 					return;
 				}
-				GWT.log("SteemApi#getDiscussionsByBlog: "+result.size());
 				future.getFuture().complete(result);
 			}
 
@@ -147,7 +143,6 @@ public class SteemApi {
 
 	@JsOverlay
 	public static CompletableFuture<List<Vote>> getActiveVotes(String username, String permlink) {
-		GWT.log("SteemApi#getActiveVotes: @" + username + "/" + permlink);
 		SteemCallbackAsFuture<List<Vote>> future = new SteemCallbackAsFuture<>();
 		SteemTypedCallback<List<Vote>, ObjectMapper<List<Vote>>> typed = new SteemTypedCallback<List<Vote>, ObjectMapper<List<Vote>>>() {
 			@Override

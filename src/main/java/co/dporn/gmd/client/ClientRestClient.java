@@ -25,6 +25,7 @@ import co.dporn.gmd.shared.NotificationsResponse;
 import co.dporn.gmd.shared.PingResponse;
 import co.dporn.gmd.shared.SuggestTagsResponse;
 import elemental2.dom.Blob;
+import elemental2.dom.DomGlobal;
 import elemental2.dom.XMLHttpRequest;
 import elemental2.dom.XMLHttpRequestUpload.OnprogressFn;
 
@@ -156,6 +157,7 @@ public class ClientRestClient {
 
 	public CompletableFuture<BlogEntryListResponse> listBlogEntries(BlogEntryType entryType, String startId,
 			int count) {
+		DomGlobal.console.log("listBlogEntries: "+entryType+", startId="+String.valueOf(startId)+", count="+count);
 		MethodCallbackAsFuture<BlogEntryListResponse> callback = new MethodCallbackAsFuture<>();
 		call(callback).blogEntries(entryType, startId, count);
 		return callback.getFuture();

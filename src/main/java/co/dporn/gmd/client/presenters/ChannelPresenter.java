@@ -41,10 +41,8 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 	}
 
 	private void activateScrollfire(IsWidget widget) {
-		GWT.log("activateScrollfire");
 		MaterialScrollfire scrollfire = new MaterialScrollfire();
 		scrollfire.setCallback(() -> {
-			GWT.log("activateScrollfire#callback");
 			loadBlogEntriesFor();
 		});
 		scrollfire.setOffset(0);
@@ -53,6 +51,10 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 	}
 
 	private String lastRecentId = null;
+	/**
+	 * See same variable in {@link MainContentPresenter}
+	 */
+	private String pendingRecentId = null;
 
 	private void loadBlogEntriesFor() {
 		showLoading(true);
@@ -62,7 +64,12 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 			listBlogEntries = model.listBlogEntriesFor(username);
 			getContentView().getRecentPosts().clear();
 		} else {
-			listBlogEntries = model.listBlogEntriesFor(username, lastRecentId, 9);
+			if (pendingRecentId==lastRecentId || (pendingRecentId!=null && pendingRecentId.equals(lastRecentId))){
+				return;
+			} else {
+				listBlogEntries = model.listBlogEntriesFor(username, lastRecentId, 9);
+				pendingRecentId = lastRecentId;
+			}
 		}
 		listBlogEntries.thenAccept((l) -> {
 			if (l.getBlogEntries().size() < 2 && lastRecentId != null) {
