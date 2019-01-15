@@ -51,6 +51,7 @@ import co.dporn.gmd.shared.TagSet;
 import elemental2.dom.Blob;
 import elemental2.dom.DomGlobal;
 import elemental2.dom.HTMLAnchorElement;
+import elemental2.dom.HTMLDivElement;
 import elemental2.dom.HTMLImageElement;
 import elemental2.dom.XMLHttpRequestUpload.OnprogressFn;
 import gwt.material.design.client.ui.MaterialToast;
@@ -774,7 +775,9 @@ public class AppControllerModelImpl implements AppControllerModel {
 		// extract image links via JQuery operation on HTML fragment
 		JSONArray jsonImageArray = new JSONArray();
 		if (content.toLowerCase().contains("<img")) {
-			JQueryElement imgs = JQuery.$(content).find("img");
+			HTMLDivElement div = Js.cast(DomGlobal.document.createElement("div"));
+			div.innerHTML=content;
+			JQueryElement imgs = JQuery.$(div).find("img");
 			if (imgs != null) {
 				// use non-async code!
 				for (int ix = 0; ix < imgs.length(); ix++) {
@@ -785,7 +788,9 @@ public class AppControllerModelImpl implements AppControllerModel {
 		}
 		JSONArray linksArray = new JSONArray();
 		if (content.toLowerCase().contains("<a")) {
-			JQueryElement anchors = JQuery.$(content).find("a");
+			HTMLDivElement div = Js.cast(DomGlobal.document.createElement("div"));
+			div.innerHTML=content;
+			JQueryElement anchors = JQuery.$(div).find("a");
 			if (anchors != null) {
 				// use non-async code!
 				for (int ix = 0; ix < anchors.length(); ix++) {
