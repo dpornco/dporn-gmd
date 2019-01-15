@@ -122,8 +122,8 @@ public class VideoCardUi extends Composite implements VideoCardView, CanBeDelete
 	}
 
 	@Override
-	public void setVoteCounts(long countUp, long countDown) {
-		voteBarUi.setVoteCounts(countUp, countDown);
+	public void setNetVoteCount(long netVoteCount) {
+		voteBarUi.setNetVoteCount(netVoteCount);
 	}
 
 	@Override

@@ -28,5 +28,5 @@ public interface HasPayoutValues {
 		}
 	}
 
-	void setVoteCounts(long countUp, long countDown);
+	void setNetVoteCount(long netVotes);
 }

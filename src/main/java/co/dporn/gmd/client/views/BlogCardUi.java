@@ -134,8 +134,8 @@ public class BlogCardUi extends Composite implements BlogCardView, HasPayoutValu
 	}
 
 	@Override
-	public void setVoteCounts(long countUp, long countDown) {
-		voteBarUi.setVoteCounts(countUp, countDown);
+	public void setNetVoteCount(long netVotes) {
+		voteBarUi.setNetVoteCount(netVotes);
 	}
 
 	@Override

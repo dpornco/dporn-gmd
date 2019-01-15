@@ -22,15 +22,15 @@ public class VoteBarUI extends Composite implements HasPayoutValues {
 	protected MaterialButton btnThumbsUp;
 	@UiField
 	MaterialLabel lblVoteCountUp;
-	@UiField
-	MaterialButton btnThumbsDown;
-	@UiField
-	MaterialLabel lblVoteCountDown;
+//	@UiField
+//	MaterialButton btnThumbsDown;
+//	@UiField
+//	MaterialLabel lblVoteCountDown;
 	@UiField
 	MaterialLabel lblEarnings;
 
 	private HandlerRegistration thumbsUpRegistration;
-	private HandlerRegistration thumbsDownRegistration;
+//	private HandlerRegistration thumbsDownRegistration;
 	private final NumberFormat voteCountFormatter;
 	private final NumberFormat sbdValueFormatter;
 
@@ -60,9 +60,9 @@ public class VoteBarUI extends Composite implements HasPayoutValues {
 		voteCountFormatter = NF.getDecimalFormat().overrideFractionDigits(0);
 		sbdValueFormatter = NF.getDecimalFormat().overrideFractionDigits(3, 3);
 		setEarnings(BigDecimal.ZERO);
-		setVoteCounts(0, 0);
+		setNetVoteCount(0);
 		btnThumbsUp.setEnabled(false);
-		btnThumbsDown.setEnabled(false);
+//		btnThumbsDown.setEnabled(false);
 	}
 
 	@Override
@@ -71,9 +71,9 @@ public class VoteBarUI extends Composite implements HasPayoutValues {
 	}
 
 	@Override
-	public void setVoteCounts(long countUp, long countDown) {
-		lblVoteCountUp.setText(voteCountFormatter.format(countUp));
-		lblVoteCountDown.setText(voteCountFormatter.format(countDown));
+	public void setNetVoteCount(long netVotes) {
+		lblVoteCountUp.setText(voteCountFormatter.format(netVotes));
+//		lblVoteCountDown.setText(voteCountFormatter.format(countDown));
 	}
 
 	public void setThumbsUpClickHandler(ClickHandler handler) {
@@ -88,16 +88,16 @@ public class VoteBarUI extends Composite implements HasPayoutValues {
 		btnThumbsUp.setEnabled(true);
 	}
 
-	public void setThumbsDownClickHandler(ClickHandler handler) {
-		if (thumbsDownRegistration != null) {
-			thumbsDownRegistration.removeHandler();
-		}
-		if (handler==null) {
-			btnThumbsDown.setEnabled(false);
-			return;
-		}
-		thumbsDownRegistration = btnThumbsDown.addClickHandler(handler);
-		btnThumbsDown.setEnabled(true);
-	}
+//	public void setThumbsDownClickHandler(ClickHandler handler) {
+//		if (thumbsDownRegistration != null) {
+//			thumbsDownRegistration.removeHandler();
+//		}
+//		if (handler==null) {
+//			btnThumbsDown.setEnabled(false);
+//			return;
+//		}
+//		thumbsDownRegistration = btnThumbsDown.addClickHandler(handler);
+//		btnThumbsDown.setEnabled(true);
+//	}
 
 }
