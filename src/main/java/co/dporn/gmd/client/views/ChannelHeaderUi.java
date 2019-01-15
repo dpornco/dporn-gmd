@@ -7,8 +7,6 @@ import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
 
 import co.dporn.gmd.client.app.Routes;
-import co.dporn.gmd.client.presenters.ContentPresenter;
-import co.dporn.gmd.client.presenters.ContentPresenter.BlogCardView;
 import co.dporn.gmd.client.presenters.ContentPresenter.BlogHeader;
 import gwt.material.design.client.constants.Color;
 import gwt.material.design.client.ui.MaterialHeader;
@@ -16,7 +14,7 @@ import gwt.material.design.client.ui.MaterialLabel;
 import gwt.material.design.client.ui.MaterialLink;
 import gwt.material.design.client.ui.MaterialPanel;
 
-public class ChannelHeaderUi extends Composite implements BlogCardView, BlogHeader {
+public class ChannelHeaderUi extends Composite implements BlogHeader {
 	@UiField
 	protected MaterialHeader header;
 	@UiField
@@ -41,18 +39,6 @@ public class ChannelHeaderUi extends Composite implements BlogCardView, BlogHead
 
 	public ChannelHeaderUi() {
 		initWidget(uiBinder.createAndBindUi(this));
-	}
-
-	@Override
-	public void bindPresenter(ContentPresenter presenter) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void unbindPresenter() {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -99,14 +85,6 @@ public class ChannelHeaderUi extends Composite implements BlogCardView, BlogHead
 	}
 
 	@Override
-	public void setShowDelay(int showDelay) {
-	}
-
-	@Override
-	public void setViewLink(String linkUrl) {
-	}
-
-	@Override
 	public void setAbout(String about) {
 		authorBlurb.setText(about);
 	}
@@ -147,20 +125,5 @@ public class ChannelHeaderUi extends Composite implements BlogCardView, BlogHead
 		steemitLink.setHref(Routes.steemit(username));
 		steemitLink.setTarget("_blank");
 		steemitLink.setVisible(true);
-	}
-
-	@Override
-	public void setChannelLink(String linkUrl) {
-		//NOOP
-	}
-
-	@Override
-	public void setChannelLinkVisible(boolean visible) {
-		//NOOP
-	}
-
-	@Override
-	public void setViewLinkVisible(boolean visible) {
-		//NOOP		
 	}
 }

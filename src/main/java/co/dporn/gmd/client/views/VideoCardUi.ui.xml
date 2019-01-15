@@ -9,12 +9,10 @@
 	}
 	
 	.column {
-		max-width: 400px;
 	}
 	
 	.image-card {
 		width: 100%;
-		height: 100%;
 		margin-bottom: 0px;
 	}
 	
@@ -67,7 +65,7 @@
 			</m:MaterialCardContent>
 			<m:MaterialCardAction>
 				<m:MaterialRow margin="0" marginBottom="16" padding="0">
-					<d:DpornLink ui:field="viewLink" text="VIEW POST"
+					<d:DpornLink ui:field="viewLink" text="VIEW"
 						float="LEFT" />
 					<d:DpornLink ui:field="viewChannel" text="CHANNEL"
 						float="RIGHT" marginRight="0"/>

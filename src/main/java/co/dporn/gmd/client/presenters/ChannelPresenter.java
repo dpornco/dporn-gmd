@@ -15,11 +15,19 @@ import com.google.gwt.user.client.ui.IsWidget;
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.app.Routes;
 import co.dporn.gmd.client.utils.SteemDataUtil;
+import co.dporn.gmd.client.views.BlogCardUi;
 import co.dporn.gmd.client.views.VideoCardUi;
 import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.BlogEntryListResponse;
+import elemental2.dom.DomGlobal;
+import elemental2.dom.HTMLDivElement;
+import elemental2.dom.HTMLImageElement;
 import gwt.material.design.addins.client.scrollfire.MaterialScrollfire;
+import gwt.material.design.jquery.client.api.JQuery;
+import gwt.material.design.jquery.client.api.JQueryElement;
+import jsinterop.base.Js;
+import steem.model.CommentMetadata;
 
 public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 
@@ -90,8 +98,55 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 						return;
 					}
 					String entryDisplayName = i.getDisplayName();
-					VideoCardUi card = new VideoCardUi();
-					card.setChannelLink(Routes.channel(entryUsername));
+					BlogCardView card;
+					if (p.getVideoPath()!=null) {
+						card = new VideoCardUi();
+						((VideoCardUi) card).setVideoEmbedUrl(Routes.embedVideo(entryUsername, p.getPermlink()));
+						//((VideoCardUi) card).setVideoEmbedUrl(p.getVideoPath());
+					} else {
+						boolean hasCardImage=false;
+						card = new BlogCardUi();
+						if (p.getGalleryImageThumbPaths()!=null && !p.getGalleryImageThumbPaths().isEmpty()) {
+							card.setImageUrl(p.getGalleryImageThumbPaths().get(0));
+							hasCardImage=true;
+						}
+						if (p.getPosterImagePath()!=null && !p.getPosterImagePath().trim().isEmpty()) {
+							card.setImageUrl(p.getPosterImagePath());
+							hasCardImage=true;
+						}
+						CommentMetadata metadata = CommentMetadata.fromJson(p.getCommentJsonMetadata());
+						metadataImage: if (metadata!=null && metadata.getImage()!=null) {
+							for (String imgUrl: metadata.getImage()) {
+								String lcImgUrl = imgUrl.toLowerCase();
+								if (lcImgUrl.endsWith("jpg")||lcImgUrl.endsWith("jpeg")||lcImgUrl.endsWith("png")||lcImgUrl.endsWith("gif")) {
+									card.setImageUrl(imgUrl);
+									hasCardImage=true;
+									break metadataImage;
+								}
+							}
+						}
+						extractImage: if (!hasCardImage) {
+							// extract image links via JQuery operation on HTML fragment
+							if (p.getContent().toLowerCase().contains("<img")) {
+								HTMLDivElement div = Js.cast(DomGlobal.document.createElement("div"));
+								div.innerHTML=p.getContent();
+								JQueryElement imgs = JQuery.$(div).find("img");
+								if (imgs != null) {
+									// use non-async code!
+									for (int ix = 0; ix < imgs.length(); ix++) {
+										HTMLImageElement img = Js.cast(imgs.get(ix));
+										if (img.src!=null && !img.src.trim().isEmpty()) {
+											GWT.log("img src="+img.src);
+											card.setImageUrl(img.src);
+											hasCardImage=true;
+											break extractImage;
+										}
+									}
+								}
+							}
+						}
+					}
+					//card.setChannelLink(Routes.channel(entryUsername));
 					card.setDisplayName(entryUsername);
 					card.setShowDelay(showDelay[0]);
 					showDelay[0] += 150; // 75
@@ -99,13 +154,11 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 					card.setDisplayName(displayName);
 					card.setAvatarUrl(Routes.avatarImage(entryUsername));
 					card.setTitle(p.getTitle());
-					String videoPath = p.getVideoPath();
 //					if (videoPath == null || !videoPath.startsWith("/ipfs/")) {
 //						return;
 //					}
 					card.setViewLink(Routes.blogEntry(entryUsername, p.getPermlink()));
-					card.setVideoEmbedUrl(Routes.embedVideo(entryUsername, p.getPermlink()));
-					getContentView().getRecentPosts().add(card);
+					getContentView().getRecentPosts().add(card.asWidget());
 					SteemDataUtil.updateCardMetadata(model, p.getUsername(), p.getPermlink(), card);
 					if (timer[0] != null) {
 						timer[0].cancel();

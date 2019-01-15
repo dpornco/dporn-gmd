@@ -1,5 +1,7 @@
 package co.dporn.gmd.client.views;
 
+import java.math.BigDecimal;
+
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
@@ -14,7 +16,7 @@ import gwt.material.design.client.ui.MaterialLabel;
 import gwt.material.design.client.ui.animate.MaterialAnimation;
 import gwt.material.design.client.ui.animate.Transition;
 
-public class BlogCardUi extends Composite implements BlogCardView {
+public class BlogCardUi extends Composite implements BlogCardView, HasPayoutValues {
 	@UiField
 	protected VoteBarUI voteBarUi;
 	@UiField
@@ -67,6 +69,18 @@ public class BlogCardUi extends Composite implements BlogCardView {
 
 	@Override
 	public void setImageUrl(String url) {
+		if (url.toLowerCase().matches("https?:.*")) {
+			if (!url.toLowerCase().startsWith("https://steemitimages.com/1280x720/")) {
+				url="https://steemitimages.com/1280x720/"+url;
+			}
+			postImage.setUrl(url);
+			return;
+		}
+		if (url.toLowerCase().matches("/ipfs/.*")) {
+			url="https://www.steemitimages.com/1280x720/https://ipfs.dporn.co"+url;
+			postImage.setUrl(url);
+			return;
+		}
 		postImage.setUrl(url);
 	}
 
@@ -112,5 +126,27 @@ public class BlogCardUi extends Composite implements BlogCardView {
 
 	public void setVoteBarVisible(boolean visible) {
 		voteBarUi.setVisible(visible);
+	}
+
+	@Override
+	public void setEarnings(BigDecimal earnings) {
+		voteBarUi.setEarnings(earnings);
+	}
+
+	@Override
+	public void setVoteCounts(long countUp, long countDown) {
+		voteBarUi.setVoteCounts(countUp, countDown);
+	}
+
+	@Override
+	public void setDeleted(boolean deleted) {
+		if (deleted) {
+			MaterialAnimation animation = new MaterialAnimation();
+			animation.setTransition(Transition.ZOOMOUT);
+			animation.setDelay(250);
+			animation.setDuration(250 + showDelay);
+			animation.animate(card);
+			animation.animate(() -> removeFromParent());
+		}		
 	}
 }

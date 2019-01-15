@@ -16,9 +16,10 @@ import gwt.material.design.client.ui.MaterialVideo;
 import gwt.material.design.client.ui.animate.MaterialAnimation;
 import gwt.material.design.client.ui.animate.Transition;
 
-public class VideoCardUi extends Composite implements VideoCardView, HasPayoutValues, CanBeDeleted {
+public class VideoCardUi extends Composite implements VideoCardView, CanBeDeleted {
 
-	@UiField VoteBarUI voteBarUi;
+	@UiField
+	VoteBarUI voteBarUi;
 	@UiField
 	protected MaterialVideo videoEmbedUrl;
 	@UiField
@@ -31,9 +32,9 @@ public class VideoCardUi extends Composite implements VideoCardView, HasPayoutVa
 	protected DpornLink viewLink;
 	@UiField
 	protected DpornLink viewChannel;
-	
+
 	private int showDelay;
-	
+
 	private static VideoCardUiUiBinder uiBinder = GWT.create(VideoCardUiUiBinder.class);
 
 	interface VideoCardUiUiBinder extends UiBinder<Widget, VideoCardUi> {
@@ -42,25 +43,25 @@ public class VideoCardUi extends Composite implements VideoCardView, HasPayoutVa
 	public VideoCardUi() {
 		initWidget(uiBinder.createAndBindUi(this));
 	}
-	
+
 	@Override
 	protected void onLoad() {
 		super.onLoad();
 		MaterialAnimation animation = new MaterialAnimation();
 		animation.setTransition(Transition.ZOOMIN);
 		animation.setDelay(0);
-		animation.setDuration(250+showDelay);
+		animation.setDuration(250 + showDelay);
 		animation.animate(card);
 	}
 
 	@Override
 	public void setImageUrl(String url) {
-		//do nothing
+		// do nothing
 	}
-	
+
 	@Override
 	public void setAvatarUrl(String url) {
-//		avatarImage.setUrl(url);
+		// avatarImage.setUrl(url);
 	}
 
 	@Override
@@ -75,21 +76,20 @@ public class VideoCardUi extends Composite implements VideoCardView, HasPayoutVa
 
 	@Override
 	public void setShowDelay(int showDelay) {
-		this.showDelay=showDelay;
+		this.showDelay = showDelay;
 	}
 
 	@Override
 	public void bindPresenter(ContentPresenter presenter) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void unbindPresenter() {
 		// TODO Auto-generated method stub
-		
-	}
 
+	}
 
 	@Override
 	public void setVideoEmbedUrl(String url) {
@@ -128,12 +128,14 @@ public class VideoCardUi extends Composite implements VideoCardView, HasPayoutVa
 
 	@Override
 	public void setDeleted(boolean deleted) {
-		MaterialAnimation animation = new MaterialAnimation();
-		animation.setTransition(Transition.ZOOMOUT);
-		animation.setDelay(250);
-		animation.setDuration(250+showDelay);
-		animation.animate(card);
-		animation.animate(()->removeFromParent());
+		if (deleted) {
+			MaterialAnimation animation = new MaterialAnimation();
+			animation.setTransition(Transition.ZOOMOUT);
+			animation.setDelay(250);
+			animation.setDuration(250 + showDelay);
+			animation.animate(card);
+			animation.animate(() -> removeFromParent());
+		}
 	}
 
 }

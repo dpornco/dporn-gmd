@@ -5,6 +5,8 @@ import com.google.gwt.user.client.ui.IsWidget;
 
 import co.dporn.gmd.client.presenters.AppPresenter.IsChildPresenter;
 import co.dporn.gmd.client.presenters.ContentPresenter.ContentView;
+import co.dporn.gmd.client.views.CanBeDeleted;
+import co.dporn.gmd.client.views.HasPayoutValues;
 import co.dporn.gmd.client.views.IsView;
 
 public interface ContentPresenter extends IsChildPresenter<ContentView> {
@@ -27,17 +29,18 @@ public interface ContentPresenter extends IsChildPresenter<ContentView> {
 		void showUserNotFound(String username);
 	}
 
-	interface BlogHeader extends BlogCardView {
+	interface BlogHeader {
 		void setFollowing(boolean following);
 		void setChannelRoute(String route);
 		void setBusyLink(String username);
 		void setSteemitLink(String username);
-		@Override
 		void setDisplayName(String displayName);
 		void setAbout(String about);
+		void setImageUrl(String coverImage);
+		void setAvatarUrl(String url);
 	}
 
-	interface BlogCardView extends IsView<ContentPresenter> {
+	interface BlogCardView extends IsView<ContentPresenter>, HasPayoutValues, CanBeDeleted, IsWidget {
 		void setImageUrl(String url);
 
 		void setAvatarUrl(String url);
