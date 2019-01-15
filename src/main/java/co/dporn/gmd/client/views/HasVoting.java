@@ -2,8 +2,8 @@ package co.dporn.gmd.client.views;
 
 import java.math.BigDecimal;
 
-public interface HasPayoutValues {
-
+public interface HasVoting {
+	
 	void setEarnings(BigDecimal earnings);
 
 	default void setEarnings(String earnings) {

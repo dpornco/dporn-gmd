@@ -16,21 +16,16 @@ import com.google.gwt.user.client.ui.Widget;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialLabel;
 
-public class VoteBarUI extends Composite implements HasPayoutValues {
+public class VoteBarUI extends Composite implements HasVoting {
 
 	@UiField
 	protected MaterialButton btnThumbsUp;
 	@UiField
 	MaterialLabel lblVoteCountUp;
-//	@UiField
-//	MaterialButton btnThumbsDown;
-//	@UiField
-//	MaterialLabel lblVoteCountDown;
 	@UiField
 	MaterialLabel lblEarnings;
 
 	private HandlerRegistration thumbsUpRegistration;
-//	private HandlerRegistration thumbsDownRegistration;
 	private final NumberFormat voteCountFormatter;
 	private final NumberFormat sbdValueFormatter;
 
@@ -62,7 +57,6 @@ public class VoteBarUI extends Composite implements HasPayoutValues {
 		setEarnings(BigDecimal.ZERO);
 		setNetVoteCount(0);
 		btnThumbsUp.setEnabled(false);
-//		btnThumbsDown.setEnabled(false);
 	}
 
 	@Override
@@ -73,7 +67,6 @@ public class VoteBarUI extends Composite implements HasPayoutValues {
 	@Override
 	public void setNetVoteCount(long netVotes) {
 		lblVoteCountUp.setText(voteCountFormatter.format(netVotes));
-//		lblVoteCountDown.setText(voteCountFormatter.format(countDown));
 	}
 
 	public void setThumbsUpClickHandler(ClickHandler handler) {
@@ -87,17 +80,4 @@ public class VoteBarUI extends Composite implements HasPayoutValues {
 		thumbsUpRegistration = btnThumbsUp.addClickHandler(handler);
 		btnThumbsUp.setEnabled(true);
 	}
-
-//	public void setThumbsDownClickHandler(ClickHandler handler) {
-//		if (thumbsDownRegistration != null) {
-//			thumbsDownRegistration.removeHandler();
-//		}
-//		if (handler==null) {
-//			btnThumbsDown.setEnabled(false);
-//			return;
-//		}
-//		thumbsDownRegistration = btnThumbsDown.addClickHandler(handler);
-//		btnThumbsDown.setEnabled(true);
-//	}
-
 }

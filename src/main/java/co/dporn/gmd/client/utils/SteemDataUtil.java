@@ -6,11 +6,11 @@ import com.google.gwt.core.client.GWT;
 
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.views.CanBeDeleted;
-import co.dporn.gmd.client.views.HasPayoutValues;
+import co.dporn.gmd.client.views.HasVoting;
 import co.dporn.gmd.shared.CommentNotFoundException;
 
 public class SteemDataUtil {
-	public static <T extends HasPayoutValues & CanBeDeleted> void updateCardMetadata(AppControllerModel model,
+	public static <T extends HasVoting & CanBeDeleted> void updateCardMetadata(AppControllerModel model,
 			String username, String permlink, T card) {
 		model.getDiscussionComment(username, permlink).thenAccept((comment) -> {
 			if (comment.getNetVotes() != null) {

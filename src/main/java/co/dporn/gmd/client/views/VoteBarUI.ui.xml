@@ -6,17 +6,22 @@
 	<ui:style>
 	
 	</ui:style>
-	<m:MaterialRow margin="0" padding="0">
-		<m:MaterialButton ui:field="btnThumbsUp"
-			type="FLOATING" float="LEFT" iconType="THUMB_UP" marginTop="-8" />
+	<m:MaterialPanel margin="0" padding="0">
+		<m:MaterialRow margin="0" padding="0">
+			<m:MaterialButton ui:field="btnThumbsUp"
+				type="FLOATING" float="LEFT" iconType="THUMB_UP" marginTop="-8" />
 			<m:MaterialLabel ui:field="lblVoteCountUp" text=""
-			float="LEFT" marginLeft="12" />
-<!-- 		<m:MaterialButton ui:field="btnThumbsDown" -->
-<!-- 			type="FLOATING" float="LEFT" iconType="THUMB_DOWN" marginTop="-8" -->
-<!-- 			marginLeft="12" /> -->
-<!-- 		<m:MaterialLabel ui:field="lblVoteCountDown" text="" -->
-<!-- 			float="LEFT" marginLeft="12" /> -->
-		<m:MaterialLabel ui:field="lblEarnings" text=""
-			float="RIGHT" marginRight="6" />
-	</m:MaterialRow>
+				float="LEFT" marginLeft="12" />
+			<m:MaterialLabel ui:field="lblEarnings" text=""
+				float="RIGHT" marginRight="6" />
+		</m:MaterialRow>
+<!-- 		<m:MaterialRow margin="0" padding="0"> -->
+<!-- 			<m:MaterialButton ui:field="xbtnThumbsUp" -->
+<!-- 				type="FLOATING" float="LEFT" iconType="THUMB_UP" marginTop="-8" /> -->
+<!-- 			<m:MaterialLabel ui:field="xlblVoteCountUp" text="x" -->
+<!-- 				float="LEFT" marginLeft="12" /> -->
+<!-- 			<m:MaterialLabel ui:field="xlblEarnings" text="y" -->
+<!-- 				float="RIGHT" marginRight="6" /> -->
+<!-- 		</m:MaterialRow> -->
+	</m:MaterialPanel>
 </ui:UiBinder> 

@@ -16,7 +16,7 @@ import gwt.material.design.client.ui.MaterialLabel;
 import gwt.material.design.client.ui.animate.MaterialAnimation;
 import gwt.material.design.client.ui.animate.Transition;
 
-public class BlogCardUi extends Composite implements BlogCardView, HasPayoutValues {
+public class BlogCardUi extends Composite implements BlogCardView, HasVoting {
 	@UiField
 	protected VoteBarUI voteBarUi;
 	@UiField

@@ -6,7 +6,7 @@ import com.google.gwt.user.client.ui.IsWidget;
 import co.dporn.gmd.client.presenters.AppPresenter.IsChildPresenter;
 import co.dporn.gmd.client.presenters.ContentPresenter.ContentView;
 import co.dporn.gmd.client.views.CanBeDeleted;
-import co.dporn.gmd.client.views.HasPayoutValues;
+import co.dporn.gmd.client.views.HasVoting;
 import co.dporn.gmd.client.views.IsView;
 
 public interface ContentPresenter extends IsChildPresenter<ContentView> {
@@ -40,7 +40,7 @@ public interface ContentPresenter extends IsChildPresenter<ContentView> {
 		void setAvatarUrl(String url);
 	}
 
-	interface BlogCardView extends IsView<ContentPresenter>, HasPayoutValues, CanBeDeleted, IsWidget {
+	interface BlogCardView extends IsView<ContentPresenter>, HasVoting, CanBeDeleted, IsWidget {
 		void setImageUrl(String url);
 
 		void setAvatarUrl(String url);
