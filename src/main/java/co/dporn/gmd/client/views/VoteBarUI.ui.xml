@@ -19,32 +19,48 @@
 		padding: 0px;
 		margin: 0px;
 	}
+	
+	.vote-range-control {
+		padding: 0px;
+		margin: 0px;
+		width: literal("calc(100% - 104px);");
+		min-width: 60px;
+	}
+	
+	.vote-range-control p, .vote-range-control input {
+		padding: 0px;
+		margin: 0px;
+	}
+	
+	.btn {
+		margin-top: -8px;
+	}
 	</ui:style>
 	<m:MaterialPanel addStyleNames="{style.vote-bar-panel}">
-		<m:MaterialRow addStyleNames="{style.vote-bar-row}">
+		<m:MaterialRow ui:field="voteBarDisplayAmounts"
+			addStyleNames="{style.vote-bar-row}">
 			<m:MaterialButton ui:field="btnThumbsUp"
-				type="FLOATING" float="LEFT" iconType="THUMB_UP" marginTop="-8" />
+				type="FLOATING" float="LEFT" iconType="THUMB_UP"
+				addStyleNames="{style.btn}" />
 			<m:MaterialLabel ui:field="lblVoteCountUp" text=""
 				float="LEFT" marginLeft="12" />
 			<m:MaterialLabel ui:field="lblEarnings" text=""
 				float="RIGHT" marginRight="6" />
 		</m:MaterialRow>
-		<m:MaterialRow addStyleNames="{style.vote-bar-row}">
-			<m:MaterialButton
-				addStyleNames="{style.vote-amount-button}" type="OUTLINED"
-				text="100%"/>
-			<m:MaterialButton
-				addStyleNames="{style.vote-amount-button}" type="OUTLINED"
-				text="75%" />
-			<m:MaterialButton
-				addStyleNames="{style.vote-amount-button}" type="OUTLINED"
-				text="50%" />
-			<m:MaterialButton
-				addStyleNames="{style.vote-amount-button}" type="OUTLINED"
-				text="25%" />
-			<m:MaterialButton
-				addStyleNames="{style.vote-amount-button}" style="padding-left: 0px" type="OUTLINED"
-				text="" iconType="CLEAR" iconPosition="RIGHT" />
+		<m:MaterialRow ui:field="voteBarControls"
+			addStyleNames="{style.vote-bar-row}">
+			<m:MaterialRange ui:field="voteWeight" float="LEFT"
+				min="0" max="100" value="100"
+				addStyleNames="{style.vote-range-control}" />
+			<m:MaterialPanel
+				addStyleNames="{style.vote-bar-panel}" float="RIGHT">
+				<m:MaterialButton ui:field="btnConfirm"
+					type="FLOATING"  iconType="THUMB_UP" marginRight="12"
+					addStyleNames="{style.btn}" />
+				<m:MaterialButton ui:field="btnCancel"
+					type="FLOATING" iconType="CLEAR"
+					addStyleNames="{style.btn}" />
+			</m:MaterialPanel>
 		</m:MaterialRow>
 	</m:MaterialPanel>
 </ui:UiBinder> 

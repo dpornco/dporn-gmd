@@ -70,7 +70,7 @@
 	}
 	
 	.info {
-		width: literal("calc(100% - 172px)");
+		width: literal("calc(100% - 172px);");
 		margin: 0px;
 		margin-left: auto;
 		margin-right: auto;

@@ -1,6 +1,7 @@
 package co.dporn.gmd.client.views;
 
 import java.math.BigDecimal;
+import java.util.Random;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -15,15 +16,29 @@ import com.google.gwt.user.client.ui.Widget;
 
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialLabel;
+import gwt.material.design.client.ui.MaterialRange;
+import gwt.material.design.client.ui.MaterialRow;
 
 public class VoteBarUI extends Composite implements HasVoting {
 
+	@UiField
+	protected MaterialRow voteBarDisplayAmounts;
+	@UiField
+	protected MaterialRow voteBarControls;
+	
 	@UiField
 	protected MaterialButton btnThumbsUp;
 	@UiField
 	protected MaterialLabel lblVoteCountUp;
 	@UiField
 	protected MaterialLabel lblEarnings;
+	
+	@UiField
+	protected MaterialRange voteWeight;
+	@UiField
+	protected MaterialButton btnConfirm;
+	@UiField
+	protected MaterialButton btnCancel;
 	
 	private HandlerRegistration thumbsUpRegistration;
 	private final NumberFormat voteCountFormatter;
@@ -50,6 +65,7 @@ public class VoteBarUI extends Composite implements HasVoting {
 		}
 	}
 
+	private static Random r = new Random();
 	public VoteBarUI() {
 		initWidget(uiBinder.createAndBindUi(this));
 		voteCountFormatter = NF.getDecimalFormat().overrideFractionDigits(0);
@@ -57,6 +73,13 @@ public class VoteBarUI extends Composite implements HasVoting {
 		setEarnings(BigDecimal.ZERO);
 		setNetVoteCount(0);
 		btnThumbsUp.setEnabled(false);
+		if (r.nextInt(100)<50) {
+			voteBarDisplayAmounts.setVisible(false);
+			voteBarControls.setVisible(true);
+		} else {
+			voteBarDisplayAmounts.setVisible(true);
+			voteBarControls.setVisible(false);
+		}
 	}
 
 	@Override
