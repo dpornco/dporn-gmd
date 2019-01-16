@@ -21,10 +21,10 @@ public class VoteBarUI extends Composite implements HasVoting {
 	@UiField
 	protected MaterialButton btnThumbsUp;
 	@UiField
-	MaterialLabel lblVoteCountUp;
+	protected MaterialLabel lblVoteCountUp;
 	@UiField
-	MaterialLabel lblEarnings;
-
+	protected MaterialLabel lblEarnings;
+	
 	private HandlerRegistration thumbsUpRegistration;
 	private final NumberFormat voteCountFormatter;
 	private final NumberFormat sbdValueFormatter;

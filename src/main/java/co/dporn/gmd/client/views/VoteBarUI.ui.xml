@@ -4,10 +4,24 @@
 	xmlns:ma="urn:import:gwt.material.design.addins.client"
 	xmlns:d="urn:import:co.dporn.gmd.client.views">
 	<ui:style>
+	.vote-amount-button {
+		padding-left: 12px;
+		padding-right: 12px;
+		font-weight: bold;
+	}
 	
+	.vote-bar-row {
+		padding: 0px;
+		margin: 0px;
+	}
+	
+	.vote-bar-panel {
+		padding: 0px;
+		margin: 0px;
+	}
 	</ui:style>
-	<m:MaterialPanel margin="0" padding="0">
-		<m:MaterialRow margin="0" padding="0">
+	<m:MaterialPanel addStyleNames="{style.vote-bar-panel}">
+		<m:MaterialRow addStyleNames="{style.vote-bar-row}">
 			<m:MaterialButton ui:field="btnThumbsUp"
 				type="FLOATING" float="LEFT" iconType="THUMB_UP" marginTop="-8" />
 			<m:MaterialLabel ui:field="lblVoteCountUp" text=""
@@ -15,13 +29,22 @@
 			<m:MaterialLabel ui:field="lblEarnings" text=""
 				float="RIGHT" marginRight="6" />
 		</m:MaterialRow>
-<!-- 		<m:MaterialRow margin="0" padding="0"> -->
-<!-- 			<m:MaterialButton ui:field="xbtnThumbsUp" -->
-<!-- 				type="FLOATING" float="LEFT" iconType="THUMB_UP" marginTop="-8" /> -->
-<!-- 			<m:MaterialLabel ui:field="xlblVoteCountUp" text="x" -->
-<!-- 				float="LEFT" marginLeft="12" /> -->
-<!-- 			<m:MaterialLabel ui:field="xlblEarnings" text="y" -->
-<!-- 				float="RIGHT" marginRight="6" /> -->
-<!-- 		</m:MaterialRow> -->
+		<m:MaterialRow addStyleNames="{style.vote-bar-row}">
+			<m:MaterialButton
+				addStyleNames="{style.vote-amount-button}" type="OUTLINED"
+				text="100%"/>
+			<m:MaterialButton
+				addStyleNames="{style.vote-amount-button}" type="OUTLINED"
+				text="75%" />
+			<m:MaterialButton
+				addStyleNames="{style.vote-amount-button}" type="OUTLINED"
+				text="50%" />
+			<m:MaterialButton
+				addStyleNames="{style.vote-amount-button}" type="OUTLINED"
+				text="25%" />
+			<m:MaterialButton
+				addStyleNames="{style.vote-amount-button}" style="padding-left: 0px" type="OUTLINED"
+				text="" iconType="CLEAR" iconPosition="RIGHT" />
+		</m:MaterialRow>
 	</m:MaterialPanel>
 </ui:UiBinder> 

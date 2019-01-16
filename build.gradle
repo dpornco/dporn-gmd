@@ -112,7 +112,7 @@ dependencies {
 	//sanitizer
 	compile 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20180219.1'
 	
-	compile 'com.github.muksihs.steem-java-api-wrapper:steemj-core:2427dd76c1'
+		compile 'com.github.muksihs.steem-java-api-wrapper:steemj-core:99bb733f61'
     //compile 'com.github.tommyettinger:RegExodus:v0.1.10' //not used
     compile 'org.mongodb:mongodb-driver-sync:3.9.0'
     
