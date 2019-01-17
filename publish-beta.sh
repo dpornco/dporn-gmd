@@ -3,7 +3,7 @@
 set -e
 set -o pipefail
 
-export SOURCE="./build/libs/dporn-gmd.war"
+export SOURCE="$(pwd)/build/libs/dporn-gmd.war"
 export DEST="/var/lib/tomcat8/webapps/beta-dporn-gmd.war"
 
 cd "$(dirname "$0")"
@@ -16,8 +16,7 @@ cd "$(dirname "$0")"
 cd 
 
 #single file rsync directly to tomcat webapps folder, must be group member of tomcat8
-rsync	--progress --verbose --human-readable --compress --delete-before -a \
-		-e "ssh -p $PORT" \
-	"$SOURCE" "$USER"@"$HOST":"$DEST"
+rsync	--progress --verbose --human-readable --compress -a \
+		-e "ssh -p $PORT" "$SOURCE" "$USER"@"$HOST":"$DEST"
 	
 echo "DONE"
