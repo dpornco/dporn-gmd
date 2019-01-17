@@ -138,4 +138,10 @@ public class VideoCardUi extends Composite implements VideoCardView, CanBeDelete
 		}
 	}
 
+	@Override
+	public void setVotedValue(int amount) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

@@ -8,13 +8,25 @@ import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.views.CanBeDeleted;
 import co.dporn.gmd.client.views.HasVoting;
 import co.dporn.gmd.shared.CommentNotFoundException;
+import steem.model.Vote;
 
 public class SteemDataUtil {
+	
 	public static <T extends HasVoting & CanBeDeleted> void updateCardMetadata(AppControllerModel model,
 			String username, String permlink, T card) {
+		String thisUser = model.getUsername()==null?"":model.getUsername();
 		model.getDiscussionComment(username, permlink).thenAccept((comment) -> {
 			if (comment.getNetVotes() != null) {
 				card.setNetVoteCount(comment.getNetVotes().longValue());
+			}
+			if (comment.getActiveVotes()!=null) {
+				for (Vote vote: comment.getActiveVotes()) {
+					if (vote.getVoter().equalsIgnoreCase(thisUser)) {
+						if (vote.getPercent()!=null) {
+							card.setVotedValue(vote.getPercent().intValue());
+						}
+					}
+				}
 			}
 			BigDecimal ppv;
 			try {

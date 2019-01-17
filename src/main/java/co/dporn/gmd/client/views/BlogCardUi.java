@@ -149,4 +149,10 @@ public class BlogCardUi extends Composite implements BlogCardView, HasVoting {
 			animation.animate(() -> removeFromParent());
 		}		
 	}
+
+	@Override
+	public void setVotedValue(int amount) {
+		// TODO Auto-generated method stub
+		
+	}
 }

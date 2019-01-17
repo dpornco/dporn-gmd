@@ -50,7 +50,7 @@
 		<m:MaterialRow ui:field="voteBarControls"
 			addStyleNames="{style.vote-bar-row}">
 			<m:MaterialRange ui:field="voteWeight" float="LEFT"
-				min="0" max="100" value="100"
+				min="0" max="100" value="0"
 				addStyleNames="{style.vote-range-control}" />
 			<m:MaterialPanel
 				addStyleNames="{style.vote-bar-panel}" float="RIGHT">

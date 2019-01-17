@@ -29,4 +29,6 @@ public interface HasVoting {
 	}
 
 	void setNetVoteCount(long netVotes);
+
+	void setVotedValue(int amount);
 }

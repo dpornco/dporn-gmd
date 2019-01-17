@@ -1,7 +1,6 @@
 package co.dporn.gmd.client.views;
 
 import java.math.BigDecimal;
-import java.util.Random;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -65,21 +64,27 @@ public class VoteBarUI extends Composite implements HasVoting {
 		}
 	}
 
-	private static Random r = new Random();
 	public VoteBarUI() {
 		initWidget(uiBinder.createAndBindUi(this));
 		voteCountFormatter = NF.getDecimalFormat().overrideFractionDigits(0);
 		sbdValueFormatter = NF.getDecimalFormat().overrideFractionDigits(3, 3);
 		setEarnings(BigDecimal.ZERO);
 		setNetVoteCount(0);
+		setVotedValue(0);
 		btnThumbsUp.setEnabled(false);
-		if (r.nextInt(100)<50) {
-			voteBarDisplayAmounts.setVisible(false);
-			voteBarControls.setVisible(true);
-		} else {
-			voteBarDisplayAmounts.setVisible(true);
-			voteBarControls.setVisible(false);
+		voteBarDisplayAmounts.setVisible(true);
+		voteBarControls.setVisible(false);
+	}
+	
+	@Override
+	public void setVotedValue(int amount) {
+		if (amount<0) {
+			amount=0;
 		}
+		if (amount>100) {
+			amount=100;
+		}
+		voteWeight.setValue(amount, false, true);
 	}
 
 	@Override
