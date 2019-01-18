@@ -83,7 +83,19 @@ public class UploadEroticaImpl implements UploadErotica {
 
 	@Override
 	public void showPostBodyPreview(Double editorWidth, String html) {
-		html += "<p>Posted using <a href=\"https://dporn.co/\" target=\"_blank\">DPorn</a></p>";
+		html += "<div>";
+		html += "<div class='pull-left' style='max-width: 50%; float: left; padding-right: 1rem;'>";
+		html += "<h5>My DPorn channel: <a href=\"https://dporn.co/@" + model.getUsername() + "\" target=\"_blank\">@"
+				+ model.getUsername() + "</a></h5>";
+		html += "</div>";
+		html += "<div class='pull-right' style='max-width: 50%; float: right; padding-left: 1rem;'>";
+		html += "<div class='text-right' style='text-align: right;'>";
+		html += "<h5>Posted using <a href=\"https://dporn.co/\" target=\"_blank\">DPorn</a></h5>";
+		html += "</div>";
+		html += "</div>";
+		html += "<p><br/></p>";
+		html += "</div>";
+		
 		double imgScaleWidth = Math.min(640d / editorWidth, 1.0d);
 		GWT.log("SCALE: " + imgScaleWidth);
 		HtmlReformatter reformatter = new HtmlReformatter(imgScaleWidth);

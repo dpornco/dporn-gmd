@@ -144,7 +144,7 @@ public class UploadVideoImpl implements UploadVideo {
 				+ model.getUsername() + "</a></h5>";
 		html += "</div>";
 		html += "<div class='pull-right' style='max-width: 50%; float: right; padding-left: 1rem;'>";
-		html += "<div class='text-right' style='text-algn: right;'>";
+		html += "<div class='text-right' style='text-align: right;'>";
 		html += "<h5>View using <a href=\"https://ipfs.io" + videoLink.replaceAll(".m3u8$", ".html")
 				+ "\" target=\"_blank\">IPFS.IO</a></h5>";
 		html += "</div>";
