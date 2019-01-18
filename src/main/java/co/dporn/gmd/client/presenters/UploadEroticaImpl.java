@@ -80,9 +80,23 @@ public class UploadEroticaImpl implements UploadErotica {
 		model.recentTagSets(mustHaveTag).thenAccept(sets -> view.showTagSets(sets));
 		return null;
 	}
-
-	@Override
-	public void showPostBodyPreview(Double editorWidth, String html) {
+	
+	private String generatePostHtml(Double editorWidth, String html,
+			String username, String permlink) {
+		if (username == null) {
+			username = "";
+		}
+		if (!username.startsWith("@")) {
+			username = "@" + username;
+		}
+		
+		/*
+		 * append
+		 */
+		if (!html.trim().isEmpty()) {
+			html += "<p><br/></p>";
+		}
+		
 		html += "<div>";
 		html += "<div class='pull-left' style='max-width: 50%; float: left; padding-right: 1rem;'>";
 		html += "<h5>My DPorn channel: <a href=\"https://dporn.co/@" + model.getUsername() + "\" target=\"_blank\">@"
@@ -95,6 +109,14 @@ public class UploadEroticaImpl implements UploadErotica {
 		html += "</div>";
 		html += "<p><br/></p>";
 		html += "</div>";
+
+		return html;
+	}
+
+	@Override
+	public void showPostBodyPreview(Double editorWidth, String html) {
+		
+		html = generatePostHtml(editorWidth, html, model.getUsername(), null);
 		
 		double imgScaleWidth = Math.min(640d / editorWidth, 1.0d);
 		GWT.log("SCALE: " + imgScaleWidth);
@@ -114,11 +136,12 @@ public class UploadEroticaImpl implements UploadErotica {
 			view.setErrorBadTitle();
 			return;
 		}
-		GWT.log("Content: " + content.length() + "\n" + content);
 		if (content.length() < 16) {
 			view.setErrorBadContent();
 			return;
 		}
+		content = generatePostHtml(width, content, model.getUsername(), null);
+		GWT.log("Content: " + content.length() + "\n" + content);
 		Set<String> _tags = new LinkedHashSet<>();
 		for (Suggestion tag : tags) {
 			_tags.add(tag.getReplacementString());
