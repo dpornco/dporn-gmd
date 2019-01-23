@@ -121,7 +121,7 @@ public class UploadVideoUi extends Composite implements UploadVideo.UploadVideoV
 			editor.clearErrorText();
 			ac.clearErrorText();
 			presenter.createNewBlogEntry(BlogEntryType.VIDEO, //
-					(double) editor.getEditor().width(), //
+					editor.getEditor().width(), //
 					title.getValue(), //
 					ac.getValue(), //
 					editor.getValue(), //

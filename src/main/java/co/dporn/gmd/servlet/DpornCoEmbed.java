@@ -26,7 +26,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import co.dporn.gmd.servlet.mongodb.MongoDpornCo;
 import co.dporn.gmd.shared.BlogEntry;
-import co.dporn.gmd.shared.BlogEntryType;
 
 @Produces(MediaType.TEXT_HTML)
 @Consumes(MediaType.TEXT_HTML)
