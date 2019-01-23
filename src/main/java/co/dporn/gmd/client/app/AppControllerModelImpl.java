@@ -576,12 +576,15 @@ public class AppControllerModelImpl implements AppControllerModel {
 				if (tag.trim().isEmpty()) {
 					continue;
 				}
+				if (tag.contains(" ")) {
+					continue;
+				}
 				tags.add(tag);
 				if (tags.size() >= limit) {
 					break;
 				}
 			}
-			if (!prefix.trim().isEmpty()) {
+			if (!prefix.trim().isEmpty() && !prefix.contains(" ")) {
 				tags.add(prefix);
 			}
 			future.complete(new ArrayList<>(new TreeSet<>(tags)));

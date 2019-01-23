@@ -68,6 +68,18 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 				callback.onSuggestionsReady(request, response);
 			});
 		}
+		@Override
+		public void requestDefaultSuggestions(Request request, Callback callback) {
+			CompletableFuture<List<String>> ftags = model.tagsOracle("porn", request.getLimit());
+			ftags.thenAccept(tags -> {
+				List<TagSuggestion> suggestions = new ArrayList<>();
+				for (String tag : tags) {
+					suggestions.add(new TagSuggestion(tag));
+				}
+				Response response = new Response(suggestions);
+				callback.onSuggestionsReady(request, response);
+			});
+		};
 	};
 
 	private String route = "";
