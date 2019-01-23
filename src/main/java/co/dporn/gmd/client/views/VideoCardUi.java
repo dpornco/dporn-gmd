@@ -3,6 +3,8 @@ package co.dporn.gmd.client.views;
 import java.math.BigDecimal;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
@@ -142,6 +144,11 @@ public class VideoCardUi extends Composite implements VideoCardView, CanBeDelete
 	public void setVotedValue(int amount) {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public HandlerRegistration setUpvoteHandler(ClickHandler handler) {
+		return voteBarUi.setUpvoteHandler(handler);
 	}
 
 }

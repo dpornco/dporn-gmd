@@ -39,7 +39,7 @@ public class VoteBarUI extends Composite implements HasVoting {
 	@UiField
 	protected MaterialButton btnCancel;
 	
-	private HandlerRegistration thumbsUpRegistration;
+	private HandlerRegistration voteUpRegistration;
 	private final NumberFormat voteCountFormatter;
 	private final NumberFormat sbdValueFormatter;
 
@@ -74,8 +74,16 @@ public class VoteBarUI extends Composite implements HasVoting {
 		btnThumbsUp.setEnabled(false);
 		voteBarDisplayAmounts.setVisible(true);
 		voteBarControls.setVisible(false);
+		btnThumbsUp.addClickHandler((e)->showVoting(true));
+//		btnConfirm.addClickHandler(this::doUpvote);
+		btnCancel.addClickHandler((e)->showVoting(false));
 	}
 	
+	private void showVoting(boolean showVoteControls) {
+		voteBarDisplayAmounts.setVisible(!showVoteControls);
+		voteBarControls.setVisible(showVoteControls);
+	}
+
 	@Override
 	public void setVotedValue(int amount) {
 		if (amount<0) {
@@ -97,15 +105,17 @@ public class VoteBarUI extends Composite implements HasVoting {
 		lblVoteCountUp.setText(voteCountFormatter.format(netVotes));
 	}
 
-	public void setThumbsUpClickHandler(ClickHandler handler) {
-		if (thumbsUpRegistration != null) {
-			thumbsUpRegistration.removeHandler();
+	@Override
+	public HandlerRegistration setUpvoteHandler(ClickHandler handler) {
+		if (voteUpRegistration != null) {
+			voteUpRegistration.removeHandler();
 		}
 		if (handler==null) {
 			btnThumbsUp.setEnabled(false);
-			return;
+			return null;
 		}
-		thumbsUpRegistration = btnThumbsUp.addClickHandler(handler);
+		voteUpRegistration = btnThumbsUp.addClickHandler(handler);
 		btnThumbsUp.setEnabled(true);
+		return voteUpRegistration;
 	}
 }

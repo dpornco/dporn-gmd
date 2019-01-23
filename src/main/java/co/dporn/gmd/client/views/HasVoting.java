@@ -2,7 +2,12 @@ package co.dporn.gmd.client.views;
 
 import java.math.BigDecimal;
 
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
+
 public interface HasVoting {
+	
+	HandlerRegistration setUpvoteHandler(ClickHandler handler);
 	
 	void setEarnings(BigDecimal earnings);
 

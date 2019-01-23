@@ -58,7 +58,7 @@ public class UploadEroticaUi extends Composite implements UploadErotica.UploadEr
 
 	public UploadEroticaUi(SuggestOracle suggestOracle, Set<String> mandatorySuggestions) {
 		initWidget(uiBinder.createAndBindUi(this));
-		btnTagSets.addClickHandler(e -> presenter.viewRecentTagSets("erotica"));
+		btnTagSets.addClickHandler(e -> presenter.viewRecentTagSets("dporn"));
 		btnClear.addClickHandler((e) -> reset());
 		btnPreview.addClickHandler(e -> {
 			presenter.showPostBodyPreview((double) editor.getEditor().width(), editor.getValue());
