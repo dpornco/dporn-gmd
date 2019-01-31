@@ -123,7 +123,6 @@ public class ClientRestClient {
 	}
 
 	public CompletableFuture<SuggestTagsResponse> suggest(String prefix) {
-		GWT.log("-> suggest: " + prefix);
 		MethodCallbackAsFuture<SuggestTagsResponse> callback = new MethodCallbackAsFuture<>();
 		call(callback).suggest(prefix);
 		return callback.getFuture();
@@ -136,7 +135,6 @@ public class ClientRestClient {
 	}
 
 	public CompletableFuture<ActiveBlogsResponse> listFeatured() {
-		GWT.log("-> listFeatured");
 		MethodCallbackAsFuture<ActiveBlogsResponse> callback = new MethodCallbackAsFuture<>();
 		call(callback).blogsRecent();
 		return callback.getFuture();
@@ -203,7 +201,6 @@ public class ClientRestClient {
 
 				@Override
 				public void onSuccess(Method method, T response) {
-//					GWT.log(" [api] onSuccess");
 					future.complete(response);
 				}
 			};
