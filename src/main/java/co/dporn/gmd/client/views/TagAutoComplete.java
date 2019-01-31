@@ -7,13 +7,15 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.event.dom.client.BlurEvent;
+import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.event.dom.client.KeyCodes;
 import com.google.gwt.event.dom.client.KeyDownEvent;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
-import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import com.google.gwt.user.client.ui.SuggestOracle;
+import com.google.gwt.user.client.ui.SuggestOracle.Suggestion;
 import com.google.gwt.user.client.ui.TextBox;
 
 import co.dporn.gmd.client.utils.DpornChipProvider;
@@ -22,9 +24,9 @@ import gwt.material.design.addins.client.autocomplete.constants.AutocompleteType
 
 public class TagAutoComplete extends MaterialAutoComplete {
 	private int maxTags = 14;
-	private HandlerRegistration keyDownRegistration;
 	private HandlerRegistration blurRegistration;
-	
+	private HandlerRegistration itemBoxKeyDownHandler;
+
 	public int getMaxTags() {
 		return maxTags;
 	}
@@ -32,7 +34,7 @@ public class TagAutoComplete extends MaterialAutoComplete {
 	public void setMaxTags(int maxTags) {
 		this.maxTags = maxTags;
 	}
-	
+
 	@Override
 	protected void setup(SuggestOracle suggestions) {
 		registerCustomHandlers();
@@ -50,7 +52,6 @@ public class TagAutoComplete extends MaterialAutoComplete {
 	}
 
 	protected void validateTags(ValueChangeEvent<List<? extends Suggestion>> event) {
-		GWT.log("validate tags");
 		clearErrorText();
 		if (event.getValue().size() > maxTags) {
 			GWT.log("MAX TAGS ERROR");
@@ -90,16 +91,16 @@ public class TagAutoComplete extends MaterialAutoComplete {
 		if (!isDirectInputAllowed()) {
 			return;
 		}
-		GWT.log("native key code: "+e.getNativeKeyCode());
 		switch (e.getNativeKeyCode()) {
 		case KeyCodes.KEY_ENTER:
 		case KeyCodes.KEY_MAC_ENTER:
 		case ';':
 		case 188: // ','
 		case ' ':
-			doChip();
+			//DomEvent.fireNativeEvent(Document.get().createKeyDownEvent(false, false, false, false, KeyCodes.KEY_ENTER), getItemBox());
 			e.preventDefault();
 			e.stopPropagation();
+			doChip();
 			break;
 		}
 	}
@@ -117,6 +118,7 @@ public class TagAutoComplete extends MaterialAutoComplete {
 	private void doChip() {
 		TextBox itemBox = getItemBox();
 		String value = itemBox.getValue();
+		itemBox.setValue("");
 		if (value != null && !(value = value.trim()).isEmpty()) {
 			String[] chipValues = value.split("[\\s,;]+");
 			if (chipValues != null) {
@@ -127,8 +129,6 @@ public class TagAutoComplete extends MaterialAutoComplete {
 					directInput.setSuggestion(chipValue);
 					addItem(directInput);
 				}
-				itemBox.setValue("");
-				itemBox.setFocus(true);
 			}
 		}
 	}
@@ -137,13 +137,20 @@ public class TagAutoComplete extends MaterialAutoComplete {
 	protected void onLoad() {
 		registerCustomHandlers();
 		super.onLoad();
+		getSuggestBox().setAutoSelectEnabled(false);
+	}
+
+	@Override
+	protected void loadHandlers() {
+		registerCustomHandlers();
+		super.loadHandlers();
 	}
 
 	private void registerCustomHandlers() {
-		if (keyDownRegistration==null) {
-			keyDownRegistration = getItemBox().addKeyDownHandler(this::doChip);
+		if (itemBoxKeyDownHandler == null) {
+			itemBoxKeyDownHandler = getItemBox().addKeyDownHandler(this::doChip);
 		}
-		if (blurRegistration==null) {
+		if (blurRegistration == null) {
 			blurRegistration = getItemBox().addBlurHandler(this::doChip);
 		}
 	}
@@ -155,14 +162,8 @@ public class TagAutoComplete extends MaterialAutoComplete {
 	}
 
 	private void unregisterCustomHandlers() {
-		if (keyDownRegistration != null) {
-			keyDownRegistration.removeHandler();
-			keyDownRegistration = null;
-		}
-		if (blurRegistration != null) {
-			blurRegistration.removeHandler();
-			blurRegistration = null;
-		}
+		removeHandler(itemBoxKeyDownHandler);
+		removeHandler(blurRegistration);
 	}
 
 	public void setMandatoryTags(Set<String> mandatoryTags) {

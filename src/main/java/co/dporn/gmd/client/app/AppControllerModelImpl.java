@@ -568,7 +568,6 @@ public class AppControllerModelImpl implements AppControllerModel {
 
 	@Override
 	public CompletableFuture<List<String>> tagsOracle(final String prefix, int limit) {
-		GWT.log("suggest: " + prefix + " [" + limit + "]");
 		final List<String> tags = new ArrayList<>();
 		CompletableFuture<List<String>> future = new CompletableFuture<>();
 		ClientRestClient.get().suggest(prefix == null ? "" : prefix.trim()).thenAccept(r -> {
