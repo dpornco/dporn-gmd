@@ -1,9 +1,9 @@
 package co.dporn.gmd.client.utils;
 
 import java.math.BigDecimal;
-
 import com.google.gwt.core.client.GWT;
 
+import co.dporn.gmd.client.ViewEvents;
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.views.CanBeDeleted;
 import co.dporn.gmd.client.views.HasVoting;
@@ -11,11 +11,33 @@ import co.dporn.gmd.shared.CommentNotFoundException;
 import steem.model.Vote;
 
 public class SteemDataUtil {
-	
-	public static <T extends HasVoting & CanBeDeleted> void updateCardMetadata(AppControllerModel model,
-			String username, String permlink, T card) {
+
+	public static <T extends HasVoting & CanBeDeleted> void enableAndUpdateCardVoting(AppControllerModel model,
+			String author, String permlink, T card) {
 		String thisUser = model.getUsername()==null?"":model.getUsername();
-		model.getDiscussionComment(username, permlink).thenAccept((comment) -> {
+
+		/*
+		 * If logged in, enable real voting, else have vote trigger "login".
+		 */
+		if (model.isLoggedIn()) {
+			card.setUpvoteHandler(event -> {
+				model.doVote(author, permlink, card.getVotedValue()).thenAccept((t)->{
+					model.fireEvent(new ViewEvents.DoNotifyMessage("Voted!"));
+					enableAndUpdateCardVoting(model, author, permlink, card);
+				}).exceptionally((ex)->{
+					model.fireEvent(new ViewEvents.DoNotifyMessage(ex.getMessage()));
+					enableAndUpdateCardVoting(model, author, permlink, card);
+					return null;
+				});
+			});
+		} else {
+
+		}
+
+		/*
+		 * Update voted values for "this user" and report existing vote counts and SBD amounts.
+		 */
+		model.getDiscussionComment(author, permlink).thenAccept((comment) -> {
 			if (comment.getNetVotes() != null) {
 				card.setNetVoteCount(comment.getNetVotes().longValue());
 			}
@@ -23,7 +45,7 @@ public class SteemDataUtil {
 				for (Vote vote: comment.getActiveVotes()) {
 					if (vote.getVoter().equalsIgnoreCase(thisUser)) {
 						if (vote.getPercent()!=null) {
-							card.setVotedValue(vote.getPercent().intValue());
+							card.setVotedValue(vote.getPercent().intValue()/100);
 						}
 					}
 				}

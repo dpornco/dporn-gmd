@@ -16,6 +16,9 @@ import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.Window.Location;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.SuggestOracle;
+import com.google.web.bindery.event.shared.EventBus;
+import com.google.web.bindery.event.shared.HandlerRegistration;
+import com.google.web.bindery.event.shared.binder.EventBinder;
 
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.app.Routes;
@@ -41,7 +44,25 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 
 	private AppControllerModel model;
 
-	public AppPresenterImpl() {
+	public AppPresenterImpl(EventBus eventBus) {
+		this.eventBus=eventBus;
+		bind();
+	}
+
+	interface MyEventBinder extends EventBinder<AppPresenterImpl> {
+	}
+	private final MyEventBinder eventBinder = GWT.create(MyEventBinder.class);
+	private HandlerRegistration registration;
+	public void bind() {
+		unbind();
+		registration = eventBinder.bindEventHandlers(this, eventBus);
+	}
+
+	public void unbind() {
+		if (registration != null) {
+			registration.removeHandler();
+			registration = null;
+		}
 	}
 
 	@Override
@@ -83,6 +104,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 	};
 
 	private String route = "";
+	private final EventBus eventBus;
 
 	@Override
 	public void loadRoutePresenter(String route) {
@@ -241,7 +263,8 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 		Window.scrollTo(0, 0);
 	}
 
-	public AppPresenterImpl(AppControllerModel model, HasWidgets rootDisplay, AppLayoutView appLayoutView) {
+	public AppPresenterImpl(EventBus eventBus, AppControllerModel model, HasWidgets rootDisplay, AppLayoutView appLayoutView) {
+		this(eventBus);
 		setRootDisplay(rootDisplay);
 		setModel(model);
 		setView(appLayoutView);
@@ -277,7 +300,7 @@ public class AppPresenterImpl implements AppPresenter, ScheduledCommand, RoutePr
 		deferred(this::notificationsWatch);
 		model.isVerified().thenAccept(verified->view.setVerified(verified));
 	}
-	
+
 	private Timer notificationsWatch=null;
 	private void notificationsWatch() {
 		if (notificationsWatch!=null) {

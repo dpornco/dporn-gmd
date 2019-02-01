@@ -21,7 +21,7 @@ public class SteemConnectV2 {
 	}
 	@JsMethod(name = "Initialize")
 	private static native SteemConnectV2 _initialize(JavaScriptObject initializeParam);
-	
+
 
 	@JsType(isNative = true)
 	private static interface SteemConnectV2Options {
@@ -118,7 +118,7 @@ public class SteemConnectV2 {
 	 *            https://steemit.com/steem/@ned/announcing-smart-media-tokens-smts
 	 *            would be "announcing-smart-media-tokens-smts".
 	 * @param weight
-	 *            The weight of the vote. 10000 equale a 100% vote.
+	 *            The weight of the vote. 10000 equals a 100% vote.
 	 * @param callback
 	 *            function that is called once the vote is submitted and included in
 	 *            a block. If successful the "res" variable will be a JSON object
@@ -126,6 +126,21 @@ public class SteemConnectV2 {
 	 */
 	@JsMethod(name = "vote")
 	private native void _vote(String voter, String author, String permlink, int weight, Sc2BiCallback callback);
+
+	@JsOverlay
+	public final CompletableFuture<Boolean> vote(String voter, String author, String permlink, int weight) {
+		CompletableFuture<Boolean> future = new CompletableFuture<>();
+		Sc2CallbackFuture scfuture = new Sc2CallbackFuture();
+		DomGlobal.console.log("Vote: "+voter+" => @"+author+"/"+permlink+" ["+weight+"]");
+		_vote(voter, author, permlink, weight, scfuture.getCallback());
+		scfuture.getFuture().thenAccept(t -> {
+			future.complete(true);
+		}).exceptionally((ex)->{
+			future.completeExceptionally(ex);
+			return null;
+		});
+		return future;
+	}
 
 	@JsMethod(name = "comment")
 	private native void _comment(String parentAuthor, String parentPermlink, String author, String title, String body,
@@ -165,5 +180,5 @@ public class SteemConnectV2 {
 	private native void _claimRewardBalance(String account, String rewardSteem, String rewardSbd, String rewardVests,
 			Sc2BiCallback callback);
 
-	
+
 }

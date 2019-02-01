@@ -108,22 +108,22 @@ public class BlogCardUi extends Composite implements BlogCardView, HasVoting {
 
 	@Override
 	public void setViewLink(String linkUrl) {
-		this.viewLink.setHref(linkUrl);
+		viewLink.setHref(linkUrl);
 	}
 
 	@Override
 	public void setChannelLink(String linkUrl) {
-		this.viewChannel.setHref(linkUrl);
+		viewChannel.setHref(linkUrl);
 	}
 
 	@Override
 	public void setChannelLinkVisible(boolean visible) {
-		this.viewChannel.setVisible(visible);
+		viewChannel.setVisible(visible);
 	}
-	
+
 	@Override
 	public void setViewLinkVisible(boolean visible) {
-		this.viewLink.setVisible(visible);
+		viewLink.setVisible(visible);
 	}
 
 	public void setVoteBarVisible(boolean visible) {
@@ -149,7 +149,7 @@ public class BlogCardUi extends Composite implements BlogCardView, HasVoting {
 			animation.setDuration(250 + showDelay);
 			animation.animate(card);
 			animation.animate(() -> removeFromParent());
-		}		
+		}
 	}
 
 	@Override
@@ -160,5 +160,10 @@ public class BlogCardUi extends Composite implements BlogCardView, HasVoting {
 	@Override
 	public HandlerRegistration setUpvoteHandler(ClickHandler handler) {
 		return voteBarUi.setUpvoteHandler(handler);
+	}
+
+	@Override
+	public int getVotedValue() {
+		return voteBarUi.getVotedValue();
 	}
 }

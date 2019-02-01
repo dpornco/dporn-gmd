@@ -6,9 +6,9 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.HandlerRegistration;
 
 public interface HasVoting {
-	
+
 	HandlerRegistration setUpvoteHandler(ClickHandler handler);
-	
+
 	void setEarnings(BigDecimal earnings);
 
 	default void setEarnings(String earnings) {
@@ -36,4 +36,5 @@ public interface HasVoting {
 	void setNetVoteCount(long netVotes);
 
 	void setVotedValue(int amount);
+	int getVotedValue();
 }

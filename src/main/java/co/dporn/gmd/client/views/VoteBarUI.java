@@ -24,24 +24,25 @@ public class VoteBarUI extends Composite implements HasVoting {
 	protected MaterialRow voteBarDisplayAmounts;
 	@UiField
 	protected MaterialRow voteBarControls;
-	
+
 	@UiField
 	protected MaterialButton btnThumbsUp;
 	@UiField
 	protected MaterialLabel lblVoteCountUp;
 	@UiField
 	protected MaterialLabel lblEarnings;
-	
+
 	@UiField
 	protected MaterialRange voteWeight;
 	@UiField
 	protected MaterialButton btnConfirm;
 	@UiField
 	protected MaterialButton btnCancel;
-	
+
 	private HandlerRegistration voteUpRegistration;
 	private final NumberFormat voteCountFormatter;
 	private final NumberFormat sbdValueFormatter;
+	private ClickHandler upvoteHandler;
 
 	private static VoteBarUI2UiBinder uiBinder = GWT.create(VoteBarUI2UiBinder.class);
 
@@ -54,7 +55,8 @@ public class VoteBarUI extends Composite implements HasVoting {
 		}
 
 		/**
-		 * Provides a new standard decimal format for the default locale. NOT A CACHED SINGLE INSTANCE!
+		 * Provides a new standard decimal format for the default locale. NOT A CACHED
+		 * SINGLE INSTANCE!
 		 *
 		 * @return a <code>NumberFormat</code> capable of producing and consuming
 		 *         decimal format for the default locale
@@ -74,11 +76,12 @@ public class VoteBarUI extends Composite implements HasVoting {
 		btnThumbsUp.setEnabled(false);
 		voteBarDisplayAmounts.setVisible(true);
 		voteBarControls.setVisible(false);
-		btnThumbsUp.addClickHandler((e)->showVoting(true));
-//		btnConfirm.addClickHandler(this::doUpvote);
-		btnCancel.addClickHandler((e)->showVoting(false));
+		btnThumbsUp.addClickHandler((e) -> showVoting(true));
+		// btnConfirm.addClickHandler(this::doUpvote);
+		btnCancel.addClickHandler((e) -> showVoting(false));
+		btnConfirm.addClickHandler((e) -> showVoting(false));
 	}
-	
+
 	private void showVoting(boolean showVoteControls) {
 		voteBarDisplayAmounts.setVisible(!showVoteControls);
 		voteBarControls.setVisible(showVoteControls);
@@ -86,13 +89,13 @@ public class VoteBarUI extends Composite implements HasVoting {
 
 	@Override
 	public void setVotedValue(int amount) {
-		if (amount<0) {
-			amount=0;
+		if (amount < 0) {
+			amount = 0;
 		}
-		if (amount>100) {
-			amount=100;
+		if (amount > 100) {
+			amount = 100;
 		}
-		voteWeight.setValue(amount, false, true);
+		voteWeight.setValue(amount);
 	}
 
 	@Override
@@ -107,15 +110,36 @@ public class VoteBarUI extends Composite implements HasVoting {
 
 	@Override
 	public HandlerRegistration setUpvoteHandler(ClickHandler handler) {
+		upvoteHandler = handler;
 		if (voteUpRegistration != null) {
 			voteUpRegistration.removeHandler();
 		}
-		if (handler==null) {
+		if (handler == null) {
 			btnThumbsUp.setEnabled(false);
 			return null;
 		}
-		voteUpRegistration = btnThumbsUp.addClickHandler(handler);
+		voteUpRegistration = btnConfirm.addClickHandler(handler);
 		btnThumbsUp.setEnabled(true);
 		return voteUpRegistration;
+	}
+
+	@Override
+	protected void onLoad() {
+		super.onLoad();
+		setUpvoteHandler(upvoteHandler);
+	}
+
+	@Override
+	protected void onUnload() {
+		super.onUnload();
+		if (voteUpRegistration != null) {
+			voteUpRegistration.removeHandler();
+		}
+		btnThumbsUp.setEnabled(false);
+	}
+
+	@Override
+	public int getVotedValue() {
+		return voteWeight.getValue();
 	}
 }

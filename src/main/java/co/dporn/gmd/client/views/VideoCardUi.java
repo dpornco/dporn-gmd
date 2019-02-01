@@ -100,22 +100,22 @@ public class VideoCardUi extends Composite implements VideoCardView, CanBeDelete
 
 	@Override
 	public void setViewLink(String linkUrl) {
-		this.viewLink.setHref(linkUrl);
+		viewLink.setHref(linkUrl);
 	}
 
 	@Override
 	public void setChannelLink(String linkUrl) {
-		this.viewChannel.setHref(linkUrl);
+		viewChannel.setHref(linkUrl);
 	}
 
 	@Override
 	public void setChannelLinkVisible(boolean visible) {
-		this.viewChannel.setVisible(visible);
+		viewChannel.setVisible(visible);
 	}
 
 	@Override
 	public void setViewLinkVisible(boolean visible) {
-		this.viewLink.setVisible(visible);
+		viewLink.setVisible(visible);
 	}
 
 	@Override
@@ -142,13 +142,17 @@ public class VideoCardUi extends Composite implements VideoCardView, CanBeDelete
 
 	@Override
 	public void setVotedValue(int amount) {
-		// TODO Auto-generated method stub
-		
+		voteBarUi.setVotedValue(amount);
 	}
 
 	@Override
 	public HandlerRegistration setUpvoteHandler(ClickHandler handler) {
 		return voteBarUi.setUpvoteHandler(handler);
+	}
+
+	@Override
+	public int getVotedValue() {
+		return voteBarUi.getVotedValue();
 	}
 
 }

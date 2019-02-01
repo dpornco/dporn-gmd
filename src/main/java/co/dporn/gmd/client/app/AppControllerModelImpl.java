@@ -32,6 +32,9 @@ import com.google.gwt.storage.client.Storage;
 import com.google.gwt.storage.client.StorageMap;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window.Location;
+import com.google.web.bindery.event.shared.EventBus;
+import com.google.web.bindery.event.shared.HandlerRegistration;
+import com.google.web.bindery.event.shared.binder.EventBinder;
 import com.wallissoftware.pushstate.client.PushStateHistorian;
 
 import co.dporn.gmd.client.ClientRestClient;
@@ -71,20 +74,30 @@ import steem.model.TrendingTag;
 import steem.model.Vote;
 
 public class AppControllerModelImpl implements AppControllerModel {
-	private static final String USERNAME_PATTERN = "(@[a-z0-9][a-z0-9\\-\\.]*[a-z0-9])";
-
 	protected interface IpfsHashResponseMapper extends ObjectMapper<IpfsHashResponse> {
 		IpfsHashResponseMapper mapper = GWT.create(IpfsHashResponseMapper.class);
 	}
 
+	private static class UsernamePermlink {
+		CompletableFuture<DiscussionComment> future;
+		String username;
+		String permlink;
+	}
+
+	private static final String USERNAME_PATTERN = "(@[a-z0-9][a-z0-9\\-\\.]*[a-z0-9])";
 	private static final int CHANNEL_ENTRIES_INITIAL_SIZE = 8;
 	private static final int FEATURED_ENTRIES_POOL_MULTIPLIER_SIZE = 3;
 	private static final String DPORN_VERIFIED_KEY = "dporn-verified";
 	private static final String STEEM_USERNAME_KEY = "steem-username";
 	private static final String STEEMCONNECT_KEY = "steemconnectv2";
+
 	private static final int TAGSETS_MAX_SIZE = 6;
+	private static List<UsernamePermlink> getDiscussionCommentQueue = new ArrayList<>();
+
+	private static Timer discussionCommentQueueTimer = null;
 
 	private Map<String, String> appModelCache;
+
 	private PushStateHistorian historian;
 
 	private boolean loggedIn;
@@ -93,11 +106,36 @@ public class AppControllerModelImpl implements AppControllerModel {
 
 	private SteemConnectV2 sc2api;
 
-	public AppControllerModelImpl(PushStateHistorian historian) {
+	private Map<String, Boolean> VERIFIED_CACHE = new HashMap<>();
+
+	private long VERIFIED_CACHE_EXPIRES = 0l;
+	private final EventBus eventBus;
+
+	public AppControllerModelImpl(EventBus eventBus, PushStateHistorian historian) {
+		this.eventBus = eventBus;
+		bind();
 		initAppModelCache();
 		initSteemConnect();
 		this.historian = historian;
 		this.historian.addValueChangeHandler(this::onRouteChange);
+	}
+
+	interface MyEventBinder extends EventBinder<AppControllerModelImpl> {
+	}
+
+	private final MyEventBinder eventBinder = GWT.create(MyEventBinder.class);
+	private HandlerRegistration registration;
+
+	public void bind() {
+		unbind();
+		registration = eventBinder.bindEventHandlers(this, eventBus);
+	}
+
+	public void unbind() {
+		if (registration != null) {
+			registration.removeHandler();
+			registration = null;
+		}
 	}
 
 	@Override
@@ -105,13 +143,227 @@ public class AppControllerModelImpl implements AppControllerModel {
 		return sc2api.me().thenAccept(this::processMeResponse).exceptionally(this::logout);
 	}
 
+	private void deferred(ScheduledCommand cmd) {
+		Scheduler.get().scheduleDeferred(cmd);
+	}
+
+	@Override
+	public CompletableFuture<Boolean> doVote(String author, String permlink, int percent) {
+		String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
+		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
+		CompletableFuture<Boolean> future = new CompletableFuture<>();
+		if (username.isEmpty() || authorization.isEmpty() || !isLoggedIn()) {
+			future.complete(false);
+			return future;
+		}
+		sc2api.vote(username, author, permlink, percent * 100).thenAccept(t -> {
+			future.complete(true);
+		}).exceptionally((ex) -> {
+			future.completeExceptionally(ex);
+			return null;
+		});
+		return future;
+	}
+
+	@Override
+	public void fireRouteState() {
+		onRouteChange(historian.getToken());
+	}
+
+	@Override
+	public CompletableFuture<BlogEntry> getBlogEntry(String username, String permlink) {
+		CompletableFuture<BlogEntry> future = new CompletableFuture<>();
+		ClientRestClient.get().getBlogEntry(username, permlink)//
+				.thenAccept(r -> future.complete(r.getBlogEntry()))//
+				.exceptionally(ex -> {
+					future.completeExceptionally(ex);
+					return null;
+				});
+		return future;
+	}
+
 	@Override
 	public CompletableFuture<ActiveBlogsResponse> getBlogInfo(String username) {
 		return ClientRestClient.get().blogInfo(username);
 	}
 
-	private void deferred(ScheduledCommand cmd) {
-		Scheduler.get().scheduleDeferred(cmd);
+	@Override
+	public CompletableFuture<DiscussionComment> getDiscussionComment(String username, String permlink) {
+		UsernamePermlink upl = new UsernamePermlink();
+		upl.future = new CompletableFuture<>();
+		upl.username = username;
+		upl.permlink = permlink;
+		synchronized (getDiscussionCommentQueue) {
+			getDiscussionCommentQueue.add(upl);
+		}
+		if (discussionCommentQueueTimer != null) {
+			return upl.future;
+		}
+		discussionCommentQueueTimer = new Timer() {
+			@Override
+			public void run() {
+				synchronized (getDiscussionCommentQueue) {
+					if (getDiscussionCommentQueue.isEmpty()) {
+						discussionCommentQueueTimer.schedule(500);
+						return;
+					}
+					UsernamePermlink lookup = getDiscussionCommentQueue.remove(0);
+					SteemApi.getContent(lookup.username, lookup.permlink).thenAccept(comment -> {
+						discussionCommentQueueTimer.schedule(10);
+						if (!lookup.username.equals(comment.getAuthor())) {
+							DomGlobal.console.log("Checking if deleted: @" + lookup.username + "/" + lookup.permlink);
+							ClientRestClient.get().check(lookup.username, lookup.permlink).thenAccept(d -> {
+								lookup.future.completeExceptionally(new CommentNotFoundException(d.isDeleted()));
+							}).exceptionally(x -> {
+								lookup.future.completeExceptionally(new CommentNotFoundException(false));
+								return null;
+							});
+							return;
+						}
+						lookup.future.complete(comment);
+					}).exceptionally(ex -> {
+						ClientRestClient.get().check(lookup.username, lookup.permlink).thenAccept(d -> {
+							lookup.future.completeExceptionally(new CommentNotFoundException(d.isDeleted()));
+						}).exceptionally(x -> {
+							lookup.future.completeExceptionally(ex);
+							return null;
+						});
+						discussionCommentQueueTimer.schedule(500);
+						DomGlobal.console.log(ex.getMessage());
+						return null;
+					});
+				}
+			}
+		};
+		discussionCommentQueueTimer.schedule(10);
+		return upl.future;
+	}
+
+	@Override
+	public CompletableFuture<HtmlSanitizedResponse> getHtmlSanitized(String html) {
+		String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
+		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
+		return ClientRestClient.get().getHtmlSanitized(username, authorization, html);
+	}
+
+	@Override
+	public CompletableFuture<NotificationsResponse> getNotifications() {
+		String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
+		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
+		if (username.isEmpty() || authorization.isEmpty()) {
+			CompletableFuture<NotificationsResponse> future = new CompletableFuture<>();
+			future.complete(new NotificationsResponse());
+			return future;
+		}
+		return ClientRestClient.get().getNotifications(username, authorization);
+	}
+
+	@Override
+	public String getTimestampedPermlink(String title) {
+		if (title == null || title.trim().isEmpty()) {
+			title = "dporn";
+		}
+		DateTimeFormat formatter = DateTimeFormat.getFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+		String utcdatetime = formatter.format(new Date(), TimeZone.createTimeZone(0));
+
+		utcdatetime = utcdatetime.toLowerCase();
+		utcdatetime = utcdatetime.replaceAll("[^a-z0-9\\-]", "-");
+		utcdatetime = utcdatetime.replaceAll("-+", "-");
+		utcdatetime = "dporn-" + utcdatetime;
+
+		title = title.toLowerCase();
+		title = title.replaceAll("[^a-z0-9\\-]", "-");
+		title = title.replaceAll("-+", "-");
+
+		while (utcdatetime.length() + title.length() > 63 && title.length() > 0) {
+			title = title.substring(0, title.length() - 1);
+		}
+		while (title.startsWith("-")) {
+			title = title.substring(1);
+		}
+		while (title.endsWith("-")) {
+			title = title.substring(0, title.length() - 1);
+		}
+		return title + "-" + utcdatetime;
+	}
+
+	@Override
+	public String getUsername() {
+		return appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
+	}
+
+	private void initAppModelCache() {
+		Storage localStorageIfSupported = Storage.getLocalStorageIfSupported();
+		if (localStorageIfSupported != null) {
+			appModelCache = new StorageMap(localStorageIfSupported);
+		} else {
+			appModelCache = new HashMap<>();
+		}
+	}
+
+	private void initSteemConnect() {
+		SteemConnectInit initializeParam = new SteemConnectInit();
+		initializeParam.setApp("dpornco.app");
+		initializeParam.setCallbackUrl(Location.getProtocol() + "//" + Location.getHost() + "/auth/");
+		initializeParam.setScopes("login", "vote", "comment", "delete_comment", "comment_options", "custom_json",
+				"claim_reward_balance");
+		String accessToken = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
+		initializeParam.setAccessToken(accessToken);
+		sc2api = SteemConnectV2.initialize(initializeParam);
+		if (!accessToken.trim().isEmpty()) {
+			autoLogin();
+		}
+	}
+
+	@Override
+	public boolean isLoggedIn() {
+		return loggedIn;
+	}
+
+	@Override
+	public CompletableFuture<Boolean> isVerified() {
+		String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
+		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
+		CompletableFuture<Boolean> future = new CompletableFuture<>();
+		if (username.isEmpty() || authorization.isEmpty()) {
+			future.complete(false);
+			return future;
+		}
+		if (VERIFIED_CACHE_EXPIRES < System.currentTimeMillis()) {
+			VERIFIED_CACHE.clear();
+		}
+		if (VERIFIED_CACHE.containsKey(username)) {
+			future.complete(VERIFIED_CACHE.get(username));
+			return future;
+		}
+		ClientRestClient.get().getIsVerified(username).thenAccept(r -> {
+			boolean verified = r.isVerified();
+			VERIFIED_CACHE.put(username, verified);
+			VERIFIED_CACHE_EXPIRES = System.currentTimeMillis() + 5l * 60000l;
+			future.complete(verified);
+		});
+		return future;
+	}
+
+	@Override
+	public CompletableFuture<BlogEntryListResponse> listBlogEntries(BlogEntryType entryType, int count) {
+		return ClientRestClient.get().listBlogEntries(entryType, count);
+	}
+
+	@Override
+	public CompletableFuture<BlogEntryListResponse> listBlogEntries(BlogEntryType entryType, String startId,
+			int count) {
+		return ClientRestClient.get().listBlogEntries(entryType, startId == null ? "" : startId, count);
+	}
+
+	@Override
+	public CompletableFuture<BlogEntryListResponse> listBlogEntriesFor(String username) {
+		return ClientRestClient.get().listBlogEntriesFor(username, CHANNEL_ENTRIES_INITIAL_SIZE);
+	}
+
+	@Override
+	public CompletableFuture<BlogEntryListResponse> listBlogEntriesFor(String username, String startId, int count) {
+		return ClientRestClient.get().listBlogEntriesFor(username, startId, count);
 	}
 
 	@Override
@@ -177,120 +429,8 @@ public class AppControllerModelImpl implements AppControllerModel {
 	}
 
 	@Override
-	public void fireRouteState() {
-		onRouteChange(historian.getToken());
-	}
-
-	private static class UsernamePermlink {
-		CompletableFuture<DiscussionComment> future;
-		String username;
-		String permlink;
-	}
-
-	private static List<UsernamePermlink> getDiscussionCommentQueue = new ArrayList<>();
-	private static Timer discussionCommentQueueTimer = null;
-
-	@Override
-	public CompletableFuture<DiscussionComment> getDiscussionComment(String username, String permlink) {
-		UsernamePermlink upl = new UsernamePermlink();
-		upl.future = new CompletableFuture<DiscussionComment>();
-		upl.username = username;
-		upl.permlink = permlink;
-		synchronized (getDiscussionCommentQueue) {
-			getDiscussionCommentQueue.add(upl);
-		}
-		if (discussionCommentQueueTimer != null) {
-			return upl.future;
-		}
-		discussionCommentQueueTimer = new Timer() {
-			@Override
-			public void run() {
-				synchronized (getDiscussionCommentQueue) {
-					if (getDiscussionCommentQueue.isEmpty()) {
-						discussionCommentQueueTimer.schedule(500);
-						return;
-					}
-					UsernamePermlink lookup = getDiscussionCommentQueue.remove(0);
-					SteemApi.getContent(lookup.username, lookup.permlink).thenAccept(comment -> {
-						discussionCommentQueueTimer.schedule(10);
-						if (!lookup.username.equals(comment.getAuthor())) {
-							DomGlobal.console.log("Checking if deleted: @" + lookup.username + "/" + lookup.permlink);
-							ClientRestClient.get().check(lookup.username, lookup.permlink).thenAccept(d -> {
-								lookup.future.completeExceptionally(new CommentNotFoundException(d.isDeleted()));
-							}).exceptionally(x -> {
-								lookup.future.completeExceptionally(new CommentNotFoundException(false));
-								return null;
-							});
-							return;
-						}
-						lookup.future.complete(comment);
-					}).exceptionally(ex -> {
-						ClientRestClient.get().check(lookup.username, lookup.permlink).thenAccept(d -> {
-							lookup.future.completeExceptionally(new CommentNotFoundException(d.isDeleted()));
-						}).exceptionally(x -> {
-							lookup.future.completeExceptionally(ex);
-							return null;
-						});
-						discussionCommentQueueTimer.schedule(500);
-						DomGlobal.console.log(ex.getMessage());
-						return null;
-					});
-				}
-			}
-		};
-		discussionCommentQueueTimer.schedule(10);
-		return upl.future;
-	}
-
-	@Override
-	public CompletableFuture<BlogEntry> getBlogEntry(String username, String permlink) {
-		CompletableFuture<BlogEntry> future = new CompletableFuture<>();
-		ClientRestClient.get().getBlogEntry(username, permlink)//
-				.thenAccept(r -> future.complete(r.getBlogEntry()))//
-				.exceptionally(ex -> {
-					future.completeExceptionally(ex);
-					return null;
-				});
-		return future;
-	}
-
-	private void initAppModelCache() {
-		Storage localStorageIfSupported = Storage.getLocalStorageIfSupported();
-		if (localStorageIfSupported != null) {
-			appModelCache = new StorageMap(localStorageIfSupported);
-		} else {
-			appModelCache = new HashMap<>();
-		}
-	}
-
-	private void initSteemConnect() {
-		SteemConnectInit initializeParam = new SteemConnectInit();
-		initializeParam.setApp("dpornco.app");
-		initializeParam.setCallbackUrl(Location.getProtocol() + "//" + Location.getHost() + "/auth/");
-		initializeParam.setScopes("login", "vote", "comment", "delete_comment", "comment_options", "custom_json",
-				"claim_reward_balance");
-		String accessToken = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
-		initializeParam.setAccessToken(accessToken);
-		sc2api = SteemConnectV2.initialize(initializeParam);
-		if (!accessToken.trim().isEmpty()) {
-			autoLogin();
-		}
-	}
-
-	@Override
-	public boolean isLoggedIn() {
-		return loggedIn;
-	}
-
-	@Override
 	public CompletableFuture<ActiveBlogsResponse> listFeaturedBlogs() {
 		return ClientRestClient.get().listFeatured();
-	}
-
-	@Override
-	public CompletableFuture<BlogEntryListResponse> listBlogEntries(BlogEntryType entryType, String startId,
-			int count) {
-		return ClientRestClient.get().listBlogEntries(entryType, startId == null ? "" : startId, count);
 	}
 
 	@Override
@@ -319,413 +459,6 @@ public class AppControllerModelImpl implements AppControllerModel {
 		return null;
 	}
 
-	private void onRouteChange(String route) {
-		// "auth/" is a special non-presenter route
-		if (route.startsWith("auth/")) {
-			route = StringUtils.substringAfter(route, "auth/");
-			if (route.startsWith("?")) {
-				route = route.substring(1);
-			}
-			String parts[] = route.split("&");
-			if (parts == null || parts.length == 0) {
-				// something wrong, panic navigate to "HOME"
-				this.routePresenter.loadRoutePresenter("");
-				return;
-			}
-			String accessToken = Location.getParameter("access_token");
-			String state = Location.getParameter("state");
-			appModelCache.put(STEEMCONNECT_KEY, accessToken == null ? "" : accessToken);
-			sc2api.setAccessToken(accessToken);
-			if (accessToken != null && !accessToken.trim().isEmpty()) {
-				sc2api.me().thenAccept(this::processMeResponse).exceptionally(this::logout);
-			}
-			deferred(() -> PushStateHistorian.replaceItem(state == null ? "" : state, true));
-			return;
-		}
-
-		this.routePresenter.loadRoutePresenter(route);
-	}
-
-	public void onRouteChange(ValueChangeEvent<String> routeEvent) {
-		onRouteChange(routeEvent.getValue());
-	}
-
-	@Override
-	public String getUsername() {
-		return appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
-	}
-
-	@Override
-	public CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob, OnprogressFn onprogress) {
-		CompletableFuture<String> future = new CompletableFuture<>();
-		String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
-		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
-		if (authorization.trim().isEmpty()) {
-			future.completeExceptionally(new RuntimeException("NOT AUTHORIZED"));
-			routePresenter.toast("UPLOAD NOT AUTHORIZED");
-			return future;
-		}
-		ClientRestClient.get().postBlobToIpfs(username, authorization, filename, blob, onprogress)
-				.thenAccept((response) -> {
-					try {
-						IpfsHashResponse hash = IpfsHashResponseMapper.mapper.read(response);
-						if (hash.getLocation() == null || hash.getLocation().trim().isEmpty()) {
-							future.completeExceptionally(new RuntimeException("NO IPFS PATH RETURNED"));
-							return;
-						}
-						future.complete(hash.getLocation());
-					} catch (JsonDeserializationException e) {
-						future.completeExceptionally(e);
-						return;
-					}
-				}).exceptionally((ex) -> {
-					future.completeExceptionally(ex);
-					return null;
-				});
-		return future;
-	}
-
-	@Override
-	public CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, int videoWidth, int videoHeight,
-			OnprogressFn onprogress) {
-		CompletableFuture<String> future = new CompletableFuture<>();
-		String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
-		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
-		if (authorization.trim().isEmpty()) {
-			future.completeExceptionally(new RuntimeException("NOT AUTHORIZED"));
-			routePresenter.toast("UPLOAD NOT AUTHORIZED");
-			return future;
-		}
-		ClientRestClient.get()
-				.postBlobToIpfsHlsVideo(username, authorization, filename, blob, videoWidth, videoHeight, onprogress)
-				.thenAccept((response) -> {
-					try {
-						IpfsHashResponse hash = IpfsHashResponseMapper.mapper.read(response);
-						if (hash.isTryAgain()) {
-							future.completeExceptionally(new RuntimeException("TRY AGAIN"));
-							return;
-						}
-						if (!hash.isTryAgain() && (hash.getLocation() == null || hash.getLocation().trim().isEmpty())) {
-							future.completeExceptionally(new RuntimeException("NO IPFS PATH RETURNED"));
-							return;
-						}
-						future.complete(hash.getLocation());
-					} catch (JsonDeserializationException e) {
-						future.completeExceptionally(e);
-						return;
-					}
-				}).exceptionally((ex) -> {
-					future.completeExceptionally(ex);
-					return null;
-				});
-		return future;
-	}
-
-	@Override
-	public CompletableFuture<BlogEntryListResponse> listBlogEntriesFor(String username) {
-		return ClientRestClient.get().listBlogEntriesFor(username, CHANNEL_ENTRIES_INITIAL_SIZE);
-	}
-
-	@Override
-	public CompletableFuture<BlogEntryListResponse> listBlogEntriesFor(String username, String startId, int count) {
-		return ClientRestClient.get().listBlogEntriesFor(username, startId, count);
-	}
-
-	private void processMeResponse(JSONObject jsonObject) {
-		String json = jsonObject.toString();
-		deferred(() -> {
-			SteemConnectMe me;
-			String displayName;
-			try {
-				me = SteemConnectMe.deserialize(json);
-			} catch (Exception e) {
-				GWT.log(e.getMessage(), e);
-				return;
-			}
-			displayName = null;
-			SteemAccountMetadata metadata;
-			try {
-				metadata = me.getAccount().getMetadata();
-			} catch (Exception e) {
-				GWT.log(e.getMessage(), e);
-				metadata = null;
-			}
-			if (metadata != null) {
-				AccountProfile profile = metadata.getProfile();
-				if (profile != null) {
-					displayName = profile.getName();
-				}
-			}
-			loggedIn = true;
-			appModelCache.put(STEEM_USERNAME_KEY, me.getUser());
-			ClientRestClient.get().getIsVerified(me.getUser()).thenAccept((x) -> {
-				if (x.isVerified()) {
-					appModelCache.put(DPORN_VERIFIED_KEY, me.getUser());
-				} else {
-					appModelCache.remove(DPORN_VERIFIED_KEY);
-				}
-			}).exceptionally(ex -> {
-				appModelCache.remove(DPORN_VERIFIED_KEY);
-				return null;
-			});
-			routePresenter.setUserInfo(new ActiveUserInfo(me.getUser(), displayName == null ? "" : displayName.trim()));
-		});
-	}
-
-	@Override
-	public CompletableFuture<List<TagSet>> recentTagSets(String mustHaveTag) {
-		mustHaveTag = mustHaveTag == null ? "" : mustHaveTag.trim().toLowerCase();
-		final String lookFor = mustHaveTag;
-		final CompletableFuture<List<TagSet>> future = new CompletableFuture<List<TagSet>>();
-		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
-		steem.SteemApi.getDiscussionsByBlog(username).thenAccept(list -> {
-			List<TagSet> tagsets = new ArrayList<>();
-			List<TagSet> dpornsets = new ArrayList<>();
-			List<TagSet> fallbacksets = new ArrayList<>();
-			scanlist: for (DiscussionComment comment : list) {
-				if (!comment.getAuthor().equals(username)) {
-					// skip reblogs
-					continue;
-				}
-				if (tagsets.size() >= TAGSETS_MAX_SIZE) {
-					break scanlist;
-				}
-				String jsonMetadata = comment.getJsonMetadata();
-				if (jsonMetadata == null) {
-					GWT.log("Missing comment json metadata");
-					continue;
-				}
-				CommentMetadata metadata = CommentMetadata.fromJson(jsonMetadata);
-				List<String> tags = metadata.getTags();
-				if (tags == null) {
-					continue;
-				}
-				// normalize tags
-				TagSet ts = new TagSet();
-				Iterator<String> iter = tags.iterator();
-				while (iter.hasNext()) {
-					String tag = iter.next();
-					tag = tag.trim().toLowerCase().replace(" ", "-").replaceAll("-+", "-");
-					if (tag.isEmpty()) {
-						continue;
-					}
-					ts.getTags().add(tag);
-				}
-				boolean isDpornSet = ts.getTags().contains("dporn") || ts.getTags().contains("dpornco")
-						|| ts.getTags().contains("dporncovideo");
-				// remove dporn/nsfw specific tags for display purposes
-				ts.getTags().remove("dporn");
-				ts.getTags().remove("dpornco");
-				ts.getTags().remove("dporncovideo");
-				ts.getTags().remove("nsfw");
-				if (!lookFor.isEmpty() && ts.getTags().contains(lookFor)) {
-					if (!tagsets.contains(ts)) {
-						tagsets.add(ts);
-					}
-					continue;
-				}
-				if (isDpornSet) {
-					if (!dpornsets.contains(ts)) {
-						dpornsets.add(ts);
-					}
-					continue;
-				}
-				if (!fallbacksets.contains(ts)) {
-					fallbacksets.add(ts);
-				}
-				continue;
-			}
-			if (tagsets.size() < TAGSETS_MAX_SIZE) {
-				Iterator<TagSet> iterFallback = dpornsets.iterator();
-				while (iterFallback.hasNext() && tagsets.size() < TAGSETS_MAX_SIZE) {
-					tagsets.add(iterFallback.next());
-				}
-			}
-			if (tagsets.size() < TAGSETS_MAX_SIZE) {
-				Iterator<TagSet> iterFallback = fallbacksets.iterator();
-				while (iterFallback.hasNext() && tagsets.size() < TAGSETS_MAX_SIZE) {
-					tagsets.add(iterFallback.next());
-				}
-			}
-			future.complete(tagsets);
-		}).exceptionally(ex -> {
-			future.completeExceptionally(ex);
-			return null;
-		});
-		return future;
-	}
-
-	@Override
-	public void setRoutePresenter(RoutePresenter presenter) {
-		this.routePresenter = presenter;
-	}
-
-	@Override
-	public void showAccountSettings() {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public CompletableFuture<List<String>> tagsOracle(final String prefix, int limit) {
-		final List<String> tags = new ArrayList<>();
-		CompletableFuture<List<String>> future = new CompletableFuture<>();
-		ClientRestClient.get().suggest(prefix == null ? "" : prefix.trim()).thenAccept(r -> {
-			for (String tag : r.getTags()) {
-				if (tag.trim().isEmpty()) {
-					continue;
-				}
-				if (tag.contains(" ")) {
-					continue;
-				}
-				tags.add(tag);
-				if (tags.size() >= limit) {
-					break;
-				}
-			}
-			if (!prefix.trim().isEmpty() && !prefix.contains(" ")) {
-				tags.add(prefix);
-			}
-			future.complete(new ArrayList<>(new TreeSet<>(tags)));
-		}).exceptionally((e) -> {
-			future.completeExceptionally(e);
-			return null;
-		});
-		return future;
-	}
-
-	/**
-	 * Stop using. No longer working as expected with recent Steem API changes. Hivemind related? 2019-01-11.
-	 * @param tags
-	 * @return
-	 */
-	@SuppressWarnings("unused")
-	private CompletableFuture<List<String>> sortTagsByNetVoteDesc(List<String> tags) {
-		CompletableFuture<List<String>> future = new CompletableFuture<>();
-		if (tags == null) {
-			future.completeExceptionally(new NullPointerException("Tags to be sorted cannot be null"));
-			return future;
-		}
-
-		// always make sure we have "dporn" and "nsfw" in the tag list
-		if (!tags.contains("dporn")) {
-			tags.add("dporn");
-		}
-		if (!tags.contains("nsfw")) {
-			tags.add("nsfw");
-		}
-
-		List<TrendingTag> trendingList = new ArrayList<>();
-		List<CompletableFuture<List<TrendingTag>>> futures = new ArrayList<>();
-		for (String tag : tags) {
-			if (tag == null || tag.trim().isEmpty()) {
-				continue;
-			}
-			tag = tag.trim();
-			CompletableFuture<List<TrendingTag>> futureTrendingTags = SteemApi.getTrendingTags(tag, 1);
-			futureTrendingTags.thenAccept(list -> {
-				if (list == null || list.isEmpty()) {
-					return;
-				}
-				for (TrendingTag t : list) {
-					GWT.log(String.valueOf(t.getName()) + ": " + String.valueOf(t.getNetVotes()));
-				}
-				synchronized (trendingList) {
-					trendingList.addAll(list);
-				}
-			}).exceptionally(ex -> {
-				if (ex == null) {
-					GWT.log("NULL EXCEPTION: futureTrendingTags in sortTagsByNetVoteDesc");
-					return null;
-				}
-				GWT.log(ex.getMessage(), ex);
-				return null;
-			});
-			futures.add(futureTrendingTags);
-		}
-		CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[0])).thenRun(() -> {
-			BigInteger totalCommentsCount = BigInteger.ZERO;
-			// get sum of weights and then pre-weight several special tags like "dporn" and
-			// "nsfw" to always be first in sorted list
-			for (TrendingTag t : trendingList) {
-				if (t.getComments() == null) {
-					t.setComments(t.getTopPosts());
-				}
-				if (t.getComments() == null) {
-					t.setComments(BigInteger.ZERO);
-				}
-				totalCommentsCount = totalCommentsCount.add(t.getComments());
-			}
-			for (TrendingTag t : trendingList) {
-				if (t.getName().equals("dporn")) {
-					t.setComments(totalCommentsCount.add(BigInteger.valueOf(5)));
-					continue;
-				}
-				if (t.getName().equals("nsfw")) {
-					t.setComments(totalCommentsCount.add(BigInteger.valueOf(4)));
-					continue;
-				}
-				if (DpornConsts.MANDATORY_VIDEO_TAGS.contains(t.getName())) {
-					t.setComments(totalCommentsCount.add(BigInteger.valueOf(3)));
-					continue;
-				}
-				if (DpornConsts.MANDATORY_PHOTO_GALLERY_TAGS.contains(t.getName())) {
-					t.setComments(totalCommentsCount.add(BigInteger.valueOf(2)));
-					continue;
-				}
-				if (DpornConsts.MANDATORY_BLOG_TAGS.contains(t.getName())) {
-					t.setComments(totalCommentsCount.add(BigInteger.valueOf(1)));
-					continue;
-				}
-			}
-			// sort, build simple string list, then sort desc and return list
-			Collections.sort(trendingList, (a, b) -> b.getComments().compareTo(a.getComments()));
-			List<String> result = new ArrayList<>();
-			for (TrendingTag t : trendingList) {
-				result.add(t.getName());
-			}
-			future.complete(result);
-		}).exceptionally(ex -> {
-			if (ex == null) {
-				DomGlobal.console.log("NULL EXCEPTION: CompletableFuture.allOf(...) in sortTagsByNetVoteDesc");
-				return null;
-			}
-			DomGlobal.console.log(ex.getMessage());
-			DomGlobal.console.log(ex);
-			return null;
-		});
-		return future;
-	}
-
-	@Override
-	public String getTimestampedPermlink(String title) {
-		if (title == null || title.trim().isEmpty()) {
-			title = "dporn";
-		}
-		DateTimeFormat formatter = DateTimeFormat.getFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-		String utcdatetime = formatter.format(new Date(), TimeZone.createTimeZone(0));
-
-		utcdatetime = utcdatetime.toLowerCase();
-		utcdatetime = utcdatetime.replaceAll("[^a-z0-9\\-]", "-");
-		utcdatetime = utcdatetime.replaceAll("-+", "-");
-		utcdatetime = "dporn-" + utcdatetime;
-
-		title = title.toLowerCase();
-		title = title.replaceAll("[^a-z0-9\\-]", "-");
-		title = title.replaceAll("-+", "-");
-
-		while (utcdatetime.length() + title.length() > 63 && title.length() > 0) {
-			title = title.substring(0, title.length() - 1);
-		}
-		while (title.startsWith("-")) {
-			title = title.substring(1);
-		}
-		while (title.endsWith("-")) {
-			title = title.substring(0, title.length() - 1);
-		}
-		return title + "-" + utcdatetime;
-	}
-
 	@Override
 	public CompletableFuture<String> newBlogEntry(BlogEntryType blogEntryType, double width, String title,
 			List<String> tags, String content) {
@@ -748,7 +481,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 		HtmlReformatter reformatter = new HtmlReformatter(width);
 		content = "<html>" + reformatter.reformat(content) + "</html>";
 
-		CompletableFuture<String> future = new CompletableFuture<String>();
+		CompletableFuture<String> future = new CompletableFuture<>();
 
 		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
 		if (username.trim().isEmpty()) {
@@ -778,7 +511,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 		JSONArray jsonImageArray = new JSONArray();
 		if (content.toLowerCase().contains("<img")) {
 			HTMLDivElement div = Js.cast(DomGlobal.document.createElement("div"));
-			div.innerHTML=content;
+			div.innerHTML = content;
 			JQueryElement imgs = JQuery.$(div).find("img");
 			if (imgs != null) {
 				// use non-async code!
@@ -791,7 +524,7 @@ public class AppControllerModelImpl implements AppControllerModel {
 		JSONArray linksArray = new JSONArray();
 		if (content.toLowerCase().contains("<a")) {
 			HTMLDivElement div = Js.cast(DomGlobal.document.createElement("div"));
-			div.innerHTML=content;
+			div.innerHTML = content;
 			JQueryElement anchors = JQuery.$(div).find("a");
 			if (anchors != null) {
 				// use non-async code!
@@ -929,55 +662,373 @@ public class AppControllerModelImpl implements AppControllerModel {
 		return future;
 	}
 
-	@Override
-	public CompletableFuture<BlogEntryListResponse> listBlogEntries(BlogEntryType entryType, int count) {
-		return ClientRestClient.get().listBlogEntries(entryType, count);
+	private void onRouteChange(String route) {
+		// "auth/" is a special non-presenter route
+		if (route.startsWith("auth/")) {
+			route = StringUtils.substringAfter(route, "auth/");
+			if (route.startsWith("?")) {
+				route = route.substring(1);
+			}
+			String parts[] = route.split("&");
+			if (parts == null || parts.length == 0) {
+				// something wrong, panic navigate to "HOME"
+				routePresenter.loadRoutePresenter("");
+				return;
+			}
+			String accessToken = Location.getParameter("access_token");
+			String state = Location.getParameter("state");
+			appModelCache.put(STEEMCONNECT_KEY, accessToken == null ? "" : accessToken);
+			sc2api.setAccessToken(accessToken);
+			if (accessToken != null && !accessToken.trim().isEmpty()) {
+				sc2api.me().thenAccept(this::processMeResponse).exceptionally(this::logout);
+			}
+			deferred(() -> PushStateHistorian.replaceItem(state == null ? "" : state, true));
+			return;
+		}
+
+		routePresenter.loadRoutePresenter(route);
+	}
+
+	public void onRouteChange(ValueChangeEvent<String> routeEvent) {
+		onRouteChange(routeEvent.getValue());
 	}
 
 	@Override
-	public CompletableFuture<HtmlSanitizedResponse> getHtmlSanitized(String html) {
+	public CompletableFuture<String> postBlobToIpfsFile(String filename, Blob blob, OnprogressFn onprogress) {
+		CompletableFuture<String> future = new CompletableFuture<>();
 		String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
 		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
-		return ClientRestClient.get().getHtmlSanitized(username, authorization, html);
+		if (authorization.trim().isEmpty()) {
+			future.completeExceptionally(new RuntimeException("NOT AUTHORIZED"));
+			routePresenter.toast("UPLOAD NOT AUTHORIZED");
+			return future;
+		}
+		ClientRestClient.get().postBlobToIpfs(username, authorization, filename, blob, onprogress)
+				.thenAccept((response) -> {
+					try {
+						IpfsHashResponse hash = IpfsHashResponseMapper.mapper.read(response);
+						if (hash.getLocation() == null || hash.getLocation().trim().isEmpty()) {
+							future.completeExceptionally(new RuntimeException("NO IPFS PATH RETURNED"));
+							return;
+						}
+						future.complete(hash.getLocation());
+					} catch (JsonDeserializationException e) {
+						future.completeExceptionally(e);
+						return;
+					}
+				}).exceptionally((ex) -> {
+					future.completeExceptionally(ex);
+					return null;
+				});
+		return future;
 	}
 
 	@Override
-	public CompletableFuture<NotificationsResponse> getNotifications() {
+	public CompletableFuture<String> postBlobToIpfsHlsVideo(String filename, Blob blob, int videoWidth, int videoHeight,
+			OnprogressFn onprogress) {
+		CompletableFuture<String> future = new CompletableFuture<>();
 		String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
 		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
-		if (username.isEmpty() || authorization.isEmpty()) {
-			CompletableFuture<NotificationsResponse> future = new CompletableFuture<>();
-			future.complete(new NotificationsResponse());
+		if (authorization.trim().isEmpty()) {
+			future.completeExceptionally(new RuntimeException("NOT AUTHORIZED"));
+			routePresenter.toast("UPLOAD NOT AUTHORIZED");
 			return future;
 		}
-		return ClientRestClient.get().getNotifications(username, authorization);
+		ClientRestClient.get()
+				.postBlobToIpfsHlsVideo(username, authorization, filename, blob, videoWidth, videoHeight, onprogress)
+				.thenAccept((response) -> {
+					try {
+						IpfsHashResponse hash = IpfsHashResponseMapper.mapper.read(response);
+						if (hash.isTryAgain()) {
+							future.completeExceptionally(new RuntimeException("TRY AGAIN"));
+							return;
+						}
+						if (!hash.isTryAgain() && (hash.getLocation() == null || hash.getLocation().trim().isEmpty())) {
+							future.completeExceptionally(new RuntimeException("NO IPFS PATH RETURNED"));
+							return;
+						}
+						future.complete(hash.getLocation());
+					} catch (JsonDeserializationException e) {
+						future.completeExceptionally(e);
+						return;
+					}
+				}).exceptionally((ex) -> {
+					future.completeExceptionally(ex);
+					return null;
+				});
+		return future;
 	}
 
-	private Map<String, Boolean> VERIFIED_CACHE = new HashMap<>();
-	private long VERIFIED_CACHE_EXPIRES = 0l;
+	private void processMeResponse(JSONObject jsonObject) {
+		String json = jsonObject.toString();
+		deferred(() -> {
+			SteemConnectMe me;
+			String displayName;
+			try {
+				me = SteemConnectMe.deserialize(json);
+			} catch (Exception e) {
+				GWT.log(e.getMessage(), e);
+				return;
+			}
+			displayName = null;
+			SteemAccountMetadata metadata;
+			try {
+				metadata = me.getAccount().getMetadata();
+			} catch (Exception e) {
+				GWT.log(e.getMessage(), e);
+				metadata = null;
+			}
+			if (metadata != null) {
+				AccountProfile profile = metadata.getProfile();
+				if (profile != null) {
+					displayName = profile.getName();
+				}
+			}
+			loggedIn = true;
+			appModelCache.put(STEEM_USERNAME_KEY, me.getUser());
+			ClientRestClient.get().getIsVerified(me.getUser()).thenAccept((x) -> {
+				if (x.isVerified()) {
+					appModelCache.put(DPORN_VERIFIED_KEY, me.getUser());
+				} else {
+					appModelCache.remove(DPORN_VERIFIED_KEY);
+				}
+			}).exceptionally(ex -> {
+				appModelCache.remove(DPORN_VERIFIED_KEY);
+				return null;
+			});
+			routePresenter.setUserInfo(new ActiveUserInfo(me.getUser(), displayName == null ? "" : displayName.trim()));
+		});
+	}
 
 	@Override
-	public CompletableFuture<Boolean> isVerified() {
-		String authorization = appModelCache.getOrDefault(STEEMCONNECT_KEY, "");
+	public CompletableFuture<List<TagSet>> recentTagSets(String mustHaveTag) {
+		mustHaveTag = mustHaveTag == null ? "" : mustHaveTag.trim().toLowerCase();
+		final String lookFor = mustHaveTag;
+		final CompletableFuture<List<TagSet>> future = new CompletableFuture<>();
 		String username = appModelCache.getOrDefault(STEEM_USERNAME_KEY, "");
-		CompletableFuture<Boolean> future = new CompletableFuture<>();
-		if (username.isEmpty() || authorization.isEmpty()) {
-			future.complete(false);
-			return future;
-		}
-		if (VERIFIED_CACHE_EXPIRES < System.currentTimeMillis()) {
-			VERIFIED_CACHE.clear();
-		}
-		if (VERIFIED_CACHE.containsKey(username)) {
-			future.complete(VERIFIED_CACHE.get(username));
-			return future;
-		}
-		ClientRestClient.get().getIsVerified(username).thenAccept(r -> {
-			boolean verified = r.isVerified();
-			VERIFIED_CACHE.put(username, verified);
-			VERIFIED_CACHE_EXPIRES = System.currentTimeMillis() + 5l * 60000l;
-			future.complete(verified);
+		steem.SteemApi.getDiscussionsByBlog(username).thenAccept(list -> {
+			List<TagSet> tagsets = new ArrayList<>();
+			List<TagSet> dpornsets = new ArrayList<>();
+			List<TagSet> fallbacksets = new ArrayList<>();
+			scanlist: for (DiscussionComment comment : list) {
+				if (!comment.getAuthor().equals(username)) {
+					// skip reblogs
+					continue;
+				}
+				if (tagsets.size() >= TAGSETS_MAX_SIZE) {
+					break scanlist;
+				}
+				String jsonMetadata = comment.getJsonMetadata();
+				if (jsonMetadata == null) {
+					GWT.log("Missing comment json metadata");
+					continue;
+				}
+				CommentMetadata metadata = CommentMetadata.fromJson(jsonMetadata);
+				List<String> tags = metadata.getTags();
+				if (tags == null) {
+					continue;
+				}
+				// normalize tags
+				TagSet ts = new TagSet();
+				Iterator<String> iter = tags.iterator();
+				while (iter.hasNext()) {
+					String tag = iter.next();
+					tag = tag.trim().toLowerCase().replace(" ", "-").replaceAll("-+", "-");
+					if (tag.isEmpty()) {
+						continue;
+					}
+					ts.getTags().add(tag);
+				}
+				boolean isDpornSet = ts.getTags().contains("dporn") || ts.getTags().contains("dpornco")
+						|| ts.getTags().contains("dporncovideo");
+				// remove dporn/nsfw specific tags for display purposes
+				ts.getTags().remove("dporn");
+				ts.getTags().remove("dpornco");
+				ts.getTags().remove("dporncovideo");
+				ts.getTags().remove("nsfw");
+				if (!lookFor.isEmpty() && ts.getTags().contains(lookFor)) {
+					if (!tagsets.contains(ts)) {
+						tagsets.add(ts);
+					}
+					continue;
+				}
+				if (isDpornSet) {
+					if (!dpornsets.contains(ts)) {
+						dpornsets.add(ts);
+					}
+					continue;
+				}
+				if (!fallbacksets.contains(ts)) {
+					fallbacksets.add(ts);
+				}
+				continue;
+			}
+			if (tagsets.size() < TAGSETS_MAX_SIZE) {
+				Iterator<TagSet> iterFallback = dpornsets.iterator();
+				while (iterFallback.hasNext() && tagsets.size() < TAGSETS_MAX_SIZE) {
+					tagsets.add(iterFallback.next());
+				}
+			}
+			if (tagsets.size() < TAGSETS_MAX_SIZE) {
+				Iterator<TagSet> iterFallback = fallbacksets.iterator();
+				while (iterFallback.hasNext() && tagsets.size() < TAGSETS_MAX_SIZE) {
+					tagsets.add(iterFallback.next());
+				}
+			}
+			future.complete(tagsets);
+		}).exceptionally(ex -> {
+			future.completeExceptionally(ex);
+			return null;
 		});
 		return future;
+	}
+
+	@Override
+	public void setRoutePresenter(RoutePresenter presenter) {
+		routePresenter = presenter;
+	}
+
+	@Override
+	public void showAccountSettings() {
+		// TODO Auto-generated method stub
+
+	}
+
+	/**
+	 * Stop using. No longer working as expected with recent Steem API changes.
+	 * Hivemind related? 2019-01-11.
+	 *
+	 * @param tags
+	 * @return
+	 */
+	@SuppressWarnings("unused")
+	private CompletableFuture<List<String>> sortTagsByNetVoteDesc(List<String> tags) {
+		CompletableFuture<List<String>> future = new CompletableFuture<>();
+		if (tags == null) {
+			future.completeExceptionally(new NullPointerException("Tags to be sorted cannot be null"));
+			return future;
+		}
+
+		// always make sure we have "dporn" and "nsfw" in the tag list
+		if (!tags.contains("dporn")) {
+			tags.add("dporn");
+		}
+		if (!tags.contains("nsfw")) {
+			tags.add("nsfw");
+		}
+
+		List<TrendingTag> trendingList = new ArrayList<>();
+		List<CompletableFuture<List<TrendingTag>>> futures = new ArrayList<>();
+		for (String tag : tags) {
+			if (tag == null || tag.trim().isEmpty()) {
+				continue;
+			}
+			tag = tag.trim();
+			CompletableFuture<List<TrendingTag>> futureTrendingTags = SteemApi.getTrendingTags(tag, 1);
+			futureTrendingTags.thenAccept(list -> {
+				if (list == null || list.isEmpty()) {
+					return;
+				}
+				for (TrendingTag t : list) {
+					GWT.log(String.valueOf(t.getName()) + ": " + String.valueOf(t.getNetVotes()));
+				}
+				synchronized (trendingList) {
+					trendingList.addAll(list);
+				}
+			}).exceptionally(ex -> {
+				if (ex == null) {
+					GWT.log("NULL EXCEPTION: futureTrendingTags in sortTagsByNetVoteDesc");
+					return null;
+				}
+				GWT.log(ex.getMessage(), ex);
+				return null;
+			});
+			futures.add(futureTrendingTags);
+		}
+		CompletableFuture.allOf(futures.toArray(new CompletableFuture<?>[0])).thenRun(() -> {
+			BigInteger totalCommentsCount = BigInteger.ZERO;
+			// get sum of weights and then pre-weight several special tags like "dporn" and
+			// "nsfw" to always be first in sorted list
+			for (TrendingTag t : trendingList) {
+				if (t.getComments() == null) {
+					t.setComments(t.getTopPosts());
+				}
+				if (t.getComments() == null) {
+					t.setComments(BigInteger.ZERO);
+				}
+				totalCommentsCount = totalCommentsCount.add(t.getComments());
+			}
+			for (TrendingTag t : trendingList) {
+				if (t.getName().equals("dporn")) {
+					t.setComments(totalCommentsCount.add(BigInteger.valueOf(5)));
+					continue;
+				}
+				if (t.getName().equals("nsfw")) {
+					t.setComments(totalCommentsCount.add(BigInteger.valueOf(4)));
+					continue;
+				}
+				if (DpornConsts.MANDATORY_VIDEO_TAGS.contains(t.getName())) {
+					t.setComments(totalCommentsCount.add(BigInteger.valueOf(3)));
+					continue;
+				}
+				if (DpornConsts.MANDATORY_PHOTO_GALLERY_TAGS.contains(t.getName())) {
+					t.setComments(totalCommentsCount.add(BigInteger.valueOf(2)));
+					continue;
+				}
+				if (DpornConsts.MANDATORY_BLOG_TAGS.contains(t.getName())) {
+					t.setComments(totalCommentsCount.add(BigInteger.valueOf(1)));
+					continue;
+				}
+			}
+			// sort, build simple string list, then sort desc and return list
+			Collections.sort(trendingList, (a, b) -> b.getComments().compareTo(a.getComments()));
+			List<String> result = new ArrayList<>();
+			for (TrendingTag t : trendingList) {
+				result.add(t.getName());
+			}
+			future.complete(result);
+		}).exceptionally(ex -> {
+			if (ex == null) {
+				DomGlobal.console.log("NULL EXCEPTION: CompletableFuture.allOf(...) in sortTagsByNetVoteDesc");
+				return null;
+			}
+			DomGlobal.console.log(ex.getMessage());
+			DomGlobal.console.log(ex);
+			return null;
+		});
+		return future;
+	}
+
+	@Override
+	public CompletableFuture<List<String>> tagsOracle(final String prefix, int limit) {
+		final List<String> tags = new ArrayList<>();
+		CompletableFuture<List<String>> future = new CompletableFuture<>();
+		ClientRestClient.get().suggest(prefix == null ? "" : prefix.trim()).thenAccept(r -> {
+			for (String tag : r.getTags()) {
+				if (tag.trim().isEmpty()) {
+					continue;
+				}
+				if (tag.contains(" ")) {
+					continue;
+				}
+				tags.add(tag);
+				if (tags.size() >= limit) {
+					break;
+				}
+			}
+			if (!prefix.trim().isEmpty() && !prefix.contains(" ")) {
+				tags.add(prefix);
+			}
+			future.complete(new ArrayList<>(new TreeSet<>(tags)));
+		}).exceptionally((e) -> {
+			future.completeExceptionally(e);
+			return null;
+		});
+		return future;
+	}
+
+	@Override
+	public EventBus getEventBus() {
+		return eventBus;
 	}
 }

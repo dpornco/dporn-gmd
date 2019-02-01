@@ -75,7 +75,7 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 				card.setVideoEmbedUrl(Routes.embedVideo(username, p.getPermlink()));
 				card.setViewLink(Routes.blogEntry(username, p.getPermlink()));
 				getContentView().getFeaturedPosts().add(card);
-				SteemDataUtil.updateCardMetadata(model, p.getUsername(), p.getPermlink(), card);
+				SteemDataUtil.enableAndUpdateCardVoting(model, p.getUsername(), p.getPermlink(), card);
 			});
 		}).exceptionally(ex -> {
 			GWT.log(ex.getMessage(), ex);
@@ -178,7 +178,7 @@ public class MainContentPresenter implements ContentPresenter, ScheduledCommand 
 					card.setViewLink(Routes.blogEntry(username, p.getPermlink()));
 					card.setVideoEmbedUrl(Routes.embedVideo(username, p.getPermlink()));
 					getContentView().getRecentPosts().add(card);
-					SteemDataUtil.updateCardMetadata(model, p.getUsername(), p.getPermlink(), card);
+					SteemDataUtil.enableAndUpdateCardVoting(model, p.getUsername(), p.getPermlink(), card);
 					if (timer[0] != null) {
 						timer[0].cancel();
 					}

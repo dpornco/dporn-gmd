@@ -159,7 +159,7 @@ public class ChannelPresenter implements ContentPresenter, ScheduledCommand {
 //					}
 					card.setViewLink(Routes.blogEntry(entryUsername, p.getPermlink()));
 					getContentView().getRecentPosts().add(card.asWidget());
-					SteemDataUtil.updateCardMetadata(model, p.getUsername(), p.getPermlink(), card);
+					SteemDataUtil.enableAndUpdateCardVoting(model, p.getUsername(), p.getPermlink(), card);
 					if (timer[0] != null) {
 						timer[0].cancel();
 					}
