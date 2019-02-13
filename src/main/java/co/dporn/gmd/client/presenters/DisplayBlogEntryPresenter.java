@@ -4,10 +4,12 @@ import com.google.gwt.core.client.Scheduler.ScheduledCommand;
 import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.IsWidget;
 
+import co.dporn.gmd.client.views.CanBeDeleted;
+import co.dporn.gmd.client.views.HasVoting;
 import co.dporn.gmd.client.views.IsView;
 
 public interface DisplayBlogEntryPresenter extends ContentPresenter, ScheduledCommand {
-	interface DisplayBlogEntryView extends ContentView {
+	interface DisplayBlogEntryView extends ContentView, HasVoting, CanBeDeleted {
 		@Override
 		IsWidget getContainer();
 		@Override
@@ -23,8 +25,6 @@ public interface DisplayBlogEntryPresenter extends ContentPresenter, ScheduledCo
 	}
 	interface CommentRepliesView extends IsView<DisplayBlogEntryPresenter> {}
 	interface PostDetails {}
-	void upvote(int percent);
-	void downvote(int percent);
 	void report(String reason);
 	void reply(String reply);
 }

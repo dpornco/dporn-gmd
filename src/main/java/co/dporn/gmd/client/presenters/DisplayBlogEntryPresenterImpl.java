@@ -4,23 +4,24 @@ import com.google.gwt.user.client.Window;
 
 import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.app.Routes;
+import co.dporn.gmd.client.utils.SteemDataUtil;
 import co.dporn.gmd.shared.AccountInfo;
 import co.dporn.gmd.shared.ActiveBlogsResponse;
 import co.dporn.gmd.shared.BlogEntryType;
 
 public class DisplayBlogEntryPresenterImpl implements DisplayBlogEntryPresenter {
 
-	private String username;
+	private String author;
 	private String permlink;
 	private AppControllerModel model;
 	private DisplayBlogEntryView view;
 
-	public DisplayBlogEntryPresenterImpl(String username, String permlink, AppControllerModel model,
+	public DisplayBlogEntryPresenterImpl(String author, String permlink, AppControllerModel model,
 			DisplayBlogEntryView displayBlogEntryView) {
-		this.username = username;
+		this.author = author;
 		this.permlink = permlink;
 		this.model = model;
-		this.view = displayBlogEntryView;
+		view = displayBlogEntryView;
 	}
 
 	@Override
@@ -54,7 +55,7 @@ public class DisplayBlogEntryPresenterImpl implements DisplayBlogEntryPresenter 
 
 	@Override
 	public void execute() {
-		model.getBlogInfo(username).thenAccept(this::setupHeader).thenRun(() -> loadAndDisplayBlogEntry());
+		model.getBlogInfo(author).thenAccept(this::setupHeader).thenRun(() -> loadAndDisplayBlogEntry());
 	}
 
 	void setupHeader(ActiveBlogsResponse infoMap) {
@@ -62,48 +63,37 @@ public class DisplayBlogEntryPresenterImpl implements DisplayBlogEntryPresenter 
 			return;
 		}
 		DisplayBlogEntryView channelView = view;
-		if (!infoMap.getInfoMap().containsKey(username)) {
-			channelView.showUserNotFound(username);
+		if (!infoMap.getInfoMap().containsKey(author)) {
+			channelView.showUserNotFound(author);
 			return;
 		}
-		AccountInfo info = infoMap.getInfoMap().get(username);
+		AccountInfo info = infoMap.getInfoMap().get(author);
 		BlogHeader blogHeader = channelView.getBlogHeader();
-		blogHeader.setAvatarUrl(Routes.avatarImage(username));
+		blogHeader.setAvatarUrl(Routes.avatarImage(author));
 		blogHeader.setDisplayName(info.getDisplayName());
 		String coverImage = info.getCoverImage();
 		blogHeader.setImageUrl(coverImage);
 	}
 
 	protected void loadAndDisplayBlogEntry() {
-		model.getBlogEntry(username, permlink).thenAccept((entry) -> {
+		model.getBlogEntry(author, permlink).thenAccept((entry) -> {
 			if (!(view instanceof DisplayBlogEntryView)) {
 				return;
 			}
 			DisplayBlogEntryView blogEntryView = view;
+			SteemDataUtil.enableAndUpdateCardVoting(model, author, permlink, view);
 			deferred(()->{
 				BlogHeader blogHeader = blogEntryView.getBlogHeader();
 				blogHeader.setAbout(entry.getTitle());
-				blogHeader.setChannelRoute(Routes.channel(username));
+				blogHeader.setChannelRoute(Routes.channel(author));
 			});
 			view.showLoading(false);
 			if (entry.getEntryType()==BlogEntryType.VIDEO) {
-				blogEntryView.setEmbedUrl(Routes.embedVideo(username, permlink));
+				blogEntryView.setEmbedUrl(Routes.embedVideo(author, permlink));
 			} else {
 				blogEntryView.setBodyMessage(entry.getContent());
 			}
 		});
-	}
-
-	@Override
-	public void upvote(int percent) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	public void downvote(int percent) {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override

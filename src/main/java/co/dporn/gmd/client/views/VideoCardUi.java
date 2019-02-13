@@ -118,15 +118,6 @@ public class VideoCardUi extends Composite implements VideoCardView, CanBeDelete
 		viewLink.setVisible(visible);
 	}
 
-	@Override
-	public void setEarnings(BigDecimal earnings) {
-		voteBarUi.setEarnings(earnings);
-	}
-
-	@Override
-	public void setNetVoteCount(long netVoteCount) {
-		voteBarUi.setNetVoteCount(netVoteCount);
-	}
 
 	@Override
 	public void setDeleted(boolean deleted) {
@@ -138,6 +129,15 @@ public class VideoCardUi extends Composite implements VideoCardView, CanBeDelete
 			animation.animate(card);
 			animation.animate(() -> removeFromParent());
 		}
+	}
+	@Override
+	public void setEarnings(BigDecimal earnings) {
+		voteBarUi.setEarnings(earnings);
+	}
+	
+	@Override
+	public void setNetVoteCount(long netVoteCount) {
+		voteBarUi.setNetVoteCount(netVoteCount);
 	}
 
 	@Override

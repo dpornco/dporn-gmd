@@ -1,8 +1,13 @@
 package co.dporn.gmd.client.views;
 
+import java.math.BigDecimal;
+
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.Scheduler;
 import com.google.gwt.dom.client.Style.FontWeight;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
@@ -25,7 +30,7 @@ import gwt.material.design.client.ui.MaterialVideo;
 
 public class DisplayBlogEntryUi extends Composite implements DisplayBlogEntryView {
 	
-	@UiField 
+	@UiField
 	protected MaterialProgress progress;
 
 	@UiField
@@ -42,6 +47,9 @@ public class DisplayBlogEntryUi extends Composite implements DisplayBlogEntryVie
 	
 	@UiField
 	protected MaterialRow comments;
+	
+	@UiField
+	protected VoteBarUI voteBarUi;
 
 	@Override
 	public IsWidget getContainer() {
@@ -158,5 +166,36 @@ public class DisplayBlogEntryUi extends Composite implements DisplayBlogEntryVie
 	@Override
 	public HasWidgets getPostView() {
 		return post;
+	}
+	
+	@Override
+	public void setEarnings(BigDecimal earnings) {
+		voteBarUi.setEarnings(earnings);
+	}
+	
+	@Override
+	public void setNetVoteCount(long netVoteCount) {
+		voteBarUi.setNetVoteCount(netVoteCount);
+	}
+
+	@Override
+	public void setVotedValue(int amount) {
+		voteBarUi.setVotedValue(amount);
+	}
+
+	@Override
+	public HandlerRegistration setUpvoteHandler(ClickHandler handler) {
+		return voteBarUi.setUpvoteHandler(handler);
+	}
+
+	@Override
+	public int getVotedValue() {
+		return voteBarUi.getVotedValue();
+	}
+
+	@Override
+	public void setDeleted(boolean deleted) {
+		setVisible(false);
+		Scheduler.get().scheduleDeferred(()->removeFromParent());
 	}
 }

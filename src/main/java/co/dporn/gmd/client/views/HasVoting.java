@@ -10,7 +10,7 @@ public interface HasVoting {
 	HandlerRegistration setUpvoteHandler(ClickHandler handler);
 
 	void setEarnings(BigDecimal earnings);
-
+	
 	default void setEarnings(String earnings) {
 		if (earnings==null) {
 			setEarnings(BigDecimal.ONE.negate());
