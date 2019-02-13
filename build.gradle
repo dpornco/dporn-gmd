@@ -20,7 +20,7 @@ apply plugin: 'net.ltgt.apt-eclipse'
 apply plugin: 'org.gretty'
 apply plugin: 'maven'
 
-version = '20181029'
+version = '20190212'
 group = "dpornco"
 
 sourceCompatibility = 1.8
