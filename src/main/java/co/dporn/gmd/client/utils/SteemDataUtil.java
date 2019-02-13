@@ -8,48 +8,57 @@ import co.dporn.gmd.client.app.AppControllerModel;
 import co.dporn.gmd.client.views.CanBeDeleted;
 import co.dporn.gmd.client.views.HasVoting;
 import co.dporn.gmd.shared.CommentNotFoundException;
+import gwt.material.design.client.ui.MaterialToast;
 import steem.model.Vote;
 
 public class SteemDataUtil {
 
 	public static <T extends HasVoting & CanBeDeleted> void enableAndUpdateCardVoting(AppControllerModel model,
 			String author, String permlink, T card) {
-		String thisUser = model.getUsername()==null?"":model.getUsername();
+		String thisUser = model.getUsername() == null ? "" : model.getUsername();
 
 		/*
 		 * If logged in, enable real voting, else have vote trigger "login".
 		 */
-		if (model.isLoggedIn()) {
-			card.setUpvoteHandler(event -> {
-				model.doVote(author, permlink, card.getVotedValue()).thenAccept((t)->{
-					model.fireEvent(new ViewEvents.DoNotifyMessage("Voted!"));
-					enableAndUpdateCardVoting(model, author, permlink, card);
-				}).exceptionally((ex)->{
-					model.fireEvent(new ViewEvents.DoNotifyMessage(ex.getMessage()));
-					enableAndUpdateCardVoting(model, author, permlink, card);
-					return null;
-				});
+		card.setUpvoteHandler(event -> {
+			if (!model.isLoggedIn()) {
+				MaterialToast.fireToast("YOU MUST LOGIN TO VOTE!", 15000);
+				enableAndUpdateCardVoting(model, author, permlink, card);
+				return;
+			}
+			model.doVote(author, permlink, card.getVotedValue()).thenAccept((t) -> {
+				model.fireEvent(new ViewEvents.DoNotifyMessage("Voted!"));
+				enableAndUpdateCardVoting(model, author, permlink, card);
+			}).exceptionally((ex) -> {
+				model.fireEvent(new ViewEvents.DoNotifyMessage(ex.getMessage()));
+				enableAndUpdateCardVoting(model, author, permlink, card);
+				return null;
 			});
-		} else {
-
-		}
+		});
 
 		/*
-		 * Update voted values for "this user" and report existing vote counts and SBD amounts.
+		 * Update voted values for "this user" and report existing vote counts and SBD
+		 * amounts.
 		 */
 		model.getDiscussionComment(author, permlink).thenAccept((comment) -> {
-			if (comment.getNetVotes() != null) {
-				card.setNetVoteCount(comment.getNetVotes().longValue());
-			}
-			if (comment.getActiveVotes()!=null) {
-				for (Vote vote: comment.getActiveVotes()) {
+			// getNetVotes appears to be worthless data
+			// if (comment.getNetVotes() != null) {
+			// card.setNetVoteCount(comment.getNetVotes().longValue());
+			// }
+			int netVotes = 0;
+			if (comment.getActiveVotes() != null) {
+				for (Vote vote : comment.getActiveVotes()) {
 					if (vote.getVoter().equalsIgnoreCase(thisUser)) {
-						if (vote.getPercent()!=null) {
-							card.setVotedValue(vote.getPercent().intValue()/100);
+						if (vote.getPercent() != null) {
+							card.setVotedValue(vote.getPercent().intValue() / 100);
 						}
+					}
+					if (vote.getRshares() != null) {
+						netVotes += vote.getRshares().signum();
 					}
 				}
 			}
+			card.setNetVoteCount(netVotes);
 			BigDecimal ppv;
 			try {
 				ppv = new BigDecimal(comment.getPendingPayoutValue().replaceAll(" .*", ""));
