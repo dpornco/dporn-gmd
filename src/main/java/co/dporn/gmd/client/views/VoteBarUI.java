@@ -13,10 +13,13 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.Widget;
 
+import gwt.material.design.client.constants.IconType;
 import gwt.material.design.client.ui.MaterialButton;
 import gwt.material.design.client.ui.MaterialLabel;
 import gwt.material.design.client.ui.MaterialRange;
 import gwt.material.design.client.ui.MaterialRow;
+import gwt.material.design.client.ui.animate.MaterialAnimation;
+import gwt.material.design.client.ui.animate.Transition;
 
 public class VoteBarUI extends Composite implements HasVoting {
 
@@ -79,8 +82,22 @@ public class VoteBarUI extends Composite implements HasVoting {
 		btnThumbsUp.addClickHandler((e) -> showVoting(true));
 		// btnConfirm.addClickHandler(this::doUpvote);
 		btnCancel.addClickHandler((e) -> showVoting(false));
-		btnConfirm.addClickHandler((e) -> showVoting(false));
+		btnConfirm.addClickHandler((e) -> {
+			btnThumbsUp.setEnabled(false);
+			showVoting(false);
+			if (animation != null) {
+				animation.stopAnimation();
+			}
+			animation = new MaterialAnimation();
+			Transition transition = Transition.PULSE;
+			animation.setTransition(transition);
+			animation.setDelay(0);
+			animation.setInfinite(true);
+			animation.animate(btnThumbsUp);
+		});
 	}
+
+	private MaterialAnimation animation = null;
 
 	private void showVoting(boolean showVoteControls) {
 		voteBarDisplayAmounts.setVisible(!showVoteControls);
@@ -95,7 +112,18 @@ public class VoteBarUI extends Composite implements HasVoting {
 		if (amount > 100) {
 			amount = 100;
 		}
+		if (animation != null) {
+			animation.stopAnimation();
+			animation = null;
+		}
 		voteWeight.setValue(amount);
+		if (amount == 0) {
+			btnThumbsUp.setIconType(IconType.THUMB_UP);
+			btnThumbsUp.setEnabled(true);
+		} else {
+			btnThumbsUp.setIconType(IconType.CHECK);
+			btnThumbsUp.setEnabled(true);
+		}
 	}
 
 	@Override
