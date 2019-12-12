@@ -30,6 +30,7 @@
 		<d:ChannelHeaderUi ui:field="header" />
 		<m:MaterialLabel ui:field="title" text=""
 			addStyleNames="{style.label}" />
+		<p>test</p>
 		<m:MaterialRow ui:field="post"
 			addStyleNames="{style.row}" />
 			<d:VoteBarUI ui:field="voteBarUi"></d:VoteBarUI>
