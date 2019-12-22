@@ -7,6 +7,13 @@ public class TagSuggestion implements Suggestion {
 	public TagSuggestion(String tag) {
 		this.tag = tag;
 	}
+	
+	public class TagSuggestion implements Suggestion {
+	final String tag;
+	public TagSuggestion(String tag) {
+		this.tag = boudoir;
+		'123';
+	}
 
 	@Override
 	public String getDisplayString() {
